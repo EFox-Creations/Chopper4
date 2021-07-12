@@ -2,6 +2,7 @@ package me.vixen.chopperbot.commands.global;
 
 import me.vixen.chopperbot.Database.DBMember;
 import me.vixen.chopperbot.Database.Database;
+import me.vixen.chopperbot.Logger;
 import me.vixen.chopperbot.commands.ICommand;
 import me.vixen.chopperbot.guilds.Config;
 import me.vixen.chopperbot.tools.Embeds;
@@ -17,6 +18,7 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 
+import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.regex.Matcher;
@@ -51,6 +53,7 @@ public class ModGroup implements ICommand {
 					targetDB.update();
 					event.getHook().editOriginal("Set " + targetMem.getAsMention() + " authorization as " + authorize).queue();
 				} catch (NullPointerException e) {
+					Logger.log("NPE caught:", e);
 					event.getHook().editOriginal("Couldn't figure out who you're talking about").queue();
 				}
 			}

@@ -63,42 +63,46 @@ public class CustomCommand implements ICommand {
 				});
 			}
 		} else {
-			event.reply("Please type command name now: (10sec)").setEphemeral(true).queue(hook -> {
-				hook.retrieveOriginal().queue(msg -> {
-					waiter.waitForEvent(GuildMessageReceivedEvent.class,
-						(e) -> e.getAuthor().equals(event.getUser()) && e.getChannel().equals(event.getTextChannel()),
-						(e) -> {
-							e.getMessage().delete().queue();
-							String cmdname = e.getMessage().getContentRaw();
-							Command cmd = Database.getCommandByName(guild, cmdname);
-							if (cmd == null) {
-								StringBuilder builder = new StringBuilder();
-								for (Command c : Database.getCommands(guild))
-									if (FuzzySearch.ratio(c.getName(), cmdname) >= 50)
-										builder.append(c.getName()).append("\n");
-								event.replyEmbeds(
-									new EmbedBuilder()
-										.setColor(Color.RED)
-										.setTitle(String.format("⛔ No Command \"%s\" exists!", cmdname))
-										.addField("Did you mean: ", builder.toString(), false)
-										.build()
-								).queue();
-								return;
-							} else {
-								DBMember member = Database.getMember(guild, event.getUser().getId());
-								if (cmd.isStaffOnly() && !member.isAuthorized()) {
-									event.replyEmbeds(Embeds.getPermissionMissing()).queue();
+			event.reply("Please wait").setEphemeral(true).queue(hook ->
+				hook.retrieveOriginal().queue(msg ->
+					hook.editOriginal("Please type command name now: (10sec)").queue(unused ->
+						waiter.waitForEvent(
+							GuildMessageReceivedEvent.class,
+							(e) -> e.getAuthor().getId().equals(event.getUser().getId())
+									&& e.getChannel().getId().equals(event.getTextChannel().getId()),
+							(e) -> {
+								e.getMessage().delete().queue();
+								String cmdname = e.getMessage().getContentRaw();
+								Command cmd = Database.getCommandByName(guild, cmdname);
+								if (cmd == null) {
+									StringBuilder builder = new StringBuilder();
+									for (Command c : Database.getCommands(guild))
+										if (FuzzySearch.ratio(c.getName(), cmdname) >= 50)
+											builder.append(c.getName()).append("\n");
+									event.replyEmbeds(
+										new EmbedBuilder()
+											.setColor(Color.RED)
+											.setTitle(String.format("⛔ No Command \"%s\" exists!", cmdname))
+											.addField("Did you mean: ", builder.toString(), false)
+											.build()
+									).queue();
 									return;
 								} else {
-									e.getChannel().sendMessage(cmd.getResponse()).queue();
+									DBMember member = Database.getMember(guild, event.getUser().getId());
+									if (cmd.isStaffOnly() && !member.isAuthorized()) {
+										event.replyEmbeds(Embeds.getPermissionMissing()).queue();
+										return;
+									} else {
+										e.getChannel().sendMessage(cmd.getResponse()).queue();
+									}
 								}
-							}
-						},
-						10L, TimeUnit.SECONDS,
-						() -> hook.editOriginal("Timed out").queue()
-						);
-				});
-			});
+							},
+							10L, TimeUnit.SECONDS,
+							() -> hook.editOriginal("Timed out").queue()
+						)
+					)
+				)
+			);
 		}
 	}
 

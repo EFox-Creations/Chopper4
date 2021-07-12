@@ -124,7 +124,7 @@ public class Database {
 	private static void createConfigTable() {
 		String SQL = """
 			CREATE TABLE IF NOT EXISTS configs (
-			guild_id TEXT NOT NULL,\s
+			guild_id TEXT UNIQUE NOT NULL,\s
 			config TEXT\s
 			);""";
 		//Build and execute

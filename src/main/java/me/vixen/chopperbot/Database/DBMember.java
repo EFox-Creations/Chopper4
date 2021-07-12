@@ -195,6 +195,7 @@ public class DBMember {
 
 		if (after || override) {
 			adjustExp(new Random().nextInt(15)+1);
+			lstMsgTime = OffsetDateTime.now();
 			update();
 		}
 	}
