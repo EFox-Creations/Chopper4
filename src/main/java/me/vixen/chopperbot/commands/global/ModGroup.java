@@ -42,6 +42,10 @@ public class ModGroup implements ICommand {
 				try {
 					final Member targetMem = event.getOption("member").getAsMember();
 					DBMember targetDB = Database.getMember(guild, targetMem.getId());
+					if (targetDB == null) {
+						event.reply("I couldn't load that person :/").queue();
+						return;
+					}
 					final boolean authorize = event.getOption("authorize").getAsBoolean();
 					targetDB.setAuthorized(authorize);
 					targetDB.update();

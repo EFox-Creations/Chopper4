@@ -5,13 +5,13 @@ plugins {
 }
 
 group 'me.vixen'
-version '4.0.0ALPHA'
+version '4.0.0BETA'
 
 compileJava.options.encoding = 'UTF-8'
 sourceCompatibility = 1.15
 
 application {
-    mainClassName = 'me.vixen.chopper4.Entry'
+    mainClassName = 'me.vixen.chopperbot.Entry'
 }
 
 repositories {

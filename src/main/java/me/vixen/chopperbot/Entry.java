@@ -54,13 +54,13 @@ public class Entry {
 
 		Database.initDatabase(jda.getGuilds());
 
-		System.out.println("DatabaseLoaded");
+		Logger.log("DatabaseLoaded");
 
 		//DeleteAllLocalCommands
-		//for (Guild g : JDA.getGuilds()) g.updateCommands().queue(unused -> System.out.println("Commands Cleared"));
+		//for (Guild g : jda.getGuilds()) g.updateCommands().queue(unused -> System.out.println("Commands Cleared"));
 
 		//DeleteAllGlobalCommands
-		//JDA.updateCommands().queue();
+		//jda.updateCommands().queue();
 
 		//Load local Commands
 		for (IGuild g : guildManager.getGuilds()) { //Local first
@@ -72,7 +72,7 @@ public class Entry {
 		//Then Global (Note: Takes up to 1 hour to update)
 		jda.updateCommands().addCommands(commandManager.getAllGlobalCommandData()).queue();
 
-		System.out.println("JDA for Chopper4 fully loaded; globals awaiting update on discord (up to 1hr response time)");
+		Logger.log("JDA for Chopper4 fully loaded; globals awaiting update on discord (up to 1hr response time)");
 		//Start treasure thread
 		Thread thread1 = new Thread(() -> BackgroundThread.go(true, guildManager, waiter));
 		thread1.setName("Background Thread");

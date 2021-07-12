@@ -180,7 +180,7 @@ public class Database {
 	}
 
 	private static OffsetDateTime resolveUnmuteTime(String unmuteString) {
-		if (unmuteString == null) return null;
+		if (unmuteString == null || unmuteString.equalsIgnoreCase("NULL")) return null;
 		else return OffsetDateTime.parse(unmuteString);
 	}
 
@@ -1019,6 +1019,7 @@ public class Database {
 				return null;
 			}
 		} catch (SQLException e) {
+			Logger.log("Failed to Upsert config:", e);
 			return null;
 		}
 	}
@@ -1039,6 +1040,7 @@ public class Database {
 			con.close();
 			return true;
 		} catch (SQLException e) {
+			Logger.log("Failed to Upsert config:", e);
 			return false;
 		}
 	}
