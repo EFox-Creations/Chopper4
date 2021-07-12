@@ -42,7 +42,7 @@ public class ModGroup implements ICommand {
 		switch (name) {
 			case "authorize" -> {
 				try {
-					final Member targetMem = event.getOption("member").getAsMember();
+					final Member targetMem = event.getOption("user").getAsMember();
 					DBMember targetDB = Database.getMember(guild, targetMem.getId());
 					if (targetDB == null) {
 						event.reply("I couldn't load that person :/").queue();
@@ -59,7 +59,7 @@ public class ModGroup implements ICommand {
 			}
 			case "softban" -> {
 				try {
-					final Member member = event.getOption("member").getAsMember();
+					final Member member = event.getOption("user").getAsMember();
 					final String reason = event.getOption("reason").getAsString() + "\nThis was a softban";
 					try {
 						member.ban(7, reason).queue(
@@ -88,7 +88,7 @@ public class ModGroup implements ICommand {
 			}
 			case "ban" -> {
 				try {
-					final Member member = event.getOption("member").getAsMember();
+					final Member member = event.getOption("user").getAsMember();
 					final String reason = event.getOption("reason").getAsString();
 					try {
 						member.ban(7, reason).queue();
