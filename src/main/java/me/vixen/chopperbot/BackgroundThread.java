@@ -157,7 +157,8 @@ public class BackgroundThread {
 			dbMember.update();
 
 			if (opened) {
-				event.retrieveMessage().queue(message ->
+				event.retrieveMessage().queue(message -> {
+					message.clearReactions().queue();
 					message.editMessageEmbeds(
 						new EmbedBuilder()
 							.setTitle(ChestRewardsEnum.getName(reward))
@@ -167,18 +168,19 @@ public class BackgroundThread {
 							)
 							.setFooter("Skill increased by 2!")
 							.build()
-					).queue()
-				);
+					).queue();
+				});
 			} else {
-				event.retrieveMessage().queue(message ->
+				event.retrieveMessage().queue(message -> {
+					message.clearReactions().queue();
 					message.editMessageEmbeds(
 						new EmbedBuilder()
 							.setTitle("⛔ The lock broke!")
 							.setColor(Color.RED)
 							.setFooter("Skill increased by 1 anyway!")
 							.build()
-					).queue()
-				);
+					).queue();
+				});
 			}
 		});
 	}
