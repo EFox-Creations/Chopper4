@@ -27,7 +27,7 @@ public class PollCommand implements ICommand {
 			return;
 		}
 		if (!dbMember.isAuthorized() && config.isOnlyStaffPolls()) {
-			event.reply("You do not have the correct permissions").setEphemeral(true).queue();
+			event.replyEmbeds(Embeds.getPermissionMissing()).setEphemeral(true).queue();
 			return;
 		}
 
@@ -64,7 +64,7 @@ public class PollCommand implements ICommand {
 			new OptionData(OptionType.STRING, "eight", "The eighth Poll option"),
 			new OptionData(OptionType.STRING, "nine", "The ninth Poll option"),
 			new OptionData(OptionType.STRING, "ten", "The tenth Poll option")
-		).setDefaultEnabled(false);
+		);
 	}
 
 	private String[] voteEmotes = {

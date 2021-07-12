@@ -3,6 +3,7 @@ package me.vixen.chopperbot.commands.global;
 import me.vixen.chopperbot.Database.DBMember;
 import me.vixen.chopperbot.Database.Database;
 import me.vixen.chopperbot.commands.ICommand;
+import me.vixen.chopperbot.tools.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
@@ -17,7 +18,7 @@ public class StickyGroup implements ICommand {
 	public void handle(SlashCommandEvent event) {
 		DBMember member = Database.getMember(event.getGuild(), event.getUser().getId());
 		if (!member.isAuthorized()) {
-			event.reply("You do not have the correct permissions").setEphemeral(true).queue();
+			event.replyEmbeds(Embeds.getPermissionMissing()).queue();
 			return;
 		}
 
@@ -33,7 +34,7 @@ public class StickyGroup implements ICommand {
 			new SubcommandData("add", "Add a sticky message to this channel")
 				.addOption(OptionType.STRING, "content", "The content of the sticky (\"<n>\" for newline)", true),
 			new SubcommandData("delete", "Delete the sticky message from this channel")
-		).setDefaultEnabled(false);
+		);
 	}
 
 	private static void addSticky(SlashCommandEvent event) {

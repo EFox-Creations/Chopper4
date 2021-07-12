@@ -33,7 +33,7 @@ public class WarningGroup implements ICommand {
 	public void handle(SlashCommandEvent event) {
 		DBMember moderator = Database.getMember(event.getGuild(), event.getUser().getId());
 		if (!moderator.isAuthorized()) {
-			event.reply("You do not have the correct permissions").setEphemeral(true).queue();
+			event.replyEmbeds(Embeds.getPermissionMissing()).queue();
 			return;
 		}
 		OptionMapping userOpt = event.getOption("user");
