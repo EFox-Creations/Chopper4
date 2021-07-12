@@ -49,6 +49,11 @@ public class BejoIjoPlugins implements IGuild {
 	}
 
 	@Override
+	public TextChannel getLottoChannel() {
+		return getGuild().getTextChannelById("784226194664456202");
+	}
+
+	@Override
 	public List<ICommand> getLocalCommands() {
 		return localCommands;
 	}
