@@ -2,6 +2,8 @@ package me.vixen.chopperbot.guilds;
 
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import me.vixen.chopperbot.guilds.bejoijoplugins.BejoIjoPlugins;
+import me.vixen.chopperbot.guilds.efox.EFoxHomeBase;
+import me.vixen.chopperbot.guilds.lspdfrts.LSPDFRTS;
 import net.dv8tion.jda.api.entities.Guild;
 
 import java.util.ArrayList;
@@ -12,6 +14,8 @@ public class GuildManager {
 
 	public GuildManager(EventWaiter waiter) {
 		addGuild(new BejoIjoPlugins("663796409635569664", waiter));
+		addGuild(new LSPDFRTS("788491012553179217"));
+		addGuild(new EFoxHomeBase("761703507546996786"));
 	}
 
 	private void addGuild(IGuild guild) {

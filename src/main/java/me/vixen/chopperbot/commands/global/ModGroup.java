@@ -48,7 +48,7 @@ public class ModGroup implements ICommand {
 						event.reply("I couldn't load that person :/").queue();
 						return;
 					}
-					final boolean authorize = event.getOption("authorize").getAsBoolean();
+					final boolean authorize = event.getOption("setauthorized").getAsBoolean();
 					targetDB.setAuthorized(authorize);
 					targetDB.update();
 					event.getHook().editOriginal("Set " + targetMem.getAsMention() + " authorization as " + authorize).queue();
