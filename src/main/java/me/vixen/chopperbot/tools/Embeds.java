@@ -277,7 +277,7 @@ public class Embeds {
 		else return "0 seconds";
 	}
 
-	//TODO
+	//TODO - Waiting on JDA PR
 	private static String getCommandString(SlashCommandEvent event)
 	{
 		//Get text like the text that appears when you hover over the interaction in discord

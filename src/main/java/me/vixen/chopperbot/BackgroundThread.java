@@ -3,16 +3,19 @@ package me.vixen.chopperbot;
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import me.vixen.chopperbot.Database.DBMember;
 import me.vixen.chopperbot.Database.Database;
+import me.vixen.chopperbot.commands.global.LottoGroup;
 import me.vixen.chopperbot.guilds.GuildManager;
 import me.vixen.chopperbot.guilds.IGuild;
 import me.vixen.chopperbot.listener.DefaultEventHandler;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
 import java.awt.*;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Locale;
 import java.util.Random;
 
 public class BackgroundThread {
@@ -24,13 +27,43 @@ public class BackgroundThread {
 		int hourToSpawn = currentHour;
 		do {
 			if (currentHour == 0 && reset) { //If Midnight
+				//Start lotto
+				StringBuilder builder = new StringBuilder();
+				for (int i=1; i<=5; i++) builder.append(new Random().nextInt(LottoGroup.UPPER)+1).append(", ");
+				String winningBet = Database.getWinningBet(builder.toString().trim());
+				Entry.jda.retrieveUserById(winningBet).queue(user -> {
+					MessageEmbed lottoEmbed;
+					if (winningBet == null) {
+						lottoEmbed = new EmbedBuilder()
+							.setColor(Color.YELLOW)
+							.setTitle("😢 No one won the lotto today")
+							.addField("🎲 Today's Draw 🎲", builder.toString().trim(), false)
+							.build();
+					} else {
+						lottoEmbed = new EmbedBuilder()
+							.setColor(Color.GREEN)
+							.setTitle("Today's Lotto Winner!")
+							.addField("🎲 Today's Draw 🎲", builder.toString().trim(), false)
+							.addField("Winner", user.getAsTag(), false)
+							.build();
+					}
+					for (Guild g : Entry.jda.getGuilds()) {
+						if (gManager.contains(g)) {
+							gManager.getGuild(g).getLottoChannel().sendMessageEmbeds(lottoEmbed).queue();
+						} else {
+							g.getSystemChannel().sendMessageEmbeds(lottoEmbed).queue();
+						}
+					}
+				});
+				//END LOTTO
+				//Start Resets
 				for (Guild g : Entry.jda.getGuilds()) {
 					if (gManager.contains(g)) {
 						gManager.getGuild(g).doNightlyReset();
 					} else DefaultEventHandler.nightlyReset(g);
-					//TODO lotto
 				}
 				reset = false;
+				//END RESETS
 			} else {
 				if (currentHour == hourToSpawn) {
 					for (Guild g : Entry.jda.getGuilds()) {

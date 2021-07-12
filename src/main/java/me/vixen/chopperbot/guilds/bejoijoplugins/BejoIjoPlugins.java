@@ -45,8 +45,6 @@ public class BejoIjoPlugins implements IGuild {
 			new UpdateTimeCommand(),
 			new WhoIsCommand(waiter),
 			new BuyGroup(waiter)
-
-			//TODO trade group
 		);
 	}
 

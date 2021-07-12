@@ -970,18 +970,21 @@ public class Database {
 	/**
 	 *
 	 * @param winBetString The winning bet
-	 * @return Possibly empty {@link List String List} of {@link net.dv8tion.jda.api.entities.User User Ids}
+	 * @return Possibly null Id String of user that made the first winning bet
 	 */
-	public static List<String> getWinningBets(String winBetString) {
+	public static String getWinningBet(String winBetString) {
 		String SQL = "SELECT user_id FROM bets WHERE bet = " + winBetString;
 		try (Connection con = getConnection(); Statement stmt = con.createStatement()) {
 			final ResultSet rs = stmt.executeQuery(SQL);
-			List<String> winnerIds = new ArrayList<>();
-			while (rs.next()) winnerIds.add(rs.getString("user_id"));
+			String winnerId = null;
+			while (rs.next()) winnerId = rs.getString("user_id");
 			stmt.close();
-			return winnerIds;
+			con.close();
+			if (winnerId != null)
+				return winnerId;
+			else return null;
 		} catch (SQLException e) {
-			return new ArrayList<>();
+			return null;
 		}
 	}
 

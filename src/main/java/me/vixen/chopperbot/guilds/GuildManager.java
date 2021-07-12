@@ -12,7 +12,6 @@ public class GuildManager {
 
 	public GuildManager(EventWaiter waiter) {
 		addGuild(new BejoIjoPlugins("663796409635569664", waiter));
-		//TODO addGuild(new OutliersCoaching("613412156460761109"));
 	}
 
 	private void addGuild(IGuild guild) {

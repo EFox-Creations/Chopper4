@@ -19,6 +19,7 @@ import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
 import net.dv8tion.jda.internal.utils.Checks;
+import org.w3c.dom.Text;
 
 import java.util.List;
 
@@ -38,6 +39,10 @@ public interface IGuild {
 		Checks.notNull(getId(), "Guild Id");
 		Checks.notBlank(getId(), "Guild Id");
 		return getGuild().getName();
+	}
+
+	default TextChannel getLottoChannel() {
+		return getGuild().getSystemChannel();
 	}
 
 	default boolean hasCustomClaims() {
