@@ -13,6 +13,7 @@ import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.Button;
 import net.dv8tion.jda.api.utils.TimeFormat;
 
@@ -42,6 +43,7 @@ public class ReportCommand implements ICommand {
 					.setColor(Color.YELLOW)
 					.setTitle(user.getAsTag() + " submitted a report!")
 					.setDescription(event.getOption("report").getAsString())
+					.addField("Timestamp", TimeFormat.RELATIVE.now().toString(), false)
 					.build()
 			).setActionRow(
 				Button.success("claim", "Mark Done"),
@@ -55,7 +57,7 @@ public class ReportCommand implements ICommand {
 						.setColor(Color.YELLOW)
 						.setTitle(user.getAsTag() + " reported " + offender.getAsUser().getAsTag())
 						.setDescription(event.getOption("report").getAsString())
-						.setFooter(TimeFormat.RELATIVE.now().toString())
+						.addField("Timestamp", TimeFormat.RELATIVE.now().toString(), false)
 						.build()
 				).setActionRow(
 					Button.success("claim", "Mark Resolved"),
@@ -90,7 +92,7 @@ public class ReportCommand implements ICommand {
 			}
 			case "delete" -> msg.delete().queue();
 		}
-		msg.editMessageEmbeds(builder.build()).queue();
+		msg.editMessageEmbeds(builder.build()).setActionRow().queue();
 	}
 
 	private EmbedBuilder copyEmbed(MessageEmbed embed) {
