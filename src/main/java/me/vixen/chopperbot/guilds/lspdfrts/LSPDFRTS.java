@@ -3,7 +3,10 @@ package me.vixen.chopperbot.guilds.lspdfrts;
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import me.vixen.chopperbot.commands.ICommand;
 import me.vixen.chopperbot.guilds.IGuild;
+import me.vixen.chopperbot.tools.Embeds;
 import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
+import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,5 +43,19 @@ public class LSPDFRTS implements IGuild {
 		return getGuild().getTextChannels().stream().filter(it ->
 			channelIds.contains(it.getId()))
 			.collect(Collectors.toList());
+	}
+
+	@Override
+	public void handleGMemJoin(GuildMemberJoinEvent event, EventWaiter waiter) {
+		getGuild().getTextChannelById("811247930836779038").sendMessageEmbeds(
+			Embeds.getWelcomeEmbed(event.getUser())
+		).queue();
+	}
+
+	@Override
+	public void handleGMemRemove(GuildMemberRemoveEvent event, EventWaiter waiter) {
+		getGuild().getTextChannelById("811247930836779038").sendMessageEmbeds(
+			Embeds.getLeaveEmbed(event.getUser())
+		).queue();
 	}
 }
