@@ -1,0 +1,70 @@
+package me.vixen.chopperbot.commands.global;
+
+import me.vixen.chopperbot.commands.ICommand;
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
+import net.dv8tion.jda.api.interactions.commands.build.CommandData;
+
+import java.awt.*;
+
+public class OddsCommand implements ICommand {
+	@Override
+	public void handle(SlashCommandEvent event) {
+		MessageEmbed embed = new EmbedBuilder()
+			.setTitle("🎲 Feeling Lucky? 🎲")
+			.setDescription("""
+                    __Daily Chest:__
+                    -Coins 40%
+                    -Exp 40%
+                    -Practice Lock 10%
+                    -Chest 8%
+                    -Role Voucher 1%
+                    -Color Voucher 1%
+                        
+                    __Scratch Off:__
+                    -Lose 50%
+                    -Payout = Bet 25%
+                    -2x Bet 13%
+                    -4x Bet 7%
+                    -8x Bet 3%
+                    -16x Bet 2%
+                        
+                    __Lotto:__
+                    1 in $
+                        
+                    __Rob Command:__
+                    -Caught and Fined 25%
+                    -Success 25%
+                    -Failure 50%
+                    (Robs 10% of a random target)
+                        
+                    __Cards:__
+                    Mythic 5%
+                    Legendary 9% 
+                    Rare 20%
+                    Uncommon 29%
+                    Common 37%
+                    """.replace(
+				"$",
+				String.valueOf(factorial(LottoGroup.UPPER) / (factorial(5) * factorial(LottoGroup.UPPER-5)))
+				)
+			)
+			.setColor(Color.BLUE)
+			.build();
+		event.replyEmbeds(embed).queue();
+	}
+
+	@Override
+	public CommandData getCommandData() {
+		return new CommandData("displayodds", "Displays the luck-based odds");
+	}
+
+	static int factorial(int n)
+	{
+		if (n == 0)
+			return 1;
+
+		return n*factorial(n-1);
+	}
+}
