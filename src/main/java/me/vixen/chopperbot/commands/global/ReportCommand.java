@@ -13,7 +13,6 @@ import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
-import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.Button;
 import net.dv8tion.jda.api.utils.TimeFormat;
 
@@ -22,7 +21,7 @@ import java.awt.*;
 
 public class ReportCommand implements ICommand {
 
-	private EventWaiter waiter;
+	private final EventWaiter waiter;
 	public ReportCommand(EventWaiter waiter) {
 		this.waiter = waiter;
 	}
@@ -31,6 +30,7 @@ public class ReportCommand implements ICommand {
 	public void handle(SlashCommandEvent event) {
 		User user = event.getUser();
 		Guild guild = event.getGuild();
+		@SuppressWarnings("ConstantConditions") //SlashCommandEvent is not accepted from DMs which is only case for NPE
 		Config config = Database.getConfig(guild.getId());
 		if (config == null) {
 			event.replyEmbeds(Embeds.getPleaseDoConfig()).setEphemeral(true).queue();
@@ -38,7 +38,17 @@ public class ReportCommand implements ICommand {
 		}
 		OptionMapping offender = event.getOption("offender");
 		if (offender == null) {
-			guild.getTextChannelById(config.getModlogId()).sendMessageEmbeds(
+			if (config.getModlogId() == null) {
+				event.replyEmbeds(Embeds.getPleaseDoConfig()).queue();
+				return;
+			}
+			TextChannel modlog = guild.getTextChannelById(config.getModlogId());
+			if (modlog == null) {
+				event.replyEmbeds(Embeds.getPleaseDoConfig()).queue();
+				return;
+			}
+			//noinspection ConstantConditions option is required, cant be null
+			modlog.sendMessageEmbeds(
 				new EmbedBuilder()
 					.setColor(Color.YELLOW)
 					.setTitle(user.getAsTag() + " submitted a report!")
@@ -55,7 +65,17 @@ public class ReportCommand implements ICommand {
 			});
 		} else {
 			if (offender.getAsMember() != null) {
-				guild.getTextChannelById(config.getModlogId()).sendMessageEmbeds(
+				if (config.getModlogId() == null) {
+					event.replyEmbeds(Embeds.getPleaseDoConfig()).queue();
+					return;
+				}
+				TextChannel modlog = guild.getTextChannelById(config.getModlogId());
+				if (modlog == null) {
+					event.replyEmbeds(Embeds.getPleaseDoConfig()).queue();
+					return;
+				}
+				//noinspection ConstantConditions option is required, cant be null
+				modlog.sendMessageEmbeds(
 					new EmbedBuilder()
 						.setColor(Color.YELLOW)
 						.setTitle(user.getAsTag() + " reported " + offender.getAsUser().getAsTag())
@@ -77,7 +97,7 @@ public class ReportCommand implements ICommand {
 	private void waitForButtons(Message msg) {
 		waiter.waitForEvent(
 			ButtonClickEvent.class,
-			(bce) -> bce.getMessage().getId().equals(msg.getId()),
+			(bce) -> bce.getMessageId().equals(msg.getId()),
 			(bce) -> editEmbed(bce, msg, bce.getComponentId())
 		);
 	}
