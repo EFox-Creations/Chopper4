@@ -153,7 +153,6 @@ public class Database {
 				final String nickname = rs.getString("nickname");
 				final boolean authorized = rs.getBoolean("authorized");
 				final boolean lvlMessages = rs.getBoolean("level_up_messages");
-				final boolean muted = rs.getBoolean("muted");
 				final String lstMsgTime = rs.getString("lst_msg_time");
 				final String unmuteTime = rs.getString("unmute_time");
 				final int galleryRemaining = rs.getInt("gallery_remaining");
