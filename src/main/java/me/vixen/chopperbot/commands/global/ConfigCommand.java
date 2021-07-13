@@ -6,6 +6,7 @@ import me.vixen.chopperbot.commands.ICommand;
 import me.vixen.chopperbot.guilds.Config;
 import me.vixen.chopperbot.guilds.ConfigBuilder;
 import me.vixen.chopperbot.tools.Embeds;
+import me.vixen.chopperbot.tools.Errors;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
@@ -18,7 +19,7 @@ public class ConfigCommand implements ICommand {
 		@SuppressWarnings("ConstantConditions") //This cant be null as we don't accept DM SCE
 		DBMember dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
 		if (dbMember == null) {
-			event.reply("An unknown error occurred; aborting with Error Code C02").queue();
+			event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
 			return;
 		}
 		if (!dbMember.isAuthorized()) {
@@ -78,7 +79,7 @@ public class ConfigCommand implements ICommand {
 			.build();
 
 		boolean b = Database.setConfig(event.getGuild().getId(), config.serialize());
-		event.reply(b ? "Config set!" : "An unknown error occurred; aborting with Error code C01").queue();
+		event.reply(b ? "Config set!" : "An error occurred; aborting with Code " + Errors.CONFIG1).queue();
 	}
 
 	@Override

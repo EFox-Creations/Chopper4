@@ -3,6 +3,7 @@ package me.vixen.chopperbot.commands.global;
 import me.vixen.chopperbot.Database.DBMember;
 import me.vixen.chopperbot.Database.Database;
 import me.vixen.chopperbot.commands.ICommand;
+import me.vixen.chopperbot.tools.Errors;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import java.util.List;
@@ -14,7 +15,7 @@ public class RobCommand implements ICommand {
 		//noinspection ConstantConditions cant be null
 		DBMember dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
 		if (dbMember == null) {
-			event.reply("An unknown error occurred; aborting with Error Code RC1").queue();
+			event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
 			return;
 		}
 		if (dbMember.hasRobbed()) {

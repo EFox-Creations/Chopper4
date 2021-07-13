@@ -22,7 +22,6 @@ public class ChangelogCommand implements ICommand {
 			return;
 		}
 
-
 		@SuppressWarnings("ConstantConditions") //cannot be null as it is required client-side
 		String text = event.getOption("text")
 			.getAsString()

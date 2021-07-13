@@ -7,6 +7,8 @@ import me.vixen.chopperbot.Database.DBMember;
 import me.vixen.chopperbot.Database.Database;
 import me.vixen.chopperbot.commands.GlobalCommandManager;
 import me.vixen.chopperbot.commands.ICommand;
+import me.vixen.chopperbot.tools.Embeds;
+import me.vixen.chopperbot.tools.Errors;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
@@ -32,11 +34,11 @@ public class CustomGroup implements ICommand {
 		@SuppressWarnings("ConstantConditions") //This cant be null as we don't accept DM SCE
 		DBMember dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
 		if (dbMember == null) {
-			event.reply("An unknown error occurred; aborting with Error Code CU01").queue();
+			event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
 			return;
 		}
 		if (!dbMember.isAuthorized()) {
-			event.reply("You do not have the correct permissions").setEphemeral(true).queue();
+			event.replyEmbeds(Embeds.getPermissionMissing()).setEphemeral(true).queue();
 			return;
 		}
 
@@ -73,7 +75,7 @@ public class CustomGroup implements ICommand {
 				final boolean success = Database.deleteCommand(guild, cmdname);
 
 				if (success) event.reply("Command deleted successfully").queue();
-				else event.reply("An error occurred").queue();
+				else event.reply("An error occurred; aborting with code " + Errors.COMMAND1).queue();
 			}
 			case "setname" -> {
 				//noinspection ConstantConditions

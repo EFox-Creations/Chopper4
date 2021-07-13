@@ -4,6 +4,7 @@ import me.vixen.chopperbot.Database.DBMember;
 import me.vixen.chopperbot.Database.Database;
 import me.vixen.chopperbot.commands.ICommand;
 import me.vixen.chopperbot.tools.Embeds;
+import me.vixen.chopperbot.tools.Errors;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
@@ -19,7 +20,7 @@ public class DonateCommand implements ICommand {
 		//noinspection ConstantConditions cant be null; no SCE from DMs accepted
 		DBMember donator = Database.getMember(guild, event.getUser().getId());
 		if (donator == null) {
-			event.reply("An unknown error occurred; aborting with Error Code D01").queue();
+			event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
 			return;
 		}
 		//noinspection ConstantConditions is required
@@ -39,7 +40,7 @@ public class DonateCommand implements ICommand {
 		DBMember reciever = Database.getMember(guild, member.getUser().getId());
 
 		if (reciever == null) {
-			event.reply("An error occurred; aborting with error: DonateTNull").queue();
+			event.reply("An error occurred; aborting with code " + Errors.DBNULLRETURN).queue();
 			return;
 		}
 

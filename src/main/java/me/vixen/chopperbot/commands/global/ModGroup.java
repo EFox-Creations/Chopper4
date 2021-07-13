@@ -6,6 +6,7 @@ import me.vixen.chopperbot.Logger;
 import me.vixen.chopperbot.commands.ICommand;
 import me.vixen.chopperbot.guilds.Config;
 import me.vixen.chopperbot.tools.Embeds;
+import me.vixen.chopperbot.tools.Errors;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
@@ -44,7 +45,7 @@ public class ModGroup implements ICommand {
 					final Member targetMem = event.getOption("user").getAsMember();
 					DBMember targetDB = Database.getMember(guild, targetMem.getId());
 					if (targetDB == null) {
-						event.reply("I couldn't load that person :/").queue();
+						event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
 						return;
 					}
 					final boolean authorize = event.getOption("setauthorized").getAsBoolean();

@@ -6,6 +6,7 @@ import me.vixen.chopperbot.Database.DBMember;
 import me.vixen.chopperbot.Database.Database;
 import me.vixen.chopperbot.commands.ICommand;
 import me.vixen.chopperbot.tools.Embeds;
+import me.vixen.chopperbot.tools.Errors;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
@@ -36,7 +37,7 @@ public class BuyGroup implements ICommand {
 		//noinspection ConstantConditions cant be null
 		DBMember dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
 		if (dbMember == null) {
-			event.reply("An unknown error occurred; aborting with Error Code HSCE1").queue();
+			event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
 			return;
 		}
 		//noinspection ConstantConditions cant be null
@@ -74,7 +75,7 @@ public class BuyGroup implements ICommand {
 				if (dbMember.getCoins() <= BejoIjoPlugins.ROLE_COST ) {
 					event.getHook().editOriginalEmbeds(Embeds.getInsufficientCoins()).queue();
 				}
-				else if (option !=null) {
+				else if (option != null) {
 					if (getAllUnownedRoles(event).contains(option.getAsRole())) {
 						//noinspection ConstantConditions cant be null
 						event.getGuild().addRoleToMember(event.getMember(), option.getAsRole()).queue();

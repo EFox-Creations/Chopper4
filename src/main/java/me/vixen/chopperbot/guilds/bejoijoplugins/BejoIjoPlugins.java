@@ -9,6 +9,7 @@ import me.vixen.chopperbot.commands.ICommand;
 import me.vixen.chopperbot.guilds.IGuild;
 import me.vixen.chopperbot.listener.DefaultEventHandler;
 import me.vixen.chopperbot.tools.Embeds;
+import me.vixen.chopperbot.tools.Errors;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
@@ -197,7 +198,7 @@ public class BejoIjoPlugins implements IGuild {
 		//noinspection ConstantConditions cant be null
 		DBMember dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
 		if (dbMember == null) {
-			event.reply("An unknown error occurred; aborting with Error Code DC0").queue();
+			event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
 			return;
 		}
 		event.deferReply().queue();
@@ -242,7 +243,7 @@ public class BejoIjoPlugins implements IGuild {
 						.queue(onSuccess -> file.delete());
 				}
 			});
-		} else event.getHook().editOriginal("An Error Occurred").queue();
+		} else event.getHook().editOriginal("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
 	}
 
 	private boolean isStaff(Guild g, Member m) {

@@ -5,6 +5,7 @@ import me.vixen.chopperbot.Database.Database;
 import me.vixen.chopperbot.commands.ICommand;
 import me.vixen.chopperbot.guilds.GuildManager;
 import me.vixen.chopperbot.tools.Embeds;
+import me.vixen.chopperbot.tools.Errors;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -30,7 +31,7 @@ public class DailyClaimCommand implements ICommand {
 			//noinspection ConstantConditions We dont accept DM SCE; can't be null
 			DBMember dbMember = Database.getMember(guild, userId);
 			if (dbMember == null) {
-				event.reply("An unknown error occurred; aborting with Error Code CD1").queue();
+				event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
 				return;
 			}
 			int dailyChests = dbMember.getDailyChests();

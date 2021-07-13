@@ -4,6 +4,7 @@ import me.vixen.chopperbot.Database.DBMember;
 import me.vixen.chopperbot.Database.Database;
 import me.vixen.chopperbot.commands.ICommand;
 import me.vixen.chopperbot.tools.Embeds;
+import me.vixen.chopperbot.tools.Errors;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
@@ -17,7 +18,6 @@ public class LottoGroup implements ICommand {
 		switch (event.getSubcommandName()) {
 			case "pool" -> getStatus(event);
 			case "place_bet" -> placeBet(event);
-			default -> event.reply("Unknown Error has occurred").setEphemeral(true).queue();
 		}
 	}
 
@@ -45,7 +45,7 @@ public class LottoGroup implements ICommand {
 		//noinspection ConstantConditions cant be null
 		DBMember dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
 		if (dbMember == null) {
-			event.reply("An unknown error occurred; aborting with Error Code LG1").queue();
+			event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
 			return;
 		}
 		event.deferReply().queue();
@@ -86,7 +86,7 @@ public class LottoGroup implements ICommand {
 				dbMember.adjustCoins(-betAmount);
 				dbMember.update();
 				event.getHook().editOriginal("Bet added!").queue();
-			} else event.getHook().editOriginal("An error occurred; aborting with error: L-LuF").queue();
+			} else event.getHook().editOriginal("An error occurred; aborting with code " + Errors.LOTTOADD).queue();
 		} else event.getHook().editOriginalFormat("All numbers must be between 1 and %d, inclusive", UPPER).queue();
 	}
 

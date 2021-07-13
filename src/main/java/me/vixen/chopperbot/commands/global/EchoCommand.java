@@ -4,6 +4,7 @@ import me.vixen.chopperbot.Database.DBMember;
 import me.vixen.chopperbot.Database.Database;
 import me.vixen.chopperbot.commands.ICommand;
 import me.vixen.chopperbot.tools.Embeds;
+import me.vixen.chopperbot.tools.Errors;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
@@ -20,7 +21,7 @@ public class EchoCommand implements ICommand {
 		//noinspection ConstantConditions cant be null
 		DBMember member = Database.getMember(guild, user.getId());
 		if (member == null) {
-			event.reply("An unknown error occurred; aborting with Error Code EC1").queue();
+			event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
 			return;
 		}
 		if (!member.isAuthorized()) {

@@ -5,6 +5,7 @@ import me.vixen.chopperbot.Database.DBMember;
 import me.vixen.chopperbot.Database.Database;
 import me.vixen.chopperbot.commands.ICommand;
 import me.vixen.chopperbot.tools.Embeds;
+import me.vixen.chopperbot.tools.Errors;
 import me.xdrop.fuzzywuzzy.FuzzySearch;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
@@ -41,7 +42,7 @@ public class CustomCommand implements ICommand {
 		}
 		DBMember member = Database.getMember(guild, event.getUser().getId());
 		if (member == null) {
-			event.reply("An error occurred, aborting with error code CCLU1").setEphemeral(true).queue();
+			event.reply("An error occurred, aborting with code " + Errors.DBNULLRETURN).setEphemeral(true).queue();
 			return;
 		}
 		if (cmd.isStaffOnly() && !member.isAuthorized()) {

@@ -5,6 +5,7 @@ import me.vixen.chopperbot.Database.Database;
 import me.vixen.chopperbot.Entry;
 import me.vixen.chopperbot.commands.ICommand;
 import me.vixen.chopperbot.tools.Embeds;
+import me.vixen.chopperbot.tools.Errors;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.Guild;
@@ -25,13 +26,13 @@ public class SlotCommand implements ICommand {
 		Guild guild = event.getGuild();
 		Guild efox = Entry.jda.getGuildById("761703507546996786");
 		if (efox == null) {
-			event.reply("An unknown error occurred; aborting with Error Code SlC0").queue();
+			event.reply("An error occurred; aborting with Code " + Errors.JDANULLRETURN).queue();
 			return;
 		}
 		//noinspection ConstantConditions cant be null
 		DBMember member = Database.getMember(guild, id);
 		if (member == null) {
-			event.reply("An unknown error occurred; aborting with Error Code SlC1").queue();
+			event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
 			return;
 		}
 		//noinspection ConstantConditions cant be null

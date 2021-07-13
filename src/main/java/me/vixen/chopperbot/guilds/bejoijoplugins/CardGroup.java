@@ -6,6 +6,7 @@ import me.vixen.chopperbot.Database.DBMember;
 import me.vixen.chopperbot.Database.Database;
 import me.vixen.chopperbot.commands.ICommand;
 import me.vixen.chopperbot.tools.Embeds;
+import me.vixen.chopperbot.tools.Errors;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
@@ -125,7 +126,7 @@ public class CardGroup implements ICommand {
 		//noinspection ConstantConditions cant be null
 		DBMember dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
 		if (dbMember == null) {
-			event.reply("An unknown error occurred; aborting with Error Code BCC1").queue();
+			event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
 			return;
 		}
 		if (dbMember.getCoins() < cardCost) {
@@ -149,7 +150,7 @@ public class CardGroup implements ICommand {
 		//noinspection ConstantConditions cant be null
 		DBMember dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
 		if (dbMember == null) {
-			event.reply("An unknown error occurred; aborting with Error Code SCC2").queue();
+			event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
 			return;
 		}
 		if (e.getReactionEmote().getName().equalsIgnoreCase("⛔")) {
@@ -189,7 +190,7 @@ public class CardGroup implements ICommand {
 
 		final Card card = Database.getCardById(cardid);
 		if (card == null) {
-			event.reply("An unknown error occurred; aborting with Error Code CCG0").queue();
+			event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
 			return;
 		}
 		final Card.Rarity rarity = card.getRarity();
@@ -239,7 +240,7 @@ public class CardGroup implements ICommand {
 	private void confirmSale(Message msg, GuildMessageReactionAddEvent e, int price, int cardId) {
 		DBMember dbMember = Database.getMember(e.getGuild(), e.getUser().getId());
 		if (dbMember == null) {
-			e.getChannel().sendMessage("An unknown error occurred; aborting with Error Code CGC4").queue();
+			e.getChannel().sendMessage("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
 			return;
 		}
 		switch (e.getReactionEmote().getName()) {
@@ -304,7 +305,7 @@ public class CardGroup implements ICommand {
 		final Card.CardFace cardFace = Card.CardFace.valueOf(facename);
 		final List<Card> cards = Database.getCardsByFaceWithOwner(cardFace, event.getUser().getId());
 		if (cards == null) {
-			event.reply("An unknown error occurred; aborting with Error Code CGC5").queue();
+			event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
 			return;
 		}
 
@@ -339,7 +340,7 @@ public class CardGroup implements ICommand {
 			//noinspection ConstantConditions cant be null
 			DBMember dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
 			if (dbMember == null) {
-				event.reply("An unknown error occurred; aborting with Error Code SCC3").queue();
+				event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
 				return;
 			}
 			dbMember.adjustCoins(2000);

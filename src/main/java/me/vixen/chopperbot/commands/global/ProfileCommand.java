@@ -4,6 +4,7 @@ import me.vixen.chopperbot.Database.DBMember;
 import me.vixen.chopperbot.Database.Database;
 import me.vixen.chopperbot.commands.ICommand;
 import me.vixen.chopperbot.tools.Embeds;
+import me.vixen.chopperbot.tools.Errors;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
@@ -31,7 +32,7 @@ public class ProfileCommand implements ICommand {
 				//noinspection ConstantConditions cant be null
 				File draw = draw(event.getGuild(), member);
 				if (draw == null) {
-					event.reply("An unknown error occurred; aborting with Error Code PF3").queue();
+					event.reply("An error occurred; aborting with Code " + Errors.PROFILE1).queue();
 					return;
 				}
 				//noinspection ResultOfMethodCallIgnored
@@ -40,7 +41,7 @@ public class ProfileCommand implements ICommand {
 				//noinspection ConstantConditions cant be null
 				DBMember dbMember = Database.getMember(event.getGuild(), member.getId());
 				if (dbMember == null) {
-					event.reply("An unknown error occurred; aborting with Error Code PF1").queue();
+					event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
 					return;
 				}
 				event.getHook().editOriginalEmbeds(
@@ -78,7 +79,7 @@ public class ProfileCommand implements ICommand {
 				try {
 					File draw = draw(event.getGuild(), member);
 					if (draw == null) {
-						event.reply("An unknown error occurred; aborting with Error Code PF3").queue();
+						event.reply("An error occurred; aborting with Code " + Errors.PROFILE1).queue();
 						return;
 					}
 					//noinspection ResultOfMethodCallIgnored
@@ -87,7 +88,7 @@ public class ProfileCommand implements ICommand {
 					//noinspection ConstantConditions cant be null
 					DBMember dbMember = Database.getMember(event.getGuild(), member.getId());
 					if (dbMember == null) {
-						event.reply("An unknown error occurred; aborting with Error Code PF2").queue();
+						event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
 						return;
 					}
 					event.getHook().editOriginalEmbeds(
