@@ -84,7 +84,7 @@ public class WarningGroup implements ICommand {
 			),
 			new SubcommandData("infractions", "Get a users warnings")
 				.addOption(OptionType.USER, "user", "The user to get", true)
-		).setDefaultEnabled(false);
+		);
 	}
 
 	private static void warn(SlashCommandEvent event, DBMember target, DBMember moderator) {
