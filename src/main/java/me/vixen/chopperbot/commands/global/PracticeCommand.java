@@ -21,7 +21,7 @@ public class PracticeCommand implements ICommand {
 		Guild guild = event.getGuild();
 		int numoflocks = (int) event.getOption("numoflocks").getAsLong();
 		DBMember member = Database.getMember(guild, userid);
-		if (member.getLockCount() > numoflocks) {
+		if (member.getLockCount() < numoflocks) {
 			event.replyEmbeds(Embeds.getInsufficientLocks()).queue();
 			return;
 		}
