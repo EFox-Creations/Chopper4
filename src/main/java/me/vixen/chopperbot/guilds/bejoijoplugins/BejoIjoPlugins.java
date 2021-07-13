@@ -242,6 +242,7 @@ public class BejoIjoPlugins implements IGuild {
 						.append(event.getMember().getAsMention())
 						.queue(onSuccess -> file.delete());
 				}
+				dbMember.update();
 			});
 		} else event.getHook().editOriginal("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
 	}

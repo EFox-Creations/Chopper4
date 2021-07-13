@@ -129,7 +129,6 @@ public class WarningGroup implements ICommand {
 	}
 
 	private void getInfractions(SlashCommandEvent event, DBMember target) {
-		Logger.log("Getting infractions");
 		List<Warning> warnings = target.getWarnings();
 		if (warnings.isEmpty()) {
 			event.reply("This user has no infractions in this server").queue();
