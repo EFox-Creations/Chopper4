@@ -7,22 +7,19 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
 
-import java.sql.Time;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
 
 public class DBMember {
-	private String userId;
-	private String guildId;
-	private String nickname;
+	private final String userId;
+	private final String guildId;
+	private final String nickname;
 	private boolean authorized;
 	private boolean lvlMsgsEnabled;
 	private OffsetDateTime lstMsgTime;
-	private boolean muted;
 	private OffsetDateTime unmuteTime;
 	private int galleryImgsLeft;
 	private int dailyChests;
@@ -36,7 +33,7 @@ public class DBMember {
 	private List<Warning> warnings;
 
 	public DBMember(String userId, String guildId, String nickname, boolean authorized, boolean lvlMsgsEnabled,
-					boolean muted, OffsetDateTime lstMsgTime, OffsetDateTime unmuteTime, int galleryImgsLeft,
+					OffsetDateTime lstMsgTime, OffsetDateTime unmuteTime, int galleryImgsLeft,
 					int dailyChests, int skill, int lockCount, int exp, int level, int coins, int lottoPlaysLeft,
 					boolean successOnRobToday) {
 		this.userId = userId;
@@ -45,7 +42,6 @@ public class DBMember {
 		this.authorized = authorized;
 		this.lvlMsgsEnabled = lvlMsgsEnabled;
 		this.lstMsgTime = lstMsgTime;
-		this.muted = muted;
 		this.unmuteTime = unmuteTime;
 		this.galleryImgsLeft = galleryImgsLeft;
 		this.dailyChests = dailyChests;
@@ -60,7 +56,7 @@ public class DBMember {
 	}
 
 	public DBMember(Member m, Guild g, boolean authorized) {
-		this(m.getUser().getId(), g.getId(), m.getEffectiveName(), authorized, true, false,
+		this(m.getUser().getId(), g.getId(), m.getEffectiveName(), authorized, true,
 			OffsetDateTime.now().minus(5L, ChronoUnit.MINUTES), null, 10, 1, 1, 0,0,0,0,
 			3, false);
 	}
@@ -105,7 +101,7 @@ public class DBMember {
 	}
 
 	public OffsetDateTime getLstMsgTime() {
-		if (lstMsgTime.equals(null))
+		if (lstMsgTime == null)
 			lstMsgTime = OffsetDateTime.now().minus(5L, ChronoUnit.MINUTES);
 		return lstMsgTime;
 	}
@@ -122,20 +118,16 @@ public class DBMember {
 	public boolean isMuted() {
 		boolean actuallyMuted = (unmuteTime != null && unmuteTime.isAfter(OffsetDateTime.now()));
 		if (actuallyMuted) return true;
-
-		muted = false;
 		unmuteTime = null;
 		return false;
 	}
 
 	public void setMuted(OffsetDateTime unmuteTime) {
 		this.unmuteTime = unmuteTime;
-		muted = true;
 	}
 
 	public void unmute() {
 		this.unmuteTime = null;
-		muted = false;
 	}
 
 	public String getUnmuteTime() {
@@ -189,15 +181,22 @@ public class DBMember {
 		level = getLevelFromXp();
 	}
 
-	public void awardExp(boolean override) {
+	public boolean awardExp(boolean override) {
 		boolean after = OffsetDateTime.now().plus(1L, ChronoUnit.SECONDS)
 			.isAfter(lstMsgTime.plus(5L, ChronoUnit.MINUTES));
 
 		if (after || override) {
 			adjustExp(new Random().nextInt(15)+1);
-			lstMsgTime = OffsetDateTime.now();
-			update();
-		}
+			updateLstMsgTime();
+			if (hasLeveledUp((int) exp)) {
+				level++;
+				update();
+				return true;
+			} else {
+				update();
+				return false;
+			}
+		} return false;
 	}
 
 	public int getLevel() {
@@ -261,7 +260,7 @@ public class DBMember {
 	// *                      Private Methods/Helpers                      *
 	// *********************************************************************
 
-	private boolean hasLeveledUp(int currentExp, int currentLevel) {
+	private boolean hasLeveledUp(int currentExp) {
 		//   formula n=Level
 		//   exp = (n*150) + ((n*150)/2)
 
@@ -283,7 +282,9 @@ public class DBMember {
 	// *********************************************************************
 
 	public void update() {
-		Database.upsertMember(Entry.jda.getGuildById(guildId), this);
+		Guild guild = Entry.jda.getGuildById(guildId);
+		if (guild != null)
+			Database.upsertMember(guild, this);
 	}
 
 	@Override

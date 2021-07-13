@@ -134,6 +134,7 @@ public class Card {
 		}
 	}
 
+	@SuppressWarnings("ResultOfMethodCallIgnored")
 	public File getGraphic(User u) {
 		try {
 			BufferedImage bg = ImageIO.read(new File("CardBlanks/" + capitalize(rarity.toString()) + ".png"));
@@ -141,7 +142,7 @@ public class Card {
 			File pfpSrc = download(u.getAvatarUrl());
 			BufferedImage pfp = ImageIO.read(pfpSrc);
 			pfpSrc.delete();
-			pfp = resize(pfp, 250, 250);
+			pfp = resize(pfp);
 
 			Graphics2D g2 = (Graphics2D) bg.getGraphics();
 
@@ -151,7 +152,7 @@ public class Card {
 			//Draw name
 			String name = capitalize(face.toString());
 			Font font = new Font("SANS_SERIF", Font.PLAIN, 60);
-			printCentered(g2, font, Color.BLACK, name, bg.getWidth(), 650);
+			printCentered(g2, font, name, bg.getWidth());
 
 			File out = new File("out.png");
 			ImageIO.write(bg, "png", out);
@@ -183,9 +184,9 @@ public class Card {
 		return new File("download.png");
 	}
 
-	private static BufferedImage resize(BufferedImage img, int newW, int newH) {
-		Image tmp = img.getScaledInstance(newW, newH, Image.SCALE_SMOOTH);
-		BufferedImage dimg = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_ARGB);
+	private static BufferedImage resize(BufferedImage img) {
+		Image tmp = img.getScaledInstance(250, 250, Image.SCALE_SMOOTH);
+		BufferedImage dimg = new BufferedImage(250, 250, BufferedImage.TYPE_INT_ARGB);
 
 		Graphics2D g2d = dimg.createGraphics();
 		g2d.drawImage(tmp, 0, 0, null);
@@ -202,16 +203,14 @@ public class Card {
 	 * Horizontally centers text in a given graphics space
 	 * @param g2d The graphics object
 	 * @param font The desired font
-	 * @param color The desired text color
 	 * @param s The desired text
 	 * @param width The width of the space to center in
-	 * @param YPos The y position at which to print
 	 */
-	private void printCentered(Graphics g2d, Font font, Color color, String s, int width, int YPos){
+	private void printCentered(Graphics g2d, Font font, String s, int width){
 		g2d.setFont(font);
-		g2d.setColor(color);
+		g2d.setColor(Color.BLACK);
 		int stringLen = (int) g2d.getFontMetrics().getStringBounds(s, g2d).getWidth();
 		int start = width/2 - stringLen/2;
-		g2d.drawString(s, start, YPos);
+		g2d.drawString(s, start, 650);
 	}
 }

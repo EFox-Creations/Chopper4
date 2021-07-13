@@ -25,12 +25,16 @@ public class FindCommand implements ICommand {
 
 	@Override
 	public void handle(SlashCommandEvent event) {
+		//noinspection ConstantConditions cant be null
 		DBMember dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
+		if (dbMember == null) {
+			event.reply("An unknown error occurred; aborting with Error Code FC1").queue();
+			return;
+		}
 		if (!dbMember.isAuthorized()) {
 			event.reply("You do not have the correct permissions").setEphemeral(true).queue();
 			return;
 		}
-
 
 		event.getGuild().loadMembers()
 			.onSuccess(m-> {
@@ -69,9 +73,7 @@ public class FindCommand implements ICommand {
 				event.reply("See Menu Below").setEphemeral(true).queue();
 				pager.paginate(event.getTextChannel(), 1);
 			})
-			.onError(voided -> {
-				event.reply("An error occurred").setEphemeral(true).queue();
-			});
+			.onError(voided -> event.reply("An error occurred").setEphemeral(true).queue());
 	}
 
 	@Override

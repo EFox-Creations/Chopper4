@@ -13,14 +13,16 @@ import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.requests.GatewayIntent;
-import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 
 import javax.security.auth.login.LoginException;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.List;
 
 public class Entry {
 	public static JDA jda;
@@ -65,9 +67,10 @@ public class Entry {
 		//Load local Commands
 		for (IGuild g : guildManager.getGuilds()) { //Local first
 			final Guild guild = jda.getGuildById(g.getId());
-			final CommandListUpdateAction commands = guild.updateCommands();
-			for (ICommand c : g.getLocalCommands()) commands.addCommands(c.getCommandData());
-			commands.queue();
+			if (guild == null) return;
+			List<CommandData> data = new ArrayList<>();
+			for (ICommand c : g.getLocalCommands()) data.add(c.getCommandData());
+			guild.updateCommands().addCommands(data).queue();
 		}
 		//Then Global (Note: Takes up to 1 hour to update)
 		jda.updateCommands().addCommands(commandManager.getAllGlobalCommandData()).queue();

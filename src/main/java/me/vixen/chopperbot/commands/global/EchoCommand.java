@@ -17,19 +17,24 @@ public class EchoCommand implements ICommand {
 	public void handle(SlashCommandEvent event) {
 		Guild guild = event.getGuild();
 		User user = event.getUser();
+		//noinspection ConstantConditions cant be null
 		DBMember member = Database.getMember(guild, user.getId());
+		if (member == null) {
+			event.reply("An unknown error occurred; aborting with Error Code EC1").queue();
+			return;
+		}
 		if (!member.isAuthorized()) {
 			event.replyEmbeds(Embeds.getPermissionMissing()).queue();
 			return;
 		}
 
+		//noinspection ConstantConditions cant be null
 		String phrase = event.getOption("phrase").getAsString();
 		OptionMapping msgid = event.getOption("msgid");
 		event.deferReply(true).queue();
 		if (msgid == null) {
-			event.getTextChannel().sendMessage(phrase).queue(msg -> {
-				event.getHook().editOriginal("Phrase Echoed").queue();
-			});
+			event.getTextChannel().sendMessage(phrase).queue(msg ->
+				event.getHook().editOriginal("Phrase Echoed").queue());
 		} else {
 			event.getTextChannel().retrieveMessageById(msgid.getAsString()).queue(msg -> {
 				msg.reply(phrase).mentionRepliedUser(true).queue();

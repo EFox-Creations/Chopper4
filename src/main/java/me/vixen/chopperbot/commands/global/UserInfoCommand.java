@@ -3,7 +3,6 @@ package me.vixen.chopperbot.commands.global;
 import me.vixen.chopperbot.commands.ICommand;
 import me.vixen.chopperbot.tools.Embeds;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;

@@ -1,7 +1,6 @@
 package me.vixen.chopperbot.guilds.bejoijoplugins;
 
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
-import me.vixen.chopperbot.Database.DBMember;
 import me.vixen.chopperbot.commands.ICommand;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -14,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 
 public class ConvertCommand implements ICommand {
 
-	private EventWaiter waiter;
+	private final EventWaiter waiter;
 	public ConvertCommand(EventWaiter waiter) {
 		this.waiter = waiter;
 	}
@@ -25,6 +24,7 @@ public class ConvertCommand implements ICommand {
 		final TextChannel textChannel = event.getTextChannel();
 		event.reply("Please paste your EUP config now").queue();
 		final InteractionHook hook = event.getHook();
+		//noinspection ConstantConditions cant be null
 		waiter.waitForEvent(
 			GuildMessageReceivedEvent.class,
 			(event1) -> (

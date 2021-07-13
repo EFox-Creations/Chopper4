@@ -15,7 +15,12 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 public class ConfigCommand implements ICommand {
 	@Override
 	public void handle(SlashCommandEvent event) {
+		@SuppressWarnings("ConstantConditions") //This cant be null as we don't accept DM SCE
 		DBMember dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
+		if (dbMember == null) {
+			event.reply("An unknown error occurred; aborting with Error Code C02").queue();
+			return;
+		}
 		if (!dbMember.isAuthorized()) {
 			event.replyEmbeds(Embeds.getPermissionMissing()).queue();
 			return;

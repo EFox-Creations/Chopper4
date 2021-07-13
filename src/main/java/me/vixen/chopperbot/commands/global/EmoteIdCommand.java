@@ -16,6 +16,7 @@ public class EmoteIdCommand implements ICommand {
 			return;
 		}
 
+		//noinspection ConstantConditions is required
 		event.reply(event.getOption("emote").getAsString()).setEphemeral(true).queue();
 	}
 

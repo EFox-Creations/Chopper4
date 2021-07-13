@@ -28,10 +28,21 @@ public class ProfileCommand implements ICommand {
 		if (userOpt == null) { //retrieve self
 			Member member = event.getMember();
 			try {
+				//noinspection ConstantConditions cant be null
 				File draw = draw(event.getGuild(), member);
+				if (draw == null) {
+					event.reply("An unknown error occurred; aborting with Error Code PF3").queue();
+					return;
+				}
+				//noinspection ResultOfMethodCallIgnored
 				event.getHook().editOriginal(draw).queue(unused -> draw.delete());
 			} catch (IOException e) {
+				//noinspection ConstantConditions cant be null
 				DBMember dbMember = Database.getMember(event.getGuild(), member.getId());
+				if (dbMember == null) {
+					event.reply("An unknown error occurred; aborting with Error Code PF1").queue();
+					return;
+				}
 				event.getHook().editOriginalEmbeds(
 					new EmbedBuilder()
 						.setColor(Embeds.Colors.FOXORANGE.get())
@@ -66,9 +77,19 @@ public class ProfileCommand implements ICommand {
 			} else {
 				try {
 					File draw = draw(event.getGuild(), member);
+					if (draw == null) {
+						event.reply("An unknown error occurred; aborting with Error Code PF3").queue();
+						return;
+					}
+					//noinspection ResultOfMethodCallIgnored
 					event.getHook().editOriginal(draw).queue(unused -> draw.delete());
 				} catch (IOException e) {
+					//noinspection ConstantConditions cant be null
 					DBMember dbMember = Database.getMember(event.getGuild(), member.getId());
+					if (dbMember == null) {
+						event.reply("An unknown error occurred; aborting with Error Code PF2").queue();
+						return;
+					}
 					event.getHook().editOriginalEmbeds(
 						new EmbedBuilder()
 							.setColor(Embeds.Colors.FOXORANGE.get())
@@ -108,6 +129,9 @@ public class ProfileCommand implements ICommand {
 
 	private static File draw(Guild g, Member m) throws IOException {
 		DBMember dbMember = Database.getMember(g, m.getId());
+		if (dbMember == null) {
+			return null;
+		}
 		String name = m.getUser().getName();
 		if (name.length() > 15) name = name.substring(0,11) + "...";
 		final long months = ChronoUnit.MONTHS.between(m.getTimeJoined(), OffsetDateTime.now());
@@ -135,8 +159,8 @@ public class ProfileCommand implements ICommand {
 		BufferedImage pfp = ImageIO.read(pfpSrc);
 		g2.setColor(Color.BLACK);
 		g2.drawImage(pfp, 744,249, 944,449, 0,0, pfp.getWidth(), pfp.getHeight(), null);
+		//noinspection ResultOfMethodCallIgnored
 		pfpSrc.delete();
-
 		g2.setFont(new Font("SANS_SERIF", Font.PLAIN, 30));
 		g2.setColor(Color.BLACK);
 
@@ -185,7 +209,8 @@ public class ProfileCommand implements ICommand {
 		int nextLevel = currentLevel+1;
 		int nextlvlexp = ((nextLevel*150) + ((nextLevel*150)/2));
 
-		return Math.max(.01, ((((exp-currentlvlexp)*100)/nextlvlexp)*.01));
+		//Math?... IDK.. I wrote it and it works so...
+		return Math.max(.01, (int) ((((exp-currentlvlexp)*100)/nextlvlexp)*.01));
 	}
 
 	private static File download(String avatarUrl) throws IOException {

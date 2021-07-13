@@ -11,7 +11,12 @@ import java.util.Random;
 public class RobCommand implements ICommand {
 	@Override
 	public void handle(SlashCommandEvent event) {
+		//noinspection ConstantConditions cant be null
 		DBMember dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
+		if (dbMember == null) {
+			event.reply("An unknown error occurred; aborting with Error Code RC1").queue();
+			return;
+		}
 		if (dbMember.hasRobbed()) {
 			event.reply("You have already robbed today").setEphemeral(true).queue();
 			return;

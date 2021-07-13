@@ -7,11 +7,9 @@ import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.utils.TimeFormat;
 
 import java.awt.*;
-import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.Collection;
 
 public class Embeds {
 
@@ -22,9 +20,10 @@ public class Embeds {
 		YELLOW(new Color(255,255,0)),
 		WHITE(new Color(255,255,255)),
 		FOXORANGE(new Color(204,112,0)),
+		@SuppressWarnings("unused")
 		ORANGE(new Color(255,127,0));
 
-		private Color color;
+		private final Color color;
 
 		Colors(Color clr) {
 			this.color = clr;
@@ -51,6 +50,12 @@ public class Embeds {
 			.build();
 	}
 
+	public static MessageEmbed getLevelUpEmbed(int level) {
+		return new EmbedBuilder()
+			.setColor(Color.ORANGE)
+			.setTitle("🔼 Level Up! " + level + "🔼")
+			.build();
+	}
 
 	public static MessageEmbed getSelfVote() {
 		return new EmbedBuilder()
@@ -232,6 +237,7 @@ public class Embeds {
 	}
 
 	public static MessageEmbed getBugEmbed(Message msg) {
+		//noinspection ConstantConditions cant be null
 		return new EmbedBuilder()
 			.setTitle(String.format("🐛 Bug report from %s", msg.getAuthor().getAsTag()))
 			.setDescription(msg.getContentRaw())
@@ -241,6 +247,7 @@ public class Embeds {
 	}
 
 	public static MessageEmbed getCandidatesEmbed(Message msg) {
+		//noinspection ConstantConditions cant be null
 		return new EmbedBuilder()
 			.setTitle(String.format("%s's idea", msg.getAuthor().getAsTag()))
 			.setDescription(msg.getContentRaw())
@@ -292,20 +299,11 @@ public class Embeds {
 		for (OptionMapping o : event.getOptions())
 		{
 			builder.append(o.getName()).append(":").append(" ");
-			switch (o.getType())
-			{
-				case CHANNEL:
-					builder.append(o.getAsGuildChannel().getName()).append(" ");
-					break;
-				case USER:
-					builder.append(o.getAsUser().getAsTag()).append(" ");
-					break;
-				case ROLE:
-					builder.append(o.getAsRole().getName()).append(" ");
-					break;
-				default:
-					builder.append(o.getAsString()).append(" ");
-					break;
+			switch (o.getType()) {
+				case CHANNEL -> builder.append(o.getAsGuildChannel().getName()).append(" ");
+				case USER -> builder.append(o.getAsUser().getAsTag()).append(" ");
+				case ROLE -> builder.append(o.getAsRole().getName()).append(" ");
+				default -> builder.append(o.getAsString()).append(" ");
 			}
 		}
 		return builder.toString().trim();

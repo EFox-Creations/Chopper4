@@ -19,12 +19,18 @@ public class ScratchOffCommand implements ICommand {
 	public void handle(SlashCommandEvent event) {
 		Guild guild = event.getGuild();
 		String userId = event.getUser().getId();
+		//noinspection ConstantConditions cant be null
 		DBMember member = Database.getMember(guild, userId);
+		if (member == null) {
+			event.reply("An unknown error occurred; aborting with Error Code SO1").queue();
+			return;
+		}
 		if (member.getLottoPlaysLeft() <= 0) {
 			event.reply("You have already played 3 games today").queue();
 			return;
 		}
 
+		//noinspection ConstantConditions cant be null
 		final int bet = (int) event.getOption("bet").getAsLong();
 
 		if (bet > member.getCoins()) {
@@ -45,7 +51,6 @@ public class ScratchOffCommand implements ICommand {
 				payout = 0;
 				win = false;
 			}
-			case X1 -> payout = bet;
 			case X2 -> payout = bet*2;
 			case X4 -> payout = bet*4;
 			case X8 -> payout = bet*8;
@@ -74,9 +79,9 @@ public class ScratchOffCommand implements ICommand {
 	private enum OUTCOME {
 		X0, //Lose 50%
 		X1, //Even 25%
-		X2, //Doub 13%
+		X2, //Double 13%
 		X4, //Quad 7%
-		X8, //Eigh 3%
+		X8, //Eight 3%
 		X16;//Jack 2%
 
 		public static OUTCOME getRandom() {

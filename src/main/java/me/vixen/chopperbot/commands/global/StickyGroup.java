@@ -16,12 +16,18 @@ import java.awt.*;
 public class StickyGroup implements ICommand {
 	@Override
 	public void handle(SlashCommandEvent event) {
+		//noinspection ConstantConditions cant be null
 		DBMember member = Database.getMember(event.getGuild(), event.getUser().getId());
+		if (member == null) {
+			event.reply("An unknown error occurred; aborting with Error Code StC1").queue();
+			return;
+		}
 		if (!member.isAuthorized()) {
 			event.replyEmbeds(Embeds.getPermissionMissing()).queue();
 			return;
 		}
 
+		//noinspection ConstantConditions cant be null
 		switch (event.getSubcommandName()) {
 			case "add" -> addSticky(event);
 			case "delete" -> deleteSticky(event);
@@ -38,6 +44,7 @@ public class StickyGroup implements ICommand {
 	}
 
 	private static void addSticky(SlashCommandEvent event) {
+		//noinspection ConstantConditions cant be null
 		final String content = event.getOption("content").getAsString().replaceAll("<n>", "\n");
 		MessageEmbed embed = new EmbedBuilder()
 			.setTitle("📌 Pinned 📌")

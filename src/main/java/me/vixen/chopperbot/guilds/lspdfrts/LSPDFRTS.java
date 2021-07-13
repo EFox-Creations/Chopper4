@@ -47,15 +47,15 @@ public class LSPDFRTS implements IGuild {
 
 	@Override
 	public void handleGMemJoin(GuildMemberJoinEvent event, EventWaiter waiter) {
-		getGuild().getTextChannelById("811247930836779038").sendMessageEmbeds(
-			Embeds.getWelcomeEmbed(event.getUser())
-		).queue();
+		TextChannel welcome = getGuild().getTextChannelById("811247930836779038");
+		if (welcome != null)
+			welcome.sendMessageEmbeds(Embeds.getWelcomeEmbed(event.getUser())).queue();
 	}
 
 	@Override
 	public void handleGMemRemove(GuildMemberRemoveEvent event, EventWaiter waiter) {
-		getGuild().getTextChannelById("811247930836779038").sendMessageEmbeds(
-			Embeds.getLeaveEmbed(event.getUser())
-		).queue();
+		TextChannel welcome = getGuild().getTextChannelById("811247930836779038");
+		if (welcome != null)
+			welcome.sendMessageEmbeds(Embeds.getLeaveEmbed(event.getUser())).queue();
 	}
 }

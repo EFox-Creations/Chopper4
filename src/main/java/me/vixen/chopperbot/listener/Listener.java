@@ -7,6 +7,7 @@ import me.vixen.chopperbot.commands.GlobalCommandManager;
 import me.vixen.chopperbot.guilds.GuildManager;
 import me.vixen.chopperbot.tools.Embeds;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
@@ -19,9 +20,9 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
 public class Listener extends ListenerAdapter {
-	private EventWaiter waiter;
-	private GlobalCommandManager commandManager;
-	private GuildManager guildManager;
+	private final EventWaiter waiter;
+	private final GlobalCommandManager commandManager;
+	private final GuildManager guildManager;
 
 	public Listener(EventWaiter waiter, GlobalCommandManager cManager, GuildManager guildManager) {
 		this.waiter = waiter;
@@ -38,14 +39,24 @@ public class Listener extends ListenerAdapter {
 	public void onGuildJoin(@NotNull GuildJoinEvent event) {
 		Database.createMemberTables(List.of(event.getGuild()));
 		final Member owner = event.getGuild().getOwner();
-		new DBMember(owner, event.getGuild(), true).update(); //Authorize owner
-		event.getGuild().getSystemChannel().sendMessageEmbeds(Embeds.getOnJoin()).queue();
+		if (owner != null)
+			new DBMember(owner, event.getGuild(), true).update(); //Authorize owner
+		TextChannel systemChannel = event.getGuild().getSystemChannel();
+		if (systemChannel != null)
+			systemChannel.sendMessageEmbeds(Embeds.getOnJoin()).queue();
+		else {
+			TextChannel defaultChannel = event.getGuild().getDefaultChannel();
+			if (defaultChannel != null)
+				defaultChannel.sendMessageEmbeds(Embeds.getOnJoin()).queue();
+		}
 	}
 
 	@Override
 	public void onSlashCommand(@NotNull SlashCommandEvent event) {
 		if (event.getUser().isBot()) return;
+		//noinspection ConstantConditions cant be null
 		if (Database.getMember(event.getGuild(), event.getUser().getId()) == null && !event.getUser().isBot()) {
+			//noinspection ConstantConditions cant be null
 			Database.upsertMember(event.getGuild(), new DBMember(event.getMember(), event.getGuild(), false));
 		}
 		if (guildManager.contains(event.getGuild())) //If guild has custom actions
@@ -57,6 +68,7 @@ public class Listener extends ListenerAdapter {
 	public void onGuildMessageReceived(@NotNull GuildMessageReceivedEvent event) {
 		if (event.getAuthor().isBot()) return;
 		if (Database.getMember(event.getGuild(), event.getAuthor().getId()) == null && !event.getAuthor().isBot()) {
+			//noinspection ConstantConditions cant be null
 			Database.upsertMember(event.getGuild(), new DBMember(event.getMember(), event.getGuild(), false));
 		}
 		if (guildManager.contains(event.getGuild())) //If guild has custom actions

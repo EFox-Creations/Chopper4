@@ -3,6 +3,7 @@ package me.vixen.chopperbot.commands.global;
 import me.vixen.chopperbot.Database.Database;
 import me.vixen.chopperbot.Entry;
 import me.vixen.chopperbot.commands.ICommand;
+import me.vixen.chopperbot.guilds.Config;
 import me.vixen.chopperbot.tools.Embeds;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -21,6 +22,8 @@ public class ChangelogCommand implements ICommand {
 			return;
 		}
 
+
+		@SuppressWarnings("ConstantConditions") //cannot be null as it is required client-side
 		String text = event.getOption("text")
 			.getAsString()
 			.replaceAll("<n>", "\n");
@@ -28,16 +31,18 @@ public class ChangelogCommand implements ICommand {
 		List<Guild> guilds = Entry.jda.getGuilds();
 		event.reply("Dispatching to " + guilds.size() + "guilds").queue();
 
-		guilds.forEach(g -> {
-			String modlogId = Database.getConfig(g.getId()).getModlogId();
+		for (Guild g : guilds) {
+			Config config = Database.getConfig(g.getId());
+			if (config == null) continue;
+			String modlogId = config.getModlogId();
 			TextChannel channel;
 			if (modlogId != null)
 				channel = g.getTextChannelById(modlogId);
 			else
 				channel = g.getSystemChannel();
+			if (channel == null) continue;
 			channel.sendMessage(text).queue();
-		});
-
+		}
 	}
 
 	@Override

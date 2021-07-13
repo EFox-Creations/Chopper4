@@ -20,6 +20,7 @@ import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEve
 import net.dv8tion.jda.internal.utils.Checks;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public interface IGuild {
 
@@ -39,6 +40,7 @@ public interface IGuild {
 		return getGuild().getName();
 	}
 
+	@SuppressWarnings("unused") //Temporarily disabled
 	default TextChannel getLottoChannel() {
 		return getGuild().getSystemChannel();
 	}
@@ -48,7 +50,7 @@ public interface IGuild {
 	}
 
 	default void getCustomClaim(SlashCommandEvent event) {
-		return;
+
 	}
 
 	default void doNightlyReset() {
@@ -59,15 +61,14 @@ public interface IGuild {
 		final Guild g = getGuild();
 		final List<TextChannel> textChannels = g.getTextChannels();
 		final Role publicRole = g.getPublicRole();
-		textChannels.stream().filter(it ->
+		return textChannels.stream().filter(it ->
 			publicRole.hasPermission(it, List.of(
 				Permission.MESSAGE_WRITE,
 				Permission.MESSAGE_READ,
 				Permission.MESSAGE_HISTORY,
 				Permission.MESSAGE_ADD_REACTION
 			))
-		);
-		return List.copyOf(textChannels);
+		).collect(Collectors.toList());
 	}
 
 	default void handleSlashCommand(SlashCommandEvent event, EventWaiter waiter, GlobalCommandManager cManager) {
@@ -88,12 +89,15 @@ public interface IGuild {
 		DefaultEventHandler.handleGMemRemove(event);
 	}
 
+	@SuppressWarnings("unused")
 	default void handleGVoiceJoin(GuildVoiceJoinEvent event) {
 		DefaultEventHandler.handleGVoiceJoin(event);
 	}
+	@SuppressWarnings("unused")
 	default void handleGVoiceLeave(GuildVoiceLeaveEvent event) {
 		DefaultEventHandler.handleGVoiceLeave(event);
 	}
+	@SuppressWarnings("unused")
 	default void handleGVoiceMove(GuildVoiceMoveEvent event) {
 		DefaultEventHandler.handleGVoiceMove(event);
 	}

@@ -13,6 +13,7 @@ import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 public class LottoGroup implements ICommand {
 	@Override
 	public void handle(SlashCommandEvent event) {
+		//noinspection ConstantConditions cant be null
 		switch (event.getSubcommandName()) {
 			case "pool" -> getStatus(event);
 			case "place_bet" -> placeBet(event);
@@ -32,7 +33,7 @@ public class LottoGroup implements ICommand {
 				new OptionData(OptionType.INTEGER, "fourthnumber", "The fourth number (1-" + UPPER + ")", true),
 				new OptionData(OptionType.INTEGER, "fifthnumber", "The fifth number (1-" + UPPER + ")", true)
 			)
-		);
+		).setDefaultEnabled(false);
 	}
 
 	private static void getStatus(SlashCommandEvent event) {
@@ -41,8 +42,14 @@ public class LottoGroup implements ICommand {
 	}
 
 	private static void placeBet(SlashCommandEvent event) {
+		//noinspection ConstantConditions cant be null
 		DBMember dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
+		if (dbMember == null) {
+			event.reply("An unknown error occurred; aborting with Error Code LG1").queue();
+			return;
+		}
 		event.deferReply().queue();
+		//noinspection ConstantConditions cant be null
 		final int betAmount = (int) event.getOption("betamount").getAsLong();
 		if (dbMember.getCoins() < betAmount) {
 			event.getHook().editOriginalEmbeds(Embeds.getInsufficientCoins()).queue();
@@ -52,15 +59,20 @@ public class LottoGroup implements ICommand {
 			return;
 		} else if (betAmount <= 0) {
 			event.replyEmbeds(
-				Embeds.getInvalidArgumentEmbed("betamount", "Must be grater than 0")
+				Embeds.getInvalidArgumentEmbed("betamount", "Must be greater than 0")
 			).setEphemeral(true).queue();
 			return;
 		}
 
+		//noinspection ConstantConditions cant be null
 		final int firstNumber = (int) event.getOption("firstnumber").getAsLong();
+		//noinspection ConstantConditions cant be null
 		final int secondNumber = (int) event.getOption("secondnumber").getAsLong();
+		//noinspection ConstantConditions cant be null
 		final int thirdNumber = (int) event.getOption("thirdnumber").getAsLong();
+		//noinspection ConstantConditions cant be null
 		final int fourthNumber = (int) event.getOption("fourthnumber").getAsLong();
+		//noinspection ConstantConditions cant be null
 		final int fifthNumber = (int) event.getOption("fifthnumber").getAsLong();
 
 		if (isAcceptable(firstNumber) && isAcceptable(secondNumber) && isAcceptable(thirdNumber)

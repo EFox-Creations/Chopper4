@@ -55,6 +55,7 @@ public class EUP2UB {
 			StringBuilder builder = new StringBuilder();
 
 			//Include a comment in the output containing the name of the outfit
+			//noinspection RegExpRedundantEscape this is just wrong
 			Matcher matcher = Pattern.compile("(\\[.+\\])").matcher(input.split("\n")[0]);
 			if (matcher.find())
 				builder.append("<!-- ").append(matcher.group(0)).append(" --> ");

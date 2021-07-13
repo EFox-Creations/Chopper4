@@ -22,10 +22,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+@SuppressWarnings("ResultOfMethodCallIgnored")
 public class CardGroup implements ICommand {
 
-	private int cardCost = 200;
-	private EventWaiter waiter;
+	private final int cardCost = 200;
+	private final EventWaiter waiter;
 	public CardGroup(EventWaiter waiter) {
 		this.waiter = waiter;
 	}
@@ -33,6 +34,7 @@ public class CardGroup implements ICommand {
 	@Override
 	public void handle(SlashCommandEvent event) {
 		final String subcommandName = event.getSubcommandName();
+		//noinspection ConstantConditions cant be null
 		switch (subcommandName) {
 			case "buy" -> buyCard(event);
 			case "sell_single" -> sellCard(event);
@@ -90,6 +92,7 @@ public class CardGroup implements ICommand {
 	}
 
 	private void showCard(SlashCommandEvent event) {
+		//noinspection ConstantConditions cant be null
 		final int cardId = (int) event.getOption("cardid").getAsLong();
 		final Card card = Database.getCardById(cardId);
 		if (card == null) {
@@ -99,12 +102,15 @@ public class CardGroup implements ICommand {
 
 		final String memberId = Card.CardFace.getId(card.getFace());
 
+		//noinspection ConstantConditions cant be null
 		event.getGuild().retrieveMemberById(memberId).queue(member -> {
+			if (member == null) return;
 			final File file = card.getGraphic(member.getUser());
 			if (file == null) {
 				event.reply("Forgot how to draw!").queue();
 			} else {
 				event.reply("Card Shown!").setEphemeral(true).queue();
+				//noinspection ConstantConditions handled already
 				event.getTextChannel()
 					.sendFile(file)
 					.append(event.getMember().getAsMention())
@@ -116,7 +122,12 @@ public class CardGroup implements ICommand {
 
 
 	private void buyCard(SlashCommandEvent event) {
+		//noinspection ConstantConditions cant be null
 		DBMember dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
+		if (dbMember == null) {
+			event.reply("An unknown error occurred; aborting with Error Code BCC1").queue();
+			return;
+		}
 		if (dbMember.getCoins() < cardCost) {
 			event.replyEmbeds(Embeds.getInsufficientCoins()).setEphemeral(true).queue();
 			return;
@@ -135,14 +146,19 @@ public class CardGroup implements ICommand {
 	}
 
 	private void confirmBuy(SlashCommandEvent event, GuildMessageReactionAddEvent e, Message msg) {
+		//noinspection ConstantConditions cant be null
 		DBMember dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
+		if (dbMember == null) {
+			event.reply("An unknown error occurred; aborting with Error Code SCC2").queue();
+			return;
+		}
 		if (e.getReactionEmote().getName().equalsIgnoreCase("⛔")) {
 			msg.delete().queue();
 			event.getHook().editOriginal("Buy card canceled").queue();
-			return;
 		} else if (e.getReactionEmote().getName().equalsIgnoreCase("✅")) {
 			dbMember.adjustCoins(cardCost);
 			dbMember.update();
+			//noinspection ConstantConditions cant be null
 			final String userId = event.getMember().getId();
 
 			Card drawnCard = new Card();
@@ -168,9 +184,14 @@ public class CardGroup implements ICommand {
 		int uncommonPrice = 100;
 		int commonPrice = 50;
 
+		//noinspection ConstantConditions cant be null
 		final int cardid = (int) event.getOption("cardid").getAsLong();
 
 		final Card card = Database.getCardById(cardid);
+		if (card == null) {
+			event.reply("An unknown error occurred; aborting with Error Code CCG0").queue();
+			return;
+		}
 		final Card.Rarity rarity = card.getRarity();
 
 		if (!Database.doesUserOwnCard(event.getUser().getId(), cardid)) {
@@ -210,12 +231,17 @@ public class CardGroup implements ICommand {
 	}
 
 	private boolean isSameMessageAndUser(SlashCommandEvent event, GuildMessageReactionAddEvent e, Message msg) {
+		//noinspection ConstantConditions cant be null
 		return e.getMessageId().equals(msg.getId())
 			&& event.getMember().getId().equals(e.getMember().getId());
 	}
 
 	private void confirmSale(Message msg, GuildMessageReactionAddEvent e, int price, int cardId) {
 		DBMember dbMember = Database.getMember(e.getGuild(), e.getUser().getId());
+		if (dbMember == null) {
+			e.getChannel().sendMessage("An unknown error occurred; aborting with Error Code CGC4").queue();
+			return;
+		}
 		switch (e.getReactionEmote().getName()) {
 			case "✅" -> {
 				dbMember.adjustCoins(price);
@@ -234,6 +260,7 @@ public class CardGroup implements ICommand {
 	}
 
 	private void showCollection(SlashCommandEvent event) {
+		//noinspection ConstantConditions cant be null
 		final Member member = event.getOption("user").getAsMember();
 		if (member == null) {
 			event.reply("This member is not in this guild").setEphemeral(true).queue();
@@ -249,6 +276,7 @@ public class CardGroup implements ICommand {
 		for (int i=0; i < ownedCards.size(); i++) {
 			cardNames[i] = ownedCards.get(i).toString();
 		}
+		//noinspection ConstantConditions cant be null
 		Paginator pager = new Paginator.Builder()
 			.setEventWaiter(waiter)
 			.setTimeout(20L, TimeUnit.SECONDS)
@@ -271,9 +299,14 @@ public class CardGroup implements ICommand {
 
 	private void sellSet(SlashCommandEvent event) {
 		event.deferReply().queue();
+		//noinspection ConstantConditions cant be null
 		final String facename = event.getOption("facename").getAsString();
 		final Card.CardFace cardFace = Card.CardFace.valueOf(facename);
 		final List<Card> cards = Database.getCardsByFaceWithOwner(cardFace, event.getUser().getId());
+		if (cards == null) {
+			event.reply("An unknown error occurred; aborting with Error Code CGC5").queue();
+			return;
+		}
 
 		boolean mythicFlag = false, legendaryFlag = false, rareFlag = false, uncommonFlag = false, commonFlag = false;
 		int mythicId = -1, legendaryId = -1, rareId = -1, uncommonId = -1, commonId = -1;
@@ -303,7 +336,12 @@ public class CardGroup implements ICommand {
 		if (mythicFlag && legendaryFlag && rareFlag && uncommonFlag && commonFlag) {
 			event.getHook().editOriginal("Cashed out! Received 2000 coins!").queue();
 			event.getTextChannel().sendFile(new File("CardBlanks/CashOut.png")).queue();
+			//noinspection ConstantConditions cant be null
 			DBMember dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
+			if (dbMember == null) {
+				event.reply("An unknown error occurred; aborting with Error Code SCC3").queue();
+				return;
+			}
 			dbMember.adjustCoins(2000);
 			dbMember.update();
 			List<Integer> cardIds = List.of(mythicId, legendaryId, rareId, uncommonId, commonId);

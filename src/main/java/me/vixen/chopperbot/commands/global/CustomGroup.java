@@ -29,7 +29,12 @@ public class CustomGroup implements ICommand {
 
 	@Override
 	public void handle(SlashCommandEvent event) {
+		@SuppressWarnings("ConstantConditions") //This cant be null as we don't accept DM SCE
 		DBMember dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
+		if (dbMember == null) {
+			event.reply("An unknown error occurred; aborting with Error Code CU01").queue();
+			return;
+		}
 		if (!dbMember.isAuthorized()) {
 			event.reply("You do not have the correct permissions").setEphemeral(true).queue();
 			return;
@@ -38,6 +43,7 @@ public class CustomGroup implements ICommand {
 		final Guild guild = event.getGuild();
 		final String name = event.getSubcommandName();
 
+		//noinspection ConstantConditions cant be null
 		switch (name) {
 			case "add" -> {
 				//noinspection ConstantConditions

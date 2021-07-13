@@ -20,7 +20,12 @@ public class PollCommand implements ICommand {
 
 	@Override
 	public void handle(SlashCommandEvent event) {
+		//noinspection ConstantConditions
 		DBMember dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
+		if (dbMember == null) {
+			event.reply("An unknown error occurred; aborting with Error Code PC1").queue();
+			return;
+		}
 		Config config = Database.getConfig(event.getGuild().getId());
 		if (config == null) {
 			event.replyEmbeds(Embeds.getPleaseDoConfig()).queue();
@@ -67,7 +72,7 @@ public class PollCommand implements ICommand {
 		);
 	}
 
-	private String[] voteEmotes = {
+	private final String[] voteEmotes = {
 		"\u0030\u20E3", //0
 		"\u0031\u20E3", //1
 		"\u0032\u20E3", //2

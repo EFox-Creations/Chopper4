@@ -10,11 +10,11 @@ import javax.annotation.Nullable;
 public class Config {
 
 	@SerializedName("Modlog ID")
-	private String modlogId;
+	private final String modlogId;
 	@SerializedName("Lvl Msg Override")
-	private boolean lvlMsgOverride;
+	private final boolean lvlMsgOverride;
 	@SerializedName("Only Staff Polls")
-	private boolean onlyStaffPolls;
+	private final boolean onlyStaffPolls;
 
 	protected Config(String modlogId, boolean lvlMsgOverride, boolean onlyStaffPolls) {
 		this.modlogId = modlogId;
@@ -40,15 +40,10 @@ public class Config {
 	public boolean arelvlMsgOverridden() {
 		return lvlMsgOverride;
 	}
+
 	public boolean isOnlyStaffPolls() {
-		return isOnlyStaffPolls();
+		return onlyStaffPolls;
 	}
 
-	public ConfigBuilder copy() {
-		return new ConfigBuilder()
-			.setLvlMsgOverride(lvlMsgOverride)
-			.setModLogId(modlogId)
-			.setIsOnlyStaffPolls(onlyStaffPolls);
-	}
 }
 

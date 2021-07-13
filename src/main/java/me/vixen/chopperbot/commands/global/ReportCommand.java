@@ -109,9 +109,7 @@ public class ReportCommand implements ICommand {
 			case "claim" -> {
 				builder.setColor(Color.GREEN);
 				builder.addField("Report resolved", "Handled by: " + event.getUser().getAsTag(), false);
-				msg.editMessageEmbeds(builder.build()).setActionRows().queue(unused -> {
-					event.reply("Marked as resolved").setEphemeral(true).queue();
-				});
+				msg.editMessageEmbeds(builder.build()).setActionRows().queue(unused -> event.reply("Marked as resolved").setEphemeral(true).queue());
 			}
 			case "faux" -> {
 				builder.setColor(Color.DARK_GRAY);

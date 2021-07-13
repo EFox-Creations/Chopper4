@@ -15,13 +15,21 @@ public class DonateCommand implements ICommand {
 	@Override
 	public void handle(SlashCommandEvent event) {
 		Guild guild = event.getGuild();
+
+		//noinspection ConstantConditions cant be null; no SCE from DMs accepted
 		DBMember donator = Database.getMember(guild, event.getUser().getId());
+		if (donator == null) {
+			event.reply("An unknown error occurred; aborting with Error Code D01").queue();
+			return;
+		}
+		//noinspection ConstantConditions is required
 		int amount = (int) event.getOption("amount").getAsLong();
 		if (donator.getCoins() < amount) {
 			event.replyEmbeds(Embeds.getInsufficientCoins()).queue();
 			return;
 		}
 
+		//noinspection ConstantConditions is required
 		Member member = event.getOption("user").getAsMember();
 		if (member == null) {
 			event.replyEmbeds(Embeds.getUnknownMember()).queue();

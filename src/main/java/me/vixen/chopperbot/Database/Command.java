@@ -1,9 +1,9 @@
 package me.vixen.chopperbot.Database;
 
 public class Command {
-	private String name;
-	private String response;
-	private boolean staffOnly;
+	private final String name;
+	private final String response;
+	private final boolean staffOnly;
 
 	protected Command(String name, String response, boolean staffOnly) {
 		this.name = name;

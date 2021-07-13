@@ -1,20 +1,18 @@
 package me.vixen.chopperbot.Database;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
-import net.dv8tion.jda.api.entities.Member;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Warning {
-	@SerializedName("Warn #") private int warningNumber;
-	@SerializedName("Warned User") private String usertag;
-	@SerializedName("Moderator") private String moderator;
-	@SerializedName("Reason") private String reason;
+	@SerializedName("Warn #") private final int warningNumber;
+	@SerializedName("Warned User") private final String usertag;
+	@SerializedName("Moderator") private final String moderator;
+	@SerializedName("Reason") private final String reason;
 
 	protected Warning(int warningNumber, String targetTag, String mod, String reason) {
 		this.warningNumber = warningNumber;
@@ -25,18 +23,6 @@ public class Warning {
 
 	public int getWarningNumber() {
 		return warningNumber;
-	}
-
-	public String getUsertag() {
-		return usertag;
-	}
-
-	public String getModerator() {
-		return moderator;
-	}
-
-	public String getReason() {
-		return reason;
 	}
 
 	@Override

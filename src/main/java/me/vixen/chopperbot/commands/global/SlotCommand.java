@@ -24,7 +24,17 @@ public class SlotCommand implements ICommand {
 		String id = event.getUser().getId();
 		Guild guild = event.getGuild();
 		Guild efox = Entry.jda.getGuildById("761703507546996786");
+		if (efox == null) {
+			event.reply("An unknown error occurred; aborting with Error Code SlC0").queue();
+			return;
+		}
+		//noinspection ConstantConditions cant be null
 		DBMember member = Database.getMember(guild, id);
+		if (member == null) {
+			event.reply("An unknown error occurred; aborting with Error Code SlC1").queue();
+			return;
+		}
+		//noinspection ConstantConditions cant be null
 		final int bet = (int) event.getOption("bet").getAsLong();
 		if (member.getCoins() < bet) {
 			event.replyEmbeds(Embeds.getInsufficientCoins()).queue();
@@ -50,39 +60,37 @@ public class SlotCommand implements ICommand {
 			Emote slottwo = getEmote(efox, s2);
 			Emote slotthree = getEmote(efox, s3);
 
-			hook.editOriginalFormat("%s%s%s", slotone, slot, slot).queueAfter(1L, TimeUnit.SECONDS, unused -> {
-				hook.editOriginalFormat("%s%s%s", slotone, slottwo, slot).queueAfter(1L, TimeUnit.SECONDS, unused1 -> {
-					int payout = 0;
-					if (allMatch(s1, s2, s3)) {
-						switch (getRank(s1, s2, s3)) {
-							case slotdiamond -> payout = bet * 16;
-							case slotseven -> payout = bet * 14;
-							case slotbar -> payout = bet * 12;
-							case slotheart -> payout = bet * 10;
-							case slotbell -> payout = bet * 8;
-							case slothorseshoe -> payout = bet * 6;
-							case slotcherry, slotmelon, slotlemon -> payout = bet * 2;
-						}
-					} else if (matchesWithWildcards(s1, s2, s3)) {
-						payout = (int) Math.floor(bet * 1.5);
-					} else payout = 0;
+			hook.editOriginalFormat("%s%s%s", slotone, slot, slot).queueAfter(1L, TimeUnit.SECONDS, unused -> hook.editOriginalFormat("%s%s%s", slotone, slottwo, slot).queueAfter(1L, TimeUnit.SECONDS, unused1 -> {
+				int payout = 0;
+				if (allMatch(s1, s2, s3)) {
+					switch (getRank(s1, s2, s3)) {
+						case slotdiamond -> payout = bet * 16;
+						case slotseven -> payout = bet * 14;
+						case slotbar -> payout = bet * 12;
+						case slotheart -> payout = bet * 10;
+						case slotbell -> payout = bet * 8;
+						case slothorseshoe -> payout = bet * 6;
+						case slotcherry, slotmelon, slotlemon -> payout = bet * 2;
+					}
+				} else if (matchesWithWildcards(s1, s2, s3)) {
+					payout = (int) Math.floor(bet * 1.5);
+				}
 
-					int net = payout - bet;
-					int finalPayout = payout;
-					hook.editOriginalFormat("%s%s%s", slotone, slottwo, slotthree).queueAfter(1L, TimeUnit.SECONDS, unused2 -> {
-						hook.editOriginalEmbeds(
-							new EmbedBuilder()
-								.setColor(finalPayout > 0 ? Color.GREEN : Color.RED)
-								.setTitle(String.format("%s%s%s", slotone, slottwo, slotthree))
-								.setDescription(String.format("Payout: %d\sBet: %d\sNet: %d", finalPayout, bet, net))
-								.build()
-						).setContent("").queueAfter(1L, TimeUnit.SECONDS);
-						member.adjustCoins(finalPayout);
-						member.update();
-					});
-
+				int net = payout - bet;
+				int finalPayout = payout;
+				hook.editOriginalFormat("%s%s%s", slotone, slottwo, slotthree).queueAfter(1L, TimeUnit.SECONDS, unused2 -> {
+					hook.editOriginalEmbeds(
+						new EmbedBuilder()
+							.setColor(finalPayout > 0 ? Color.GREEN : Color.RED)
+							.setTitle(String.format("%s%s%s", slotone, slottwo, slotthree))
+							.setDescription(String.format("Payout: %d\sBet: %d\sNet: %d", finalPayout, bet, net))
+							.build()
+					).setContent("").queueAfter(1L, TimeUnit.SECONDS);
+					member.adjustCoins(finalPayout);
+					member.update();
 				});
-			});
+
+			}));
 
 		});
 	}
@@ -133,8 +141,7 @@ public class SlotCommand implements ICommand {
 	}
 
 	private boolean allMatch(Slot s1, Slot s2, Slot s3) {
-		if (s1.toString().equals(s2.toString()) && s2.toString().equals(s3.toString())) return true;
-		else return false;
+		return s1.toString().equals(s2.toString()) && s2.toString().equals(s3.toString());
 	}
 
 	@SuppressWarnings("DuplicateExpressions")
@@ -147,11 +154,10 @@ public class SlotCommand implements ICommand {
 			return true;
 		else if (s1.toString().equals(s2.toString()) && s1.toString().equals(Slot.slotdiamond.toString())) //1 and 2 are both wild
 			return true;
-		else if (s1.toString().equals(s3.toString()) && s1.toString().equals(Slot.slotdiamond.toString())) //1 and 3 are both wild
+		else //2 and 3 are both wild
+			if (s1.toString().equals(s3.toString()) && s1.toString().equals(Slot.slotdiamond.toString())) //1 and 3 are both wild
 			return true;
-		else if (s2.toString().equals(s3.toString()) && s2.toString().equals(Slot.slotdiamond.toString())) //2 and 3 are both wild
-			return true;
-		else return false;
+		else return s2.toString().equals(s3.toString()) && s2.toString().equals(Slot.slotdiamond.toString());
 	}
 
 	private Slot getRank(Slot s1, Slot s2, Slot s3) {

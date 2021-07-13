@@ -10,7 +10,12 @@ public class ToggleLvlMsgsCommand implements ICommand {
 	@Override
 	public void handle(SlashCommandEvent event) {
 		String id = event.getUser().getId();
+		//noinspection ConstantConditions cant be null
 		DBMember member = Database.getMember(event.getGuild(), id);
+		if (member == null) {
+			event.reply("An unknown error occurred; aborting with Error Code TLMC1").queue();
+			return;
+		}
 		boolean newSetting = member.toggleLvlMsgs();
 		event.reply(String.format("Your level up messages are `%s`", newSetting ? "ON" : "OFF")).queue();
 		member.update();

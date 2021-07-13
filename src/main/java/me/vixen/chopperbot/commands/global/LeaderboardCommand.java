@@ -20,7 +20,9 @@ public class LeaderboardCommand implements ICommand {
 
 	@Override
 	public void handle(SlashCommandEvent event) {
+		//noinspection ConstantConditions is required
 		final int entries = (int) event.getOption("entries").getAsLong();
+		//noinspection ConstantConditions cant be null
 		final String[] leaderboard = Database.getLeaderboard(event.getGuild(), entries);
 
 		if (leaderboard == null) {
@@ -28,6 +30,7 @@ public class LeaderboardCommand implements ICommand {
 			return;
 		}
 
+		//noinspection ConstantConditions cant be null
 		Paginator pager = new Paginator.Builder()
 			.setText(event.getMember().getAsMention() + "\nName --- EXP --- Currency")
 			.addItems(leaderboard)

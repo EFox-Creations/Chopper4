@@ -83,7 +83,10 @@ public class BejoIjoPlugins implements IGuild {
 				c.handle(event);
 		DefaultEventHandler.handleSlashCommand(event, cManager);
 		//This guild wants slash command logs
-		event.getGuild().getTextChannelById("672112948776534049").sendMessageEmbeds(Embeds.getSlashCommandLogEmbed(event)).queue();
+		//noinspection ConstantConditions cant be null
+		TextChannel logs = event.getGuild().getTextChannelById("672112948776534049");
+		if (logs != null)
+			logs.sendMessageEmbeds(Embeds.getSlashCommandLogEmbed(event)).queue();
 	}
 
 	@Override
@@ -91,6 +94,7 @@ public class BejoIjoPlugins implements IGuild {
 		final Message message = event.getMessage();
 		if (event.getChannel().getId().equals("671729684693778483")) { //If in gallery
 			final DBMember member = Database.getMember(event.getGuild(), event.getAuthor().getId());
+			if (member == null) return;
 			//Delete message if it is not a link, attachment, or the user has exceeded the limit
 			if (member.getGalleryImgsLeft() <= 0 ||
 				(message.getAttachments().isEmpty() && !message.getContentRaw().contains("https://"))) {
@@ -112,6 +116,7 @@ public class BejoIjoPlugins implements IGuild {
 		DefaultEventHandler.handleGMsgReceived(event); //update stickies and award exp
 	}
 
+	@SuppressWarnings("SwitchStatementWithTooFewBranches") //may add more in future
 	@Override
 	public void handleGMsgReactAdd(GuildMessageReactionAddEvent event, EventWaiter waiter) {
 		//IGNORE BOTS
@@ -120,7 +125,6 @@ public class BejoIjoPlugins implements IGuild {
 		List<String> adminOnlyEmotes = List.of("heisenberg", "choppereyes", "🐛");
 
 		final MessageReaction.ReactionEmote reactionEmote = event.getReactionEmote();
-
 		switch (event.getChannel().getId()) {
 			case "663796720173580317" -> { //#idea-dump
 				switch (reactionEmote.getName()) {
@@ -167,16 +171,16 @@ public class BejoIjoPlugins implements IGuild {
 
 	@Override
 	public void handleGMemJoin(GuildMemberJoinEvent event, EventWaiter waiter) {
-		event.getGuild().getTextChannelById("678667071437144151").sendMessageEmbeds(
-			Embeds.getWelcomeEmbed(event.getUser())
-		).queue();
+		TextChannel welcome = event.getGuild().getTextChannelById("678667071437144151");
+		if (welcome != null)
+			welcome.sendMessageEmbeds(Embeds.getWelcomeEmbed(event.getUser())).queue();
 	}
 
 	@Override
 	public void handleGMemRemove(GuildMemberRemoveEvent event, EventWaiter waiter) {
-		event.getGuild().getTextChannelById("678667071437144151").sendMessageEmbeds(
-			Embeds.getLeaveEmbed(event.getUser())
-		).queue();
+		TextChannel welcome = event.getGuild().getTextChannelById("678667071437144151");
+		if (welcome != null)
+			welcome.sendMessageEmbeds(Embeds.getLeaveEmbed(event.getUser())).queue();
 	}
 
 	@Override
@@ -186,7 +190,12 @@ public class BejoIjoPlugins implements IGuild {
 
 	@Override
 	public void getCustomClaim(SlashCommandEvent event) {
+		//noinspection ConstantConditions cant be null
 		DBMember dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
+		if (dbMember == null) {
+			event.reply("An unknown error occurred; aborting with Error Code DC0").queue();
+			return;
+		}
 		event.deferReply().queue();
 		final String userId = event.getUser().getId();
 		final int dailyChestCount = dbMember.getDailyChests();
@@ -199,6 +208,7 @@ public class BejoIjoPlugins implements IGuild {
 		for (int i = 1; i <= dailyChestCount; i++) {
 			final MessageEmbed.Field reward = getReward(dbMember);
 			eb.addField(reward);
+			//noinspection ConstantConditions
 			if (reward.getName().equals("Another Chest!")) i--;
 		}
 
@@ -209,7 +219,7 @@ public class BejoIjoPlugins implements IGuild {
 		final boolean success = Database.addCard(userId, drawnCard);
 		final String memberId = Card.CardFace.getId(drawnCard.getFace());
 
-		if (success) {
+		if (success && memberId != null) {
 			event.getGuild().retrieveMemberById(memberId).queue(member -> {
 				final File file = drawnCard.getGraphic(member.getUser());
 				if (file == null) {
@@ -220,6 +230,7 @@ public class BejoIjoPlugins implements IGuild {
 					event.getHook().editOriginalEmbeds(dailyChests, embed).queue();
 				} else {
 					event.getHook().editOriginal("Claimed all Dailies!").queue();
+					//noinspection ResultOfMethodCallIgnored,ConstantConditions
 					event.getTextChannel()
 						.sendMessageEmbeds(dailyChests)
 						.addFile(file)
@@ -241,7 +252,8 @@ public class BejoIjoPlugins implements IGuild {
 	private void sendToBugChannel(GuildMessageReactionAddEvent event) {
 		event.retrieveMessage().queue(msg -> {
 			final TextChannel bugchannel = event.getGuild().getTextChannelById("672884335447113769");
-			bugchannel.sendMessageEmbeds(Embeds.getBugEmbed(msg)).queue();
+			if (bugchannel != null)
+				bugchannel.sendMessageEmbeds(Embeds.getBugEmbed(msg)).queue();
 		});
 	}
 
@@ -269,7 +281,8 @@ public class BejoIjoPlugins implements IGuild {
 	private void promote(Message message) {
 		final Guild guild = message.getGuild();
 		final TextChannel candidates = guild.getTextChannelById("683070989319667829");
-		candidates.sendMessageEmbeds(Embeds.getCandidatesEmbed(message)).queue();
+		if (candidates != null)
+			candidates.sendMessageEmbeds(Embeds.getCandidatesEmbed(message)).queue();
 	}
 
 	private void promote(TextChannel channel, String messageId) {

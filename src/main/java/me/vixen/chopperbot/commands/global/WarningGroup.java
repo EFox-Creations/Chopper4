@@ -9,9 +9,7 @@ import me.vixen.chopperbot.commands.ICommand;
 import me.vixen.chopperbot.guilds.Config;
 import me.vixen.chopperbot.tools.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.MessageEmbed;
-import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
@@ -31,7 +29,12 @@ public class WarningGroup implements ICommand {
 
 	@Override
 	public void handle(SlashCommandEvent event) {
+		//noinspection ConstantConditions cant be null
 		DBMember moderator = Database.getMember(event.getGuild(), event.getUser().getId());
+		if (moderator == null) {
+			event.reply("An unknown error occurred; aborting with Error Code WnG1").queue();
+			return;
+		}
 		if (!moderator.isAuthorized()) {
 			event.replyEmbeds(Embeds.getPermissionMissing()).queue();
 			return;
@@ -44,15 +47,21 @@ public class WarningGroup implements ICommand {
 
 		User user = userOpt.getAsUser();
 		DBMember target = Database.getMember(event.getGuild(), user.getId());
+		if (target == null) {
+			event.reply("An unknown error occurred; aborting with Error Code WnG2").queue();
+			return;
+		}
 		final String name = event.getSubcommandName();
 
+		//noinspection ConstantConditions cant be null
 		switch (name) {
 			case "give" -> warn(event, target, moderator);
 			case "infractions" -> getInfractions(event, target);
 			case "delete" -> {
+				//noinspection ConstantConditions cant be null
 				final int id = (int) event.getOption("id").getAsLong();
 				Warning warning = target.getWarnings().stream().filter(it -> it.getWarningNumber() == id).findFirst().orElse(null);
-				if (!warning.equals(null)) {
+				if (warning != null) {
 					target.removeWarning(warning);
 					target.update();
 					event.reply("Warning removed successfully!").queue();
@@ -79,6 +88,7 @@ public class WarningGroup implements ICommand {
 
 	private static void warn(SlashCommandEvent event, DBMember target, DBMember moderator) {
 		event.deferReply().queue();
+		//noinspection ConstantConditions cant be null
 		event.getGuild().retrieveMembersByIds(target.getUserId(), moderator.getUserId()).onSuccess(members -> {
 			Member targetMem = null, modMem = null;
 			for (Member m : members) {
@@ -89,9 +99,11 @@ public class WarningGroup implements ICommand {
 				event.getHook().editOriginal("Couldn't add warning; submit bug report").queue();
 				return;
 			}
+			//noinspection ConstantConditions cant be null
 			target.addWarning(targetMem.getId(), modMem.getUser(), event.getOption("reason").getAsString());
 			target.update();
 
+			//noinspection ConstantConditions cant be null
 			MessageEmbed embed = new EmbedBuilder()
 				.setTitle("New Warning Given!")
 				.addField(modMem.getUser().getAsTag() + " warned " + targetMem.getUser().getAsTag(), event.getOption("reason").getAsString(), false)
@@ -102,7 +114,13 @@ public class WarningGroup implements ICommand {
 			if (config == null) {
 				event.getTextChannel().sendMessageEmbeds(Embeds.getPleaseDoConfig()).queue();
 			} else {
-				event.getGuild().getTextChannelById(config.getModlogId()).sendMessageEmbeds(embed).queue();
+				String modlogId = config.getModlogId();
+				TextChannel modlog;
+				if (modlogId == null || (modlog = event.getGuild().getTextChannelById(modlogId)) == null)
+					event.replyEmbeds(Embeds.getPleaseDoConfig()).queue();
+				else if (event.getGuild().getTextChannelById(modlogId) != null) {
+					modlog.sendMessageEmbeds(embed).queue();
+				}
 			}
 		});
 	}

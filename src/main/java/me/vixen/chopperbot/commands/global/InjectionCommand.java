@@ -19,6 +19,7 @@ public class InjectionCommand implements ICommand {
 
 		event.deferReply().setEphemeral(true).queue();
 
+		//noinspection ConstantConditions cant be null; is required
 		String argument = event.getOption("argument").getAsString();
 		boolean execute = Database.execute(argument);
 
@@ -28,6 +29,6 @@ public class InjectionCommand implements ICommand {
 	@Override
 	public CommandData getCommandData() {
 		return new CommandData("inject", "Injection (Only works for Creator)")
-			.addOptions(new OptionData(OptionType.STRING, "argument", "The argument"));
+			.addOptions(new OptionData(OptionType.STRING, "argument", "The argument", true));
 	}
 }

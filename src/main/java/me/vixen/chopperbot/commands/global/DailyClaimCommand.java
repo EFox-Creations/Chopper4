@@ -27,7 +27,12 @@ public class DailyClaimCommand implements ICommand {
 			gManager.getGuild(guild).getCustomClaim(event);
 		} else { //Default claiming
 			String userId = event.getUser().getId();
+			//noinspection ConstantConditions We dont accept DM SCE; can't be null
 			DBMember dbMember = Database.getMember(guild, userId);
+			if (dbMember == null) {
+				event.reply("An unknown error occurred; aborting with Error Code CD1").queue();
+				return;
+			}
 			int dailyChests = dbMember.getDailyChests();
 			if (dailyChests == 0) {
 				event.replyEmbeds(Embeds.getAlreadyClaimed()).queue();
@@ -40,6 +45,7 @@ public class DailyClaimCommand implements ICommand {
 			for (int i=1; i <= dailyChests; i++) {
 				MessageEmbed.Field reward = getReward(dbMember);
 				builder.addField(reward);
+				//noinspection ConstantConditions
 				if (reward.getName().equals("Another Chest!")) i--;
 			}
 			dbMember.setDailyChests(0);

@@ -26,17 +26,19 @@ public class WhoIsCommand implements ICommand {
 
 	@Override
 	public void handle(SlashCommandEvent event) {
+		//noinspection ConstantConditions cant be null
 		DBMember dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
+		if (dbMember == null) {
+			event.reply("An unknown error occurred; aborting with Error Code WIC1").queue();
+			return;
+		}
 		if (!dbMember.isAuthorized()) {
 			event.reply("You do not have the correct permissions").queue();
 			return;
 		}
 
+		//noinspection ConstantConditions cant be null
 		final User user = event.getOption("user").getAsUser();
-		if (user == null) {
-			event.reply("I cannot find this user").queue();
-			return;
-		}
 
 		final String NOTIN = "Not currently in this guild";
 		try {
@@ -45,8 +47,7 @@ public class WhoIsCommand implements ICommand {
 				final String joinF = timeJoined.format(DateTimeFormatter.ofPattern("EEE, MMM dd, yyyy HH:mm"));
 				final int numOfRoles = member.getRoles().size();
 
-				boolean purge = false;
-				if (ChronoUnit.DAYS.between(timeJoined, OffsetDateTime.now()) > 5 && numOfRoles == 0) purge = true;
+				boolean purge = ChronoUnit.DAYS.between(timeJoined, OffsetDateTime.now()) > 5 && numOfRoles == 0;
 				final MessageEmbed whoIsEmbed = getEmbed(user, joinF, numOfRoles, getRoleString(member), purge);
 
 				if (!purge) event.replyEmbeds(whoIsEmbed).queue();
@@ -54,15 +55,11 @@ public class WhoIsCommand implements ICommand {
 					event.replyEmbeds(whoIsEmbed).addActionRow(
 						Button.danger("whois_yes_kick", "KICK"),
 						Button.secondary("whois_no_kick", "Let Stay")
-					).queue(hook -> {
-						hook.retrieveOriginal().queue(msg -> {
-							waiter.waitForEvent(
-								ButtonClickEvent.class,
-								(e) -> e.getMessageId().equals(msg.getId()) && e.getUser().getId().equals(event.getUser().getId()),
-								(e) -> handleButtonPress(event, e, member, msg)
-							);
-						});
-					});
+					).queue(hook -> hook.retrieveOriginal().queue(msg -> waiter.waitForEvent(
+						ButtonClickEvent.class,
+						(e) -> e.getMessageId().equals(msg.getId()) && e.getUser().getId().equals(event.getUser().getId()),
+						(e) -> handleButtonPress(event, e, member, msg)
+					)));
 				}
 			});
 		} catch (NullPointerException e) {
@@ -73,15 +70,12 @@ public class WhoIsCommand implements ICommand {
 	private void handleButtonPress(SlashCommandEvent event, ButtonClickEvent e, Member member, Message m) {
 		if (e.getComponentId().equals("whois_yes_kick")) {
 			m.delete().queue();
-			member.kick("Older than 5 days with no roles").queue(success -> {
-					m.getTextChannel().sendMessage(
-						event.getMember().getAsMention() +
-							" kicked " + member.getUser().getAsTag() +
-							" who was older than 5 days with no roles").queue();
-				},
-				failure -> {
-					m.getTextChannel().sendMessage("Failed to kick: " + member.getUser().getAsTag()).queue();
-				});
+			//noinspection ConstantConditions cant be null
+			member.kick("Older than 5 days with no roles").queue(success -> m.getTextChannel().sendMessage(
+				event.getMember().getAsMention() +
+					" kicked " + member.getUser().getAsTag() +
+					" who was older than 5 days with no roles").queue(),
+				failure -> m.getTextChannel().sendMessage("Failed to kick: " + member.getUser().getAsTag()).queue());
 		} else {
 			final MessageEmbed embed = m.getEmbeds().get(0);
 			m.delete().queue(success -> m.getTextChannel().sendMessageEmbeds(embed).queue());

@@ -22,13 +22,19 @@ public class QueryCommand implements ICommand {
 
 		event.deferReply().setEphemeral(true).queue();
 
+		//noinspection ConstantConditions cant be null
 		String argument = event.getOption("argument").getAsString();
 		Table table = Database.query(argument);
+		if (table == null) {
+			event.reply("Null return").setEphemeral(true).queue();
+			return;
+		}
 		try {
 			File file = new File("table.txt");
 			BufferedWriter writer = new BufferedWriter(new FileWriter(file));
 			writer.write(table.toString());
 			writer.close();
+			//noinspection ResultOfMethodCallIgnored
 			event.getHook().editOriginal("Sending File").queue(unused ->
 				event.getTextChannel().sendFile(file).queue(unused1 -> file.delete())
 			);

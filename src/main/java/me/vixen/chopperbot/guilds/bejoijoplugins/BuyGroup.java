@@ -33,7 +33,13 @@ public class BuyGroup implements ICommand {
 	@Override
 	public void handle(SlashCommandEvent event) {
 		final String name = event.getSubcommandName();
+		//noinspection ConstantConditions cant be null
 		DBMember dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
+		if (dbMember == null) {
+			event.reply("An unknown error occurred; aborting with Error Code HSCE1").queue();
+			return;
+		}
+		//noinspection ConstantConditions cant be null
 		switch (name) {
 			case "color" -> {
 				final OptionMapping number = event.getOption("number");
@@ -50,6 +56,7 @@ public class BuyGroup implements ICommand {
 						}
 
 						final Role role = event.getGuild().getRolesByName(colorRole, true).get(0);
+						//noinspection ConstantConditions cant be null
 						event.getGuild().addRoleToMember(event.getMember(), role).queue((unused -> {
 							dbMember.adjustCoins(BejoIjoPlugins.COLOR_COST  * -1);
 							event.getHook().editOriginal("Role " + colorRole + " added successfully").queue();
@@ -66,10 +73,10 @@ public class BuyGroup implements ICommand {
 				if (option == null) showRoleMenu(event);
 				if (dbMember.getCoins() <= BejoIjoPlugins.ROLE_COST ) {
 					event.getHook().editOriginalEmbeds(Embeds.getInsufficientCoins()).queue();
-					return;
 				}
 				else if (option !=null) {
 					if (getAllUnownedRoles(event).contains(option.getAsRole())) {
+						//noinspection ConstantConditions cant be null
 						event.getGuild().addRoleToMember(event.getMember(), option.getAsRole()).queue();
 						dbMember.adjustCoins(BejoIjoPlugins.ROLE_COST * -1);
 						event.reply("Bought `" + option.getAsRole().getName() + "` for " + BejoIjoPlugins.ROLE_COST + " coins").queue();
@@ -90,7 +97,7 @@ public class BuyGroup implements ICommand {
 	}
 
 	public void showColorMenu(SlashCommandEvent event) {
-		String[] roles = colorRoles.toArray(new String[colorRoles.size()]);
+		String[] roles = colorRoles.toArray(new String[0]);
 		Paginator pager = new Paginator.Builder()
 			.addItems(roles)
 			.setText(event.getUser().getAsMention() +
@@ -125,6 +132,7 @@ public class BuyGroup implements ICommand {
 
 		for (int i=0; i < allUnownedRoles.size(); i++) unownedRoleNames[i] = allUnownedRoles.get(i).getName();
 
+		//noinspection ConstantConditions cant be null
 		Paginator pager = new Paginator.Builder()
 			.addItems(unownedRoleNames)
 			.setText(event.getMember().getAsMention())
@@ -147,9 +155,10 @@ public class BuyGroup implements ICommand {
 	}
 
 	private List<Role> getAllUnownedRoles(SlashCommandEvent event) {
+		//noinspection ConstantConditions cant be null
 		List<Role> temp = event.getMember().getRoles();
-		List<Role> memberRoles = new ArrayList<>();
-		memberRoles.addAll(temp); //Temp is immutable, need to copy to mutable
+		List<Role> memberRoles = new ArrayList<>(temp); //Temp is immutable, need to copy to mutable
+		//noinspection ConstantConditions cant be null
 		List<Role> vanityRoles = getVanityRoles(event.getGuild());
 
 		//Remove all non-vanity roles from member roles

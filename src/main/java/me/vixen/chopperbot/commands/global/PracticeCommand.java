@@ -19,8 +19,14 @@ public class PracticeCommand implements ICommand {
 	public void handle(SlashCommandEvent event) {
 		String userid = event.getUser().getId();
 		Guild guild = event.getGuild();
+		//noinspection ConstantConditions is required
 		int numoflocks = (int) event.getOption("numoflocks").getAsLong();
+		//noinspection ConstantConditions cant be null
 		DBMember member = Database.getMember(guild, userid);
+		if (member == null) {
+			event.reply("An unknown error occurred; aborting with Error Code PLC1").queue();
+			return;
+		}
 		if (member.getLockCount() < numoflocks) {
 			event.replyEmbeds(Embeds.getInsufficientLocks()).queue();
 			return;
@@ -31,11 +37,14 @@ public class PracticeCommand implements ICommand {
 		int usedLocks = 0;
 		for (int i = 1; i <= numoflocks; i++ , usedLocks++, member.adjustLockCount(-1)) {
 			int rand =
-				skill < 10 ?
+				skill+skillIncrease < 10 ?
 					new Random().nextInt(10)+1 :
 					new Random().nextInt(100)+1;
-			if (skill > rand)
+			if (skill > rand) {
 				member.adjustSkill(1);
+				skillIncrease++;
+			}
+
 		}
 		member.update();
 

@@ -38,6 +38,7 @@ public class DatabaseHandler {
 		}
 	}
 
+	@SuppressWarnings("unused")
 	public void close() {
 		try {
 			pool.close();

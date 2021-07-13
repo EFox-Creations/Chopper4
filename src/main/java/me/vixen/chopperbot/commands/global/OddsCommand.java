@@ -41,7 +41,7 @@ public class OddsCommand implements ICommand {
                         
                     __Cards:__
                     Mythic 5%
-                    Legendary 9% 
+                    Legendary 9%
                     Rare 20%
                     Uncommon 29%
                     Common 37%

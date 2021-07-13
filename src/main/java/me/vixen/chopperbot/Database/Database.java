@@ -4,12 +4,14 @@ import me.vixen.chopperbot.Entry;
 import me.vixen.chopperbot.Logger;
 import me.vixen.chopperbot.guilds.Config;
 import me.vixen.chopperbot.guilds.bejoijoplugins.Card;
-import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.TextChannel;
 import net.steppschuh.markdowngenerator.table.Table;
+
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.swing.plaf.nimbus.State;
 import java.sql.*;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -66,7 +68,6 @@ public class Database {
 			try (Connection con = getConnection(); Statement statement = con.createStatement()) {
 				statement.execute(SQL);
 			} catch (SQLException e) {
-				System.out.println(e);
 				Logger.log("Error creating Database Member Table", e);
 				System.exit(1);
 			}
@@ -167,7 +168,7 @@ public class Database {
 				ps.close();
 				con.close();
 				return new DBMember(userId, guildId, nickname, authorized, lvlMessages,
-					muted, OffsetDateTime.parse(lstMsgTime), resolveUnmuteTime(unmuteTime), galleryRemaining,
+					OffsetDateTime.parse(lstMsgTime), resolveUnmuteTime(unmuteTime), galleryRemaining,
 					chestCount, lockpickSkill, lockCount, exp, level, currency, lotteryPlays, robbedToday);
 			}
 			ps.close();
@@ -189,7 +190,7 @@ public class Database {
 	 *
 	 * @param dbmember The {@link DBMember} object
 	 */
-	public static boolean upsertMember(Guild guild, DBMember dbmember) {
+	public static void upsertMember(Guild guild, DBMember dbmember) {
 		String guildMemberTable = getGuildMemberTable(guild.getId());
 		String SQL = "INSERT INTO " + guildMemberTable + "(user_id,nickname,authorized,level_up_messages,muted,lst_msg_time," +
 			"unmute_time,gallery_remaining,chest_count,lockpick_skill,lock_count,exp," +
@@ -232,11 +233,9 @@ public class Database {
 			ps.setBoolean(31, dbmember.hasRobbed());
 			ps.setString(32, dbmember.getUserId());
 			ps.executeUpdate();
-			return true;
 		} catch (SQLException e) {
 			e.printStackTrace();
 			Logger.log("Couldn't Upsert Member", e);
-			return false;
 		}
 	}
 
@@ -256,6 +255,7 @@ public class Database {
 			final Guild guild = Entry.jda.getGuildById(g.getId());
 			List<DBMember> dbMembers = new ArrayList<>();
 			while (resultSet.next())
+				//noinspection ConstantConditions 99.99% likely to be non-null
 				dbMembers.add(getMember(guild, resultSet.getString("user_id")));
 			ps.close();
 			con.close();
@@ -545,9 +545,8 @@ public class Database {
 	 * @param premiumPatreonIds A list of users entitled to premium patreon benefits
 	 * @param chopAndBasic A list of users entitled to basic patreon benefits and are supporting chopper
 	 * @param chopAndPremium A list of users entitled to premium patreon benefits and are supporting chopper
-	 * @return True, if all updates successful
 	 */
-	public static boolean resetDailyCounts(Guild g, List<String> basicPatreonIds, List<String> premiumPatreonIds,
+	public static void resetDailyCounts(Guild g, List<String> basicPatreonIds, List<String> premiumPatreonIds,
 										   List<String> chopAndBasic, List<String> chopAndPremium) {
 		try (Connection con = getConnection()) {
 			con.setAutoCommit(false);
@@ -592,12 +591,9 @@ public class Database {
 			}
 			ps.executeBatch();
 			ps.close();
-			con.close();
-			return true;
 		} catch (SQLException e) {
 			e.printStackTrace();
 			Logger.log(e.getMessage());
-			return false;
 		}
 	}
 
@@ -635,8 +631,6 @@ public class Database {
 			ps.setString(5, member.warningsAsJSON());
 			ps.setString(6, member.getUserId());
 			ps.executeUpdate();
-			ps.close();
-			con.close();
 		} catch (SQLException e) {
 			Logger.log("Couldn't load warnings", e);
 		}
@@ -780,25 +774,25 @@ public class Database {
 		}
 	}
 
-	/**
-	 *
-	 * @param cardId The id of the {@link Card}
-	 * @param newOwnerId The user id of the new owner
-	 * @return True, if changed successfully
-	 */
-	public static boolean setNewCardOwner(int cardId, String newOwnerId) {
-		String SQL = "UPDATE cards SET user_id = ? WHERE card_id = ?";
-		try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(SQL)) {
-			ps.setString(1, newOwnerId);
-			ps.setInt(2, cardId);
-			ps.executeUpdate();
-			ps.close();
-			con.close();
-			return true;
-		} catch (SQLException e) {
-			return false;
-		}
-	}
+//	/**
+//	 *
+//	 * @param cardId The id of the {@link Card}
+//	 * @param newOwnerId The user id of the new owner
+//	 * @return True, if changed successfully
+//	 */
+//	public static boolean setNewCardOwner(int cardId, String newOwnerId) {
+//		String SQL = "UPDATE cards SET user_id = ? WHERE card_id = ?";
+//		try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(SQL)) {
+//			ps.setString(1, newOwnerId);
+//			ps.setInt(2, cardId);
+//			ps.executeUpdate();
+//			ps.close();
+//			con.close();
+//			return true;
+//		} catch (SQLException e) {
+//			return false;
+//		}
+//	}
 
 	/**
 	 *
@@ -822,9 +816,8 @@ public class Database {
 	/**
 	 *
 	 * @param cardIds An Integer {@link Collection} of {@link Card} ids
-	 * @return True, if all cards deleted successfully
 	 */
-	public static boolean deleteCards(Collection<Integer> cardIds) {
+	public static void deleteCards(Collection<Integer> cardIds) {
 		String SQL = "DELETE FROM cards WHERE card_id = ?";
 		try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(SQL)) {
 			for (int i : cardIds) {
@@ -832,13 +825,9 @@ public class Database {
 				ps.addBatch();
 			}
 			ps.executeBatch();
-			ps.close();
-			con.close();
-			return true;
 		} catch (SQLException e) {
 			e.printStackTrace();
 			Logger.log(e.getMessage());
-			return false;
 		}
 	}
 
@@ -902,6 +891,7 @@ public class Database {
 		}
 	}
 
+	/*
 	public static boolean setPot(int amount) {
 		String SQL = String.format("UPDATE lotto SET value = %s WHERE key = \"pot\"", amount);
 		try (Connection con = getConnection(); Statement stmt = con.createStatement()) {
@@ -913,6 +903,7 @@ public class Database {
 			return false;
 		}
 	}
+	*/
 
 	public static boolean addToPot(int amount) {
 		final int pot = getPot();
@@ -967,38 +958,34 @@ public class Database {
 		}
 	}
 
-	/**
-	 *
-	 * @param winBetString The winning bet
-	 * @return Possibly null Id String of user that made the first winning bet
-	 */
-	public static String getWinningBet(String winBetString) {
-		String SQL = "SELECT user_id FROM bets WHERE bet = " + winBetString;
-		try (Connection con = getConnection(); Statement stmt = con.createStatement()) {
-			final ResultSet rs = stmt.executeQuery(SQL);
-			String winnerId = null;
-			while (rs.next()) winnerId = rs.getString("user_id");
-			stmt.close();
-			con.close();
-			if (winnerId != null)
-				return winnerId;
-			else return null;
-		} catch (SQLException e) {
-			return null;
-		}
-	}
+//	/**
+//	 *
+//	 * @param winBetString The winning bet
+//	 * @return Possibly null Id String of user that made the first winning bet
+//	 */
+//	public static String getWinningBet(String winBetString) {
+//		String SQL = "SELECT user_id FROM bets WHERE bet = " + winBetString;
+//		try (Connection con = getConnection(); Statement stmt = con.createStatement()) {
+//			final ResultSet rs = stmt.executeQuery(SQL);
+//			String winnerId = null;
+//			while (rs.next()) winnerId = rs.getString("user_id");
+//			stmt.close();
+//			con.close();
+//			return winnerId;
+//		} catch (SQLException e) {
+//			return null;
+//		}
+//	}
 
-	public static boolean deleteAllBets() {
+	/*
+	public static void deleteAllBets() {
 		String SQL = "DELETE FROM bets";
 		try (Connection con = getConnection(); Statement stmt = con.createStatement()) {
 			stmt.executeUpdate(SQL);
-			stmt.close();
-			con.close();
-			return true;
 		} catch (SQLException e) {
-			return false;
+			Logger.log("Failed to delete lotto bets", e);
 		}
-	}
+	}*/
 
 	// ************************************************************
 	// *                      Config Methods                      *

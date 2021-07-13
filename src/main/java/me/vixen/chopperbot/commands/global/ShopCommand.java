@@ -24,7 +24,12 @@ public class ShopCommand implements ICommand {
 
 	@Override
 	public void handle(SlashCommandEvent event) {
+		//noinspection ConstantConditions cant be null
 		DBMember dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
+		if (dbMember == null) {
+			event.reply("An unknown error occurred; aborting with Error Code ShC1").queue();
+			return;
+		}
 		int price = getPrice(dbMember);
 
 		SelectionMenu menu = SelectionMenu.create("menu:shop")
@@ -36,6 +41,7 @@ public class ShopCommand implements ICommand {
 			.addOption("Textbook", "book", "Guarantees a skill increase for " + price*2 + " coins!", Emoji.fromUnicode("📚"))
 			.build();
 
+		//noinspection ConstantConditions wont be null
 		event.reply("Choose your item!").addActionRow(menu).queue(hook ->
 			hook.retrieveOriginal().queue(msg ->
 				waiter.waitForEvent(SelectionMenuEvent.class,
@@ -89,7 +95,12 @@ public class ShopCommand implements ICommand {
 				)
 			);
 			case "lock" -> {
+				//noinspection ConstantConditions cant be null
 				DBMember dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
+				if (dbMember == null) {
+					event.reply("An unknown error occurred; aborting with Error Code ShC2").queue();
+					return;
+				}
 				if (dbMember.getCoins() < getPrice(dbMember)) {
 					event.replyEmbeds(Embeds.getInsufficientCoins()).queue();
 					return;
@@ -99,7 +110,12 @@ public class ShopCommand implements ICommand {
 				dbMember.update();
 			}
 			case "book" -> {
+				//noinspection ConstantConditions cant be null
 				DBMember dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
+				if (dbMember == null) {
+					event.reply("An unknown error occurred; aborting with Error Code ShC3").queue();
+					return;
+				}
 				if (dbMember.getCoins() < getPrice(dbMember)*2) {
 					event.replyEmbeds(Embeds.getInsufficientCoins()).queue();
 					return;
@@ -113,7 +129,12 @@ public class ShopCommand implements ICommand {
 	}
 
 	private void resolveClick(ButtonClickEvent event) {
+		//noinspection ConstantConditions cant be null
 		DBMember dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
+		if (dbMember == null) {
+			event.reply("An unknown error occurred; aborting with Error Code ShC4").queue();
+			return;
+		}
 		switch (event.getComponentId()) {
 			case "allcoins" -> { //buying max amount of exp
 				int availableCoins = dbMember.getCoins();
