@@ -78,10 +78,14 @@ public class BejoIjoPlugins implements IGuild {
 
 	@Override
 	public void handleSlashCommand(SlashCommandEvent event, EventWaiter waiter, GlobalCommandManager cManager) {
-		for (ICommand c : getLocalCommands())
-			if (c.getName().equals(event.getName()))
+		boolean found = false;
+		for (ICommand c : getLocalCommands()) {
+			if (c.getName().equals(event.getName())) {
 				c.handle(event);
-		DefaultEventHandler.handleSlashCommand(event, cManager);
+				found = true;
+			}
+		}
+		if (!found) DefaultEventHandler.handleSlashCommand(event, cManager);
 		//This guild wants slash command logs
 		//noinspection ConstantConditions cant be null
 		TextChannel logs = event.getGuild().getTextChannelById("672112948776534049");

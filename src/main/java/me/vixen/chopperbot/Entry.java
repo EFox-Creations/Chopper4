@@ -80,5 +80,7 @@ public class Entry {
 		Thread thread1 = new Thread(() -> BackgroundThread.go(true, guildManager, waiter));
 		thread1.setName("Background Thread");
 		thread1.start();
+
+		//TODO error lookup
 	}
 }
