@@ -162,7 +162,6 @@ public class BejoIjoPlugins implements IGuild {
 					sendToBugChannel(event);
 			}
 		}
-
 		DefaultEventHandler.updateStickies(event.getChannel());
 	}
 
@@ -178,6 +177,11 @@ public class BejoIjoPlugins implements IGuild {
 		event.getGuild().getTextChannelById("678667071437144151").sendMessageEmbeds(
 			Embeds.getLeaveEmbed(event.getUser())
 		).queue();
+	}
+
+	@Override
+	public boolean hasCustomClaims() {
+		return true;
 	}
 
 	@Override
