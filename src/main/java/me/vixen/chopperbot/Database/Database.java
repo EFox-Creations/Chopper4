@@ -621,18 +621,17 @@ public class Database {
 		String SQL = """
 			INSERT INTO ?(user_id,warn_json) VALUES(?,?)
 			ON CONFLICT (user_id) DO
-			UPDATE ? SET warn_json = ? WHERE user_id = ?
+			UPDATE SET warn_json = ? WHERE user_id = ?
 			""";
 		try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(SQL)) {
 			ps.setString(1, getGuildWarningTable(member.getGuildId()));
 			ps.setString(2, member.getUserId());
 			ps.setString(3, member.warningsAsJSON());
-			ps.setString(4, getGuildWarningTable(member.getGuildId()));
 			ps.setString(5, member.warningsAsJSON());
 			ps.setString(6, member.getUserId());
 			ps.executeUpdate();
 		} catch (SQLException e) {
-			Logger.log("Couldn't load warnings", e);
+			Logger.log("Couldn't set warnings", e);
 		}
 	}
 

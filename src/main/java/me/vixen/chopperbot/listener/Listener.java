@@ -38,17 +38,18 @@ public class Listener extends ListenerAdapter {
 	@Override
 	public void onGuildJoin(@NotNull GuildJoinEvent event) {
 		Database.createMemberTables(List.of(event.getGuild()));
-		final Member owner = event.getGuild().getOwner();
-		if (owner != null)
-			new DBMember(owner, event.getGuild(), true).update(); //Authorize owner
-		TextChannel systemChannel = event.getGuild().getSystemChannel();
-		if (systemChannel != null)
-			systemChannel.sendMessageEmbeds(Embeds.getOnJoin()).queue();
-		else {
-			TextChannel defaultChannel = event.getGuild().getDefaultChannel();
-			if (defaultChannel != null)
-				defaultChannel.sendMessageEmbeds(Embeds.getOnJoin()).queue();
-		}
+		event.getGuild().retrieveOwner().queue(owner -> {
+			if (owner != null)
+				new DBMember(owner, event.getGuild(), true).update(); //Authorize owner
+			TextChannel systemChannel = event.getGuild().getSystemChannel();
+			if (systemChannel != null)
+				systemChannel.sendMessageEmbeds(Embeds.getOnJoin()).queue();
+			else {
+				TextChannel defaultChannel = event.getGuild().getDefaultChannel();
+				if (defaultChannel != null)
+					defaultChannel.sendMessageEmbeds(Embeds.getOnJoin()).queue();
+			}
+		});
 	}
 
 	@Override
