@@ -109,16 +109,20 @@ public class ReportCommand implements ICommand {
 			case "claim" -> {
 				builder.setColor(Color.GREEN);
 				builder.addField("Report resolved", "Handled by: " + event.getUser().getAsTag(), false);
-				event.reply("Marked as resolved").setEphemeral(true).queue();
+				msg.editMessageEmbeds(builder.build()).setActionRows().queue(unused -> {
+					event.reply("Marked as resolved").setEphemeral(true).queue();
+				});
 			}
 			case "faux" -> {
 				builder.setColor(Color.DARK_GRAY);
 				builder.addField("Report faux/Not enough information", "Marked by: " + event.getUser().getAsTag(), false);
-				event.reply("Marked as faux/NEI").setEphemeral(true).queue();
+				msg.editMessageEmbeds(builder.build()).queue(msg1 -> {
+					event.reply("Marked as faux/NEI").setEphemeral(true).queue();
+					waitForButtons(msg1);
+				});
 			}
 			case "delete" -> msg.delete().queue();
 		}
-		msg.editMessageEmbeds(builder.build()).setActionRow().queue();
 	}
 
 	private EmbedBuilder copyEmbed(MessageEmbed embed) {

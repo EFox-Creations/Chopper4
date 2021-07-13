@@ -22,7 +22,7 @@ public class Logger {
 			final String time = OffsetDateTime.now().format(DateTimeFormatter.ofPattern("yy-MMM-dd HH:mm:ss.SSS"));
 			writer.write(String.format("[%s]\s%s: %s\n", time, text, e.getMessage()));
 			writer.close();
-			System.out.println(String.format("[%s]\s%s\n", time, text));
+			System.out.println(String.format("[%s]\s%s: %s\n", time, text, e.getMessage()));
 		} catch (Exception ex) { }
 	}
 }

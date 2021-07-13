@@ -128,6 +128,7 @@ public class BackgroundThread {
 	} //End Enum
 
 	public static void makeTreasureChest(List<TextChannel> availableChannels, EventWaiter waiter) {
+		if (availableChannels.isEmpty()) return;
 		final TextChannel targetChannel = availableChannels.get(new Random().nextInt(availableChannels.size()));
 		final ChestRewardsEnum rewardName = ChestRewardsEnum.getRandom();
 		targetChannel.sendMessageEmbeds(
