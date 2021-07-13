@@ -7,6 +7,7 @@ import me.vixen.chopperbot.tools.Embeds;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
+import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
@@ -23,10 +24,18 @@ public class EchoCommand implements ICommand {
 		}
 
 		String phrase = event.getOption("phrase").getAsString();
+		OptionMapping msgid = event.getOption("msgid");
 		event.deferReply(true).queue();
-		event.getTextChannel().sendMessage(phrase).queue(msg -> {
-			event.getHook().editOriginal("Phrase Echoed").queue();
-		});
+		if (msgid == null) {
+			event.getTextChannel().sendMessage(phrase).queue(msg -> {
+				event.getHook().editOriginal("Phrase Echoed").queue();
+			});
+		} else {
+			event.getTextChannel().retrieveMessageById(msgid.getAsString()).queue(msg -> {
+				msg.reply(phrase).mentionRepliedUser(true).queue();
+				event.getHook().editOriginal("Phrase Replied").queue();
+			});
+		}
 	}
 
 	@Override
