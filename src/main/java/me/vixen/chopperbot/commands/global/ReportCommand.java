@@ -49,7 +49,10 @@ public class ReportCommand implements ICommand {
 				Button.success("claim", "Mark Done"),
 				Button.primary("faux", "Mark Faux"),
 				Button.danger("delete", "Delete").withEmoji(Emoji.fromUnicode("⚠"))
-			).queue(msg -> waitForButtons(msg));
+			).queue(msg -> {
+				waitForButtons(msg);
+				event.reply("Report Submitted").setEphemeral(true).queue();
+			});
 		} else {
 			if (offender.getAsMember() != null) {
 				guild.getTextChannelById(config.getModlogId()).sendMessageEmbeds(
@@ -63,15 +66,18 @@ public class ReportCommand implements ICommand {
 					Button.success("claim", "Mark Resolved"),
 					Button.primary("faux", "Mark Faux/NEI"),
 					Button.danger("delete", "Delete").withEmoji(Emoji.fromUnicode("⚠"))
-				).queue(msg -> waitForButtons(msg));
-			} else event.replyEmbeds(Embeds.getUnknownMember()).queue();
+				).queue(msg -> {
+					waitForButtons(msg);
+					event.reply("Report Submitted").setEphemeral(true).queue();
+				});
+			} else event.replyEmbeds(Embeds.getUnknownMember()).setEphemeral(true).queue();
 		}
 	}
 
 	private void waitForButtons(Message msg) {
 		waiter.waitForEvent(
 			ButtonClickEvent.class,
-			(bce) -> bce.getMessageId().equals(msg.getId()),
+			(bce) -> bce.getMessage().getId().equals(msg.getId()),
 			(bce) -> editEmbed(bce, msg, bce.getComponentId())
 		);
 	}
@@ -96,11 +102,13 @@ public class ReportCommand implements ICommand {
 	}
 
 	private EmbedBuilder copyEmbed(MessageEmbed embed) {
-		return new EmbedBuilder()
+		EmbedBuilder builder = new EmbedBuilder()
 			.setColor(embed.getColor())
 			.setTitle(embed.getTitle())
-			.setDescription(embed.getDescription())
-			.setFooter(embed.getFooter().getText());
+			.setDescription(embed.getDescription());
+		for (MessageEmbed.Field f: embed.getFields())
+			builder.addField(f);
+		return builder;
 	}
 
 	@Override
