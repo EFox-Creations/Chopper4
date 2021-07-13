@@ -35,6 +35,13 @@ public class Warning {
 			'}';
 	}
 
+	public String toPrettyString() {
+		return "-Warning#: " + warningNumber
+			+ " Username: " + usertag
+			+ " Mod: " + moderator
+			+ " Reason: " + reason;
+	}
+
 	public static List<Warning> deserializeList(String jsonPayload) {
 		Type listOfWarnings = new TypeToken<ArrayList<Warning>>() {}.getType();
 		Gson gson = new Gson();

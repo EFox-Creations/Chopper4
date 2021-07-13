@@ -618,18 +618,16 @@ public class Database {
 	}
 
 	public static void setWarnings(DBMember member) {
-		String SQL = """
-			INSERT INTO ?(user_id,warn_json) VALUES(?,?)
-			ON CONFLICT (user_id) DO
-			UPDATE SET warn_json = ? WHERE user_id = ?
-			""";
-		try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(SQL)) {
-			ps.setString(1, getGuildWarningTable(member.getGuildId()));
-			ps.setString(2, member.getUserId());
-			ps.setString(3, member.warningsAsJSON());
-			ps.setString(5, member.warningsAsJSON());
-			ps.setString(6, member.getUserId());
-			ps.executeUpdate();
+		String tableName = getGuildWarningTable(member.getGuildId());
+		String userId = member.getUserId();
+		String json = member.warningsAsJSON();
+		String SQL =
+			"INSERT INTO " + tableName + "(user_id,warn_json)\s" +
+			"VALUES(" + userId + ",'" + json + "')\s" +
+			"ON CONFLICT (user_id) DO\s" +
+			"UPDATE SET warn_json = '" + json + "' WHERE user_id = " + userId;
+		try (Connection con = getConnection(); Statement stmt = con.createStatement()) {
+			stmt.executeUpdate(SQL);
 		} catch (SQLException e) {
 			Logger.log("Couldn't set warnings", e);
 		}

@@ -5,6 +5,7 @@ import com.jagrosh.jdautilities.menu.Paginator;
 import me.vixen.chopperbot.Database.DBMember;
 import me.vixen.chopperbot.Database.Database;
 import me.vixen.chopperbot.Database.Warning;
+import me.vixen.chopperbot.Logger;
 import me.vixen.chopperbot.commands.ICommand;
 import me.vixen.chopperbot.guilds.Config;
 import me.vixen.chopperbot.tools.Embeds;
@@ -18,6 +19,7 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -127,13 +129,19 @@ public class WarningGroup implements ICommand {
 	}
 
 	private void getInfractions(SlashCommandEvent event, DBMember target) {
+		Logger.log("Getting infractions");
 		List<Warning> warnings = target.getWarnings();
-		String[] warningArr = new String[warnings.size()];
-		for (int i = 0; i<= warnings.size(); i++) {
-			warningArr[i] = warnings.get(i).toString();
+		if (warnings.isEmpty()) {
+			event.reply("This user has no infractions in this server").queue();
+			return;
 		}
+		List<String> forArr = new ArrayList<>();
+		for (Warning w : warnings)
+			forArr.add(w.toPrettyString());
+		//noinspection ConstantConditions cant be null
 		Paginator pager = new Paginator.Builder()
-			.setItems(warningArr)
+			.setText("Warnings for:" + event.getOption("user").getAsUser().getAsTag())
+			.setItems(forArr.toArray(new String[0]))
 			.setItemsPerPage(10)
 			.showPageNumbers(true)
 			.allowTextInput(true)
