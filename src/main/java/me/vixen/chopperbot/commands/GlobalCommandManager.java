@@ -24,7 +24,7 @@ public class GlobalCommandManager {
 		//Global Commands
 		addGlobalCommand(new AvatarCommand());
 		addGlobalCommand(new ConfigCommand());
-		addGlobalCommand(new CustomCommand(waiter));
+		addGlobalCommand(new CustomCommand());
 		addGlobalCommand(new CustomGroup(this, waiter));
 		addGlobalCommand(new DailyClaimCommand(guildManager));
 		addGlobalCommand(new DonateCommand());
