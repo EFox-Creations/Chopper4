@@ -6,6 +6,7 @@ import me.vixen.chopperbot.Database.Database;
 import me.vixen.chopperbot.Entry;
 import me.vixen.chopperbot.commands.GlobalCommandManager;
 import me.vixen.chopperbot.commands.ICommand;
+import me.vixen.chopperbot.commands.global.LottoGroup;
 import me.vixen.chopperbot.guilds.IGuild;
 import me.vixen.chopperbot.listener.DefaultEventHandler;
 import me.vixen.chopperbot.tools.Embeds;
@@ -20,6 +21,8 @@ import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEve
 
 import java.awt.*;
 import java.io.File;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -383,6 +386,56 @@ public class BejoIjoPlugins implements IGuild {
 				}
 			}
 		}
+	}
+
+	@Override
+	public void doNightlyReset() {
+		Role patreonBasic = null;
+		Role patreonPremium = null;
+		Role suppChop = null;
+		final List<Role> roles = getGuild().getRoles();
+		for (Role r : roles) {
+			if (r.getName().equalsIgnoreCase("patreon basic")) patreonBasic = r;
+			else if (r.getName().equalsIgnoreCase("patreon premium")) patreonPremium = r;
+			else if (r.getName().equalsIgnoreCase("Supporting Chopper")) suppChop = r;
+		}
+		Role finalPatreonBasic = patreonBasic;
+		Role finalPatreonPremium = patreonPremium;
+		Role finalSuppChop = suppChop;
+
+		getGuild().loadMembers().onSuccess(members -> {
+			List<String> basicPatreonIds = new ArrayList<>();
+			List<String> premiumPatreonIds = new ArrayList<>();
+			List<String> chopAndBasic = new ArrayList<>();
+			List<String> chopAndPremium = new ArrayList<>();
+
+			for (Member m : members) {
+				if (finalPatreonBasic == null || finalPatreonPremium == null) break;
+
+				if (m.getRoles().contains(finalPatreonBasic) && !m.getRoles().contains(finalSuppChop)) {
+					basicPatreonIds.add(m.getId());
+				} else if (m.getRoles().contains(finalPatreonPremium) && !m.getRoles().contains(finalSuppChop))  {
+					premiumPatreonIds.add(m.getId());
+				} else if (m.getRoles().contains(finalSuppChop) && m.getRoles().contains(finalPatreonBasic)) {
+					chopAndBasic.add(m.getId());
+				} else if (m.getRoles().contains(finalSuppChop) && m.getRoles().contains(finalPatreonPremium)) {
+					chopAndPremium.add(m.getId());
+				}
+
+
+				//Get all of member roles and all the color reward roles
+				List<Role> mRoles = new ArrayList<>(m.getRoles());
+				List<Role> colorRoles = getGuild().getRoles().stream()
+					.filter(role -> BuyGroup.colorRoles.contains(role.getName()))
+					.collect(Collectors.toList());
+				//Remove all roles that aren't colorRoles from memberRoles
+				mRoles.retainAll(colorRoles);
+				//Remove all roles left in member roles (These should only be colorRoles the member has
+				mRoles.forEach(role -> getGuild().removeRoleFromMember(m, role).queue());
+
+			}
+			Database.resetDailyCounts(getGuild(), basicPatreonIds, premiumPatreonIds, chopAndBasic, chopAndPremium);
+		});
 	}
 }
 

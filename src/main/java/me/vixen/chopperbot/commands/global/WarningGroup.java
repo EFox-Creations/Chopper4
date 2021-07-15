@@ -18,6 +18,8 @@ import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
+
+import javax.xml.crypto.Data;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -55,6 +57,7 @@ public class WarningGroup implements ICommand {
 			return;
 		}
 		final String name = event.getSubcommandName();
+		event.deferReply().queue();
 
 		//noinspection ConstantConditions cant be null
 		switch (name) {
@@ -67,8 +70,8 @@ public class WarningGroup implements ICommand {
 				if (warning != null) {
 					target.removeWarning(warning);
 					target.update();
-					event.reply("Warning removed successfully!").queue();
-				} else event.reply("An error occurred! Most likely an Invalid Id#").setEphemeral(true).queue();
+					event.getHook().editOriginal("Warning removed successfully!").queue();
+				} else event.getHook().editOriginal("An error occurred! Most likely an Invalid Id#").queue();
 			}
 		}
 	}
@@ -90,8 +93,11 @@ public class WarningGroup implements ICommand {
 	}
 
 	private static void warn(SlashCommandEvent event, DBMember target, DBMember moderator) {
-		event.deferReply().queue();
 		//noinspection ConstantConditions cant be null
+		if (target.getUserId().equals(moderator.getUserId())) {
+			event.reply("You cannot warn yourself").queue();
+			return;
+		}
 		event.getGuild().retrieveMembersByIds(target.getUserId(), moderator.getUserId()).onSuccess(members -> {
 			Member targetMem = null, modMem = null;
 			for (Member m : members) {
@@ -129,8 +135,8 @@ public class WarningGroup implements ICommand {
 	}
 
 	private void getInfractions(SlashCommandEvent event, DBMember target) {
-		List<Warning> warnings = target.getWarnings();
-		if (warnings.isEmpty()) {
+		List<Warning> warnings = Database.getWarnings(target.getGuildId(), target.getUserId());
+		if (warnings == null || warnings.isEmpty()) {
 			event.reply("This user has no infractions in this server").queue();
 			return;
 		}
@@ -157,6 +163,6 @@ public class WarningGroup implements ICommand {
 			.setTimeout(30L, TimeUnit.SECONDS)
 			.build();
 		pager.paginate(event.getTextChannel(), 1);
-		event.reply("Warnings Displayed").setEphemeral(true).queue();
+		event.getHook().editOriginal("Warnings Displayed").queue();
 	}
 }

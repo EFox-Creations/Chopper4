@@ -14,9 +14,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.sql.*;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 public class Database {
 
@@ -547,49 +545,59 @@ public class Database {
 	 */
 	public static void resetDailyCounts(Guild g, List<String> basicPatreonIds, List<String> premiumPatreonIds,
 										   List<String> chopAndBasic, List<String> chopAndPremium) {
+		String SQL = "UPDATE ? SET gallery_pics = 0, daily_chest_count = 1, claimed_card = 0, robbed_today = 0, lottery_plays = 0, lock_count = 1";
 		try (Connection con = getConnection()) {
 			con.setAutoCommit(false);
-			String SQL = "UPDATE ? SET gallery_pics = 0, daily_chest_count = 1, claimed_card = 0, robbed_today = 0, lottery_plays = 0, lock_count = 1";
+
 			PreparedStatement ps = con.prepareStatement(SQL);
 			ps.setString(1, getGuildMemberTable(g.getId()));
 			ps.executeUpdate();
 
-			SQL = "UPDATE ? SET daily_chest_count = 2 WHERE user_id = ?";
-			ps = con.prepareStatement(SQL);
-			for (String id : basicPatreonIds) {
-				ps.setString(1, getGuildMemberTable(g.getId()));
-				ps.setString(2, id);
-				ps.addBatch();
+			if (!basicPatreonIds.isEmpty()) {
+				SQL = "UPDATE ? SET daily_chest_count = 2 WHERE user_id = ?";
+				ps = con.prepareStatement(SQL);
+				for (String id : basicPatreonIds) {
+					ps.setString(1, getGuildMemberTable(g.getId()));
+					ps.setString(2, id);
+					ps.addBatch();
+				}
+				ps.executeBatch();
 			}
-			ps.executeBatch();
 
-			SQL = "UPDATE ? SET daily_chest_count = 3 WHERE user_id = ?";
-			ps = con.prepareStatement(SQL);
-			for (String id : premiumPatreonIds) {
-				ps.setString(1, getGuildMemberTable(g.getId()));
-				ps.setString(2, id);
-				ps.addBatch();
+			if (!premiumPatreonIds.isEmpty()) {
+				SQL = "UPDATE ? SET daily_chest_count = 3 WHERE user_id = ?";
+				ps = con.prepareStatement(SQL);
+				for (String id : premiumPatreonIds) {
+					ps.setString(1, getGuildMemberTable(g.getId()));
+					ps.setString(2, id);
+					ps.addBatch();
+				}
+				ps.executeBatch();
 			}
-			ps.executeBatch();
 
-			SQL = "UPDATE ? SET daily_chest_count = 3 WHERE user_id = ?";
-			ps = con.prepareStatement(SQL);
-			for (String id : chopAndBasic) {
-				ps.setString(1, getGuildMemberTable(g.getId()));
-				ps.setString(2, id);
-				ps.addBatch();
+			if (!chopAndBasic.isEmpty()) {
+				SQL = "UPDATE ? SET daily_chest_count = 3 WHERE user_id = ?";
+				ps = con.prepareStatement(SQL);
+				for (String id : chopAndBasic) {
+					ps.setString(1, getGuildMemberTable(g.getId()));
+					ps.setString(2, id);
+					ps.addBatch();
+				}
+				ps.executeBatch();
 			}
-			ps.executeBatch();
 
-			SQL = "UPDATE ? SET daily_chest_count = 4 WHERE user_id = ?";
-			ps = con.prepareStatement(SQL);
-			for (String id : chopAndPremium) {
-				ps.setString(1, getGuildMemberTable(g.getId()));
-				ps.setString(2, id);
-				ps.addBatch();
+			if (!chopAndPremium.isEmpty()) {
+				SQL = "UPDATE ? SET daily_chest_count = 4 WHERE user_id = ?";
+				ps = con.prepareStatement(SQL);
+				for (String id : chopAndPremium) {
+					ps.setString(1, getGuildMemberTable(g.getId()));
+					ps.setString(2, id);
+					ps.addBatch();
+				}
+				ps.executeBatch();
 			}
-			ps.executeBatch();
 			ps.close();
+			con.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 			Logger.log(e.getMessage());
@@ -604,12 +612,17 @@ public class Database {
 		String SQL = "SELECT warn_json FROM " + getGuildWarningTable(guildId) + " WHERE user_id = " + userId;
 		try (Connection con = getConnection(); Statement stmt = con.createStatement()) {
 			final ResultSet rs = stmt.executeQuery(SQL);
-			List<Warning> warnings = new ArrayList<>();
-			if (rs.next())
-				 warnings = Warning.deserializeList(rs.getString("warn_json"));
-			stmt.close();
-			con.close();
-			return warnings;
+			if (rs.next()) {
+				List<Warning> warnings = Warning.deserializeList(rs.getString("warn_json"));
+				stmt.close();
+				con.close();
+				if (warnings.isEmpty()) return null;
+				else return warnings;
+			} else {
+				stmt.close();
+				con.close();
+				return null;
+			}
 		} catch (SQLException e) {
 			Logger.log("Couldn't load warnings", e);
 			return null;

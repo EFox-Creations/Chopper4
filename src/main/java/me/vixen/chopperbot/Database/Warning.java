@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
 
+import javax.annotation.CheckReturnValue;
+import javax.annotation.Nullable;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +44,8 @@ public class Warning {
 			+ " Reason: " + reason;
 	}
 
+	@Nullable
+	@CheckReturnValue
 	public static List<Warning> deserializeList(String jsonPayload) {
 		Type listOfWarnings = new TypeToken<ArrayList<Warning>>() {}.getType();
 		Gson gson = new Gson();

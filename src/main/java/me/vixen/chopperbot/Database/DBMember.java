@@ -9,9 +9,7 @@ import net.dv8tion.jda.api.entities.User;
 
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class DBMember {
 	private final String userId;
@@ -235,6 +233,8 @@ public class DBMember {
 
 	public void loadWarnings() {
 		this.warnings = Database.getWarnings(guildId, userId);
+		if (warnings == null)
+			this.warnings = new ArrayList<>();
 	}
 
 	public String warningsAsJSON() {

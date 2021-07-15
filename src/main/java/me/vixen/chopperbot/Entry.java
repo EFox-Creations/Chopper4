@@ -50,7 +50,7 @@ public class Entry {
 
 		jda = JDABuilder.createDefault(token, enabledIntents)
 			.addEventListeners(waiter, new Listener(waiter, commandManager, guildManager))
-			.setActivity(Activity.listening("/Help"))
+			.setActivity(Activity.listening("/help"))
 			.disableIntents(GatewayIntent.GUILD_VOICE_STATES)
 			.setStatus(OnlineStatus.ONLINE).build().awaitReady();
 
