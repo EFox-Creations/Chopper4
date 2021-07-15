@@ -545,14 +545,20 @@ public class Database {
 	 */
 	public static void resetDailyCounts(Guild g, List<String> basicPatreonIds, List<String> premiumPatreonIds,
 										   List<String> chopAndBasic, List<String> chopAndPremium) {
-		String SQL = "UPDATE ? SET gallery_pics = 0, daily_chest_count = 1, claimed_card = 0, robbed_today = 0, lottery_plays = 0, lock_count = 1";
+		String SQL = "UPDATE ? SET gallery_pics = 10, daily_chest_count = 1, robbed_today = 0, lottery_plays = 0";
 		try (Connection con = getConnection()) {
-			con.setAutoCommit(false);
-
 			PreparedStatement ps = con.prepareStatement(SQL);
 			ps.setString(1, getGuildMemberTable(g.getId()));
 			ps.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+			Logger.log(e.getMessage());
+		}
 
+		try (Connection con = getConnection()) {
+			con.setAutoCommit(false);
+
+			PreparedStatement ps;
 			if (!basicPatreonIds.isEmpty()) {
 				SQL = "UPDATE ? SET daily_chest_count = 2 WHERE user_id = ?";
 				ps = con.prepareStatement(SQL);
@@ -596,8 +602,6 @@ public class Database {
 				}
 				ps.executeBatch();
 			}
-			ps.close();
-			con.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 			Logger.log(e.getMessage());
