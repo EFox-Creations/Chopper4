@@ -15,6 +15,7 @@ import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.requests.GatewayIntent;
+import net.dv8tion.jda.api.utils.ChunkingFilter;
 
 import javax.security.auth.login.LoginException;
 import java.io.BufferedReader;
@@ -51,9 +52,9 @@ public class Entry {
 		jda = JDABuilder.createDefault(token, enabledIntents)
 			.addEventListeners(waiter, new Listener(waiter, commandManager, guildManager))
 			.setActivity(Activity.listening("/help"))
+			.setChunkingFilter(ChunkingFilter.NONE)
 			.disableIntents(GatewayIntent.GUILD_VOICE_STATES)
 			.setStatus(OnlineStatus.ONLINE).build().awaitReady();
-
 		Database.initDatabase(jda.getGuilds());
 
 		Logger.log("DatabaseLoaded");
@@ -80,7 +81,5 @@ public class Entry {
 		Thread thread1 = new Thread(() -> BackgroundThread.go(true, guildManager, waiter));
 		thread1.setName("Background Thread");
 		thread1.start();
-
-		//TODO error lookup
 	}
 }

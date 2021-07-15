@@ -71,10 +71,10 @@ public class BackgroundThread {
 					for (Guild g : Entry.jda.getGuilds()) {
 						if (gManager.contains(g)) {
 							final IGuild ig = gManager.getGuild(g);
-							makeTreasureChest(ig.getTreasureChannels(), waiter);
+							//makeTreasureChest(ig.getTreasureChannels(), waiter);
 						} else {
 							final List<TextChannel> defaultTreasureChannels = DefaultEventHandler.getDefaultTreasureChannels(g);
-							makeTreasureChest(defaultTreasureChannels, waiter);
+							//makeTreasureChest(defaultTreasureChannels, waiter);
 						}
 					}
 					hourToSpawn = OffsetDateTime.now().plusHours(new Random().nextInt(3)+4).getHour();

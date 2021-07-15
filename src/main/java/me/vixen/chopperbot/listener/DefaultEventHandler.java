@@ -83,7 +83,7 @@ public class DefaultEventHandler {
 	public static void handleGVoiceMove(GuildVoiceMoveEvent event) { }
 
 	public static void nightlyReset(Guild g) {
-		Database.resetDailyCounts(g, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+		Database.resetDailyCounts(g, null, null, null, null);
 	}
 
 	public static List<TextChannel> getDefaultTreasureChannels(Guild g) {

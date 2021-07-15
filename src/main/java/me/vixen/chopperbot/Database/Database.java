@@ -547,7 +547,7 @@ public class Database {
 										   List<String> chopAndBasic, List<String> chopAndPremium) {
 
 		String SQL = "UPDATE " + getGuildMemberTable(g.getId()) +
-			" SET gallery_remaining = 10, chest_count = 1, robbed_today = 0, lottery_plays = 0";
+			" SET gallery_remaining = 10, chest_count = 1, robbed_today = 0, lottery_plays = 3";
 		try (Connection con = getConnection()) {
 			Statement stmt = con.createStatement();
 			stmt.executeUpdate(SQL);
@@ -563,7 +563,7 @@ public class Database {
 			SQL = "UPDATE " + getGuildMemberTable(g.getId()) +
 				" SET chest_count = 2 WHERE user_id = ?";
 			ps = con.prepareStatement(SQL);
-			if (!basicPatreonIds.isEmpty()) {
+			if (basicPatreonIds != null && !basicPatreonIds.isEmpty()) {
 				for (String id : basicPatreonIds) {
 					ps.setString(1, id);
 					ps.addBatch();
@@ -571,7 +571,7 @@ public class Database {
 				ps.executeBatch();
 			}
 
-			if (!premiumPatreonIds.isEmpty()) {
+			if (premiumPatreonIds != null && !premiumPatreonIds.isEmpty()) {
 				SQL = "UPDATE " + getGuildMemberTable(g.getId()) +
 					" SET chest_count = 3 WHERE user_id = ?";
 				ps = con.prepareStatement(SQL);
@@ -582,7 +582,7 @@ public class Database {
 				ps.executeBatch();
 			}
 
-			if (!chopAndBasic.isEmpty()) {
+			if (chopAndBasic != null && !chopAndBasic.isEmpty()) {
 				SQL = "UPDATE " + getGuildMemberTable(g.getId()) +
 					" SET chest_count = 3 WHERE user_id = ?";
 				ps = con.prepareStatement(SQL);
@@ -593,7 +593,7 @@ public class Database {
 				ps.executeBatch();
 			}
 
-			if (!chopAndPremium.isEmpty()) {
+			if (chopAndPremium != null && !chopAndPremium.isEmpty()) {
 				SQL = "UPDATE " + getGuildMemberTable(g.getId()) +
 					" SET chest_count = 4 WHERE user_id = ?";
 				ps = con.prepareStatement(SQL);
