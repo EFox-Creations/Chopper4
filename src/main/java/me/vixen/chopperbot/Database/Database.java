@@ -545,11 +545,12 @@ public class Database {
 	 */
 	public static void resetDailyCounts(Guild g, List<String> basicPatreonIds, List<String> premiumPatreonIds,
 										   List<String> chopAndBasic, List<String> chopAndPremium) {
-		String SQL = "UPDATE ? SET gallery_pics = 10, daily_chest_count = 1, robbed_today = 0, lottery_plays = 0";
+
+		String SQL = "UPDATE " + getGuildMemberTable(g.getId()) +
+			" SET gallery_remaining = 10, chest_count = 1, robbed_today = 0, lottery_plays = 0";
 		try (Connection con = getConnection()) {
-			PreparedStatement ps = con.prepareStatement(SQL);
-			ps.setString(1, getGuildMemberTable(g.getId()));
-			ps.executeUpdate();
+			Statement stmt = con.createStatement();
+			stmt.executeUpdate(SQL);
 		} catch (SQLException e) {
 			e.printStackTrace();
 			Logger.log(e.getMessage());
@@ -559,45 +560,45 @@ public class Database {
 			con.setAutoCommit(false);
 
 			PreparedStatement ps;
+			SQL = "UPDATE " + getGuildMemberTable(g.getId()) +
+				" SET chest_count = 2 WHERE user_id = ?";
+			ps = con.prepareStatement(SQL);
 			if (!basicPatreonIds.isEmpty()) {
-				SQL = "UPDATE ? SET daily_chest_count = 2 WHERE user_id = ?";
-				ps = con.prepareStatement(SQL);
 				for (String id : basicPatreonIds) {
-					ps.setString(1, getGuildMemberTable(g.getId()));
-					ps.setString(2, id);
+					ps.setString(1, id);
 					ps.addBatch();
 				}
 				ps.executeBatch();
 			}
 
 			if (!premiumPatreonIds.isEmpty()) {
-				SQL = "UPDATE ? SET daily_chest_count = 3 WHERE user_id = ?";
+				SQL = "UPDATE " + getGuildMemberTable(g.getId()) +
+					" SET chest_count = 3 WHERE user_id = ?";
 				ps = con.prepareStatement(SQL);
 				for (String id : premiumPatreonIds) {
-					ps.setString(1, getGuildMemberTable(g.getId()));
-					ps.setString(2, id);
+					ps.setString(1, id);
 					ps.addBatch();
 				}
 				ps.executeBatch();
 			}
 
 			if (!chopAndBasic.isEmpty()) {
-				SQL = "UPDATE ? SET daily_chest_count = 3 WHERE user_id = ?";
+				SQL = "UPDATE " + getGuildMemberTable(g.getId()) +
+					" SET chest_count = 3 WHERE user_id = ?";
 				ps = con.prepareStatement(SQL);
 				for (String id : chopAndBasic) {
-					ps.setString(1, getGuildMemberTable(g.getId()));
-					ps.setString(2, id);
+					ps.setString(1, id);
 					ps.addBatch();
 				}
 				ps.executeBatch();
 			}
 
 			if (!chopAndPremium.isEmpty()) {
-				SQL = "UPDATE ? SET daily_chest_count = 4 WHERE user_id = ?";
+				SQL = "UPDATE " + getGuildMemberTable(g.getId()) +
+					" SET chest_count = 4 WHERE user_id = ?";
 				ps = con.prepareStatement(SQL);
 				for (String id : chopAndPremium) {
-					ps.setString(1, getGuildMemberTable(g.getId()));
-					ps.setString(2, id);
+					ps.setString(1, id);
 					ps.addBatch();
 				}
 				ps.executeBatch();
@@ -620,7 +621,7 @@ public class Database {
 				List<Warning> warnings = Warning.deserializeList(rs.getString("warn_json"));
 				stmt.close();
 				con.close();
-				if (warnings.isEmpty()) return null;
+				if (warnings == null || warnings.isEmpty()) return null;
 				else return warnings;
 			} else {
 				stmt.close();
