@@ -28,7 +28,7 @@ import java.util.List;
 public class Entry {
 	public static JDA jda;
 	public static DatabaseHandler dbHandler;
-	public static final String CREATOR_ID = "354682693918785549";
+	public static final String CREATOR_ID = "867602586257195028";
 
 	public static void main(String[] args) throws IOException, LoginException, InterruptedException {
 		BufferedReader reader = new BufferedReader(new FileReader("token.txt"));

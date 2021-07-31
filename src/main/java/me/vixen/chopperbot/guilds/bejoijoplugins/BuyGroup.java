@@ -80,6 +80,7 @@ public class BuyGroup implements ICommand {
 						//noinspection ConstantConditions cant be null
 						event.getGuild().addRoleToMember(event.getMember(), option.getAsRole()).queue();
 						dbMember.adjustCoins(BejoIjoPlugins.ROLE_COST * -1);
+						dbMember.update();
 						event.reply("Bought `" + option.getAsRole().getName() + "` for " + BejoIjoPlugins.ROLE_COST + " coins").queue();
 					} else event.reply("Invalid Role Selection. This is either not a vanity role or you already own it").setEphemeral(true).queue();
 				} else  event.reply("Unknown Error, Please report to bot admin").queue();
