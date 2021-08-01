@@ -48,7 +48,8 @@ public class BejoIjoPlugins implements IGuild {
 			new PatreonCommand(),
 			new UpdateTimeCommand(),
 			new WhoIsCommand(waiter),
-			new BuyGroup(waiter)
+			new BuyGroup(waiter),
+			new SuggestGroup()
 		);
 	}
 
@@ -114,11 +115,6 @@ public class BejoIjoPlugins implements IGuild {
 				member.adjustGalleryImgsLeft(message.getAttachments().isEmpty() ? -1 : -1*message.getAttachments().size());
 				member.update();
 			}
-		} else if (event.getChannel().getId().equals("663796720173580317") && !event.getAuthor().isBot()) { //We need to add the voting emotes to all non-bot messages in #idea-dump
-			message.addReaction("✅").queue();
-			message.addReaction("🐛").queue();
-			message.addReaction("🔘").queue();
-			message.addReaction("🚫").queue();
 		}
 
 		DefaultEventHandler.handleGMsgReceived(event); //update stickies and award exp
@@ -136,7 +132,7 @@ public class BejoIjoPlugins implements IGuild {
 		switch (event.getChannel().getId()) {
 			case "663796720173580317" -> { //#idea-dump
 				switch (reactionEmote.getName()) {
-					case "✅" -> checkVotes(event);
+					case "⬆" -> checkVotes(event);
 					case "🐛" -> { //only staff may use these
 						if (isStaff(getGuild(), event.getMember()))
 							sendToBugChannel(event);

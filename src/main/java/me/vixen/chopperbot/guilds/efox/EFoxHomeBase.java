@@ -5,10 +5,9 @@ import me.vixen.chopperbot.commands.ICommand;
 import me.vixen.chopperbot.guilds.IGuild;
 import net.dv8tion.jda.api.entities.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+
 
 public class EFoxHomeBase implements IGuild {
 
