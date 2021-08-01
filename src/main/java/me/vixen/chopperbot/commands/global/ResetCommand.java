@@ -33,6 +33,6 @@ public class ResetCommand implements ICommand {
 
     @Override
     public CommandData getCommandData() {
-        return null;
+        return new CommandData("reset-day", "Reset day counts (Only works for creator)");
     }
 }

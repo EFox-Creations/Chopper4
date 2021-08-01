@@ -70,7 +70,9 @@ public class Entry {
 			final Guild guild = jda.getGuildById(g.getId());
 			if (guild == null) return;
 			List<CommandData> data = new ArrayList<>();
-			for (ICommand c : g.getLocalCommands()) data.add(c.getCommandData());
+			List<ICommand> localCommands = g.getLocalCommands();
+			if (localCommands == null || localCommands.isEmpty()) continue;
+			for (ICommand c : localCommands) data.add(c.getCommandData());
 			guild.updateCommands().addCommands(data).queue();
 		}
 		//Then Global (Note: Takes up to 1 hour to update)

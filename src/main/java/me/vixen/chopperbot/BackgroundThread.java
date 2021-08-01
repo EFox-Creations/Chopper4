@@ -28,6 +28,7 @@ public class BackgroundThread {
 
 	@SuppressWarnings("LoopConditionNotUpdatedInsideLoop") //This needs to run forever in the background
 	public static void go(boolean runForever, GuildManager gManager, EventWaiter waiter) {
+		System.out.println("BG Thread Started");
 		int currentHour = OffsetDateTime.now().getHour();
 		int hourToSpawn = currentHour;
 		do {

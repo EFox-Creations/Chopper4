@@ -36,6 +36,7 @@ public class LSPDFRTS implements IGuild {
 
 	@Override
 	public List<TextChannel> getTreasureChannels() {
+		//TODO this server isnt getting chests
 		List<String> channelIds = List.of(
 			"864226792217903174", "864226792217903174",
 			"864226792217903174"
