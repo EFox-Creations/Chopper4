@@ -19,7 +19,9 @@ public class EFoxHomeBase implements IGuild {
 
 	@Override
 	public void setLocalCommands(EventWaiter waiter) {
-		localCommands.add(new IssueCommand(waiter));
+		localCommands = List.of(
+			new IssueCommand(waiter)
+		);
 	}
 
 	@Override

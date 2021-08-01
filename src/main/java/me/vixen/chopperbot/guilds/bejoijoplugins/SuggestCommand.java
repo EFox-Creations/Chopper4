@@ -11,9 +11,10 @@ import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 
 import java.awt.*;
 
-public class SuggestGroup implements ICommand {
+public class SuggestCommand implements ICommand {
     @Override
     public void handle(SlashCommandEvent event) {
+        event.deferReply().queue();
         String asTag = event.getUser().getAsTag();
         //noinspection ConstantConditions cant be null; is required
         String text = event.getOption("text").getAsString();
@@ -28,6 +29,7 @@ public class SuggestGroup implements ICommand {
                     .build()
         ).queue(msg -> {
             msg.addReaction("⬆").queue();
+            event.reply("Suggestion Submitted").queue();
         });
     }
 

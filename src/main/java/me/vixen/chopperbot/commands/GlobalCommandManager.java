@@ -20,6 +20,7 @@ public class GlobalCommandManager {
 		addGlobalCommand(new ErrorTrackingCommand());
 		addGlobalCommand(new InjectionCommand());
 		addGlobalCommand(new QueryCommand());
+		addGlobalCommand(new ResetCommand(guildManager));
 		addGlobalCommand(new SummonCommand(waiter, guildManager));
 
 		//Global Commands

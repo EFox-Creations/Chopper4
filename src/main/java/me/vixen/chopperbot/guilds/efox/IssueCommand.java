@@ -45,19 +45,19 @@ public class IssueCommand implements ICommand {
                 new EmbedBuilder()
                     .setTitle(title)
                     .setDescription(body)
-                    .setColor(Color.RED)
+                    .setColor(Color.YELLOW)
                     .build()
         ).setContent(event.getMember().getAsMention() +
             """
             `
-            [Warn]         [Warn]         [Warn]
-            -This posts directly to Vixen's feed
-            -This will tag them here.
+            ⚠[Warn]⚠       ⚠[Warn]⚠       ⚠[Warn]⚠
+            -This posts directly as Vixen
+            -This will tag them here
             -This action is irreversible and
-            cannot be undone.
+            cannot be undone
             
             -Are you sure you want to submit this?
-            [Warn]         [Warn]         [Warn]
+            ⚠[Warn]⚠       ⚠[Warn]⚠       ⚠[Warn]⚠
             `
             """
         ).addActionRow(
