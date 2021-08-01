@@ -23,11 +23,13 @@ public class ResetCommand implements ICommand {
             return;
         }
 
+        event.reply("Resetting...").setEphemeral(true).queue();
         for (Guild g : Entry.jda.getGuilds()) {
             if (gManager.contains(g)) {
                 gManager.getGuild(g).doNightlyReset();
             } else DefaultEventHandler.nightlyReset(g);
         }
+        event.getHook().editOriginal("Done!").queue();
 
     }
 
