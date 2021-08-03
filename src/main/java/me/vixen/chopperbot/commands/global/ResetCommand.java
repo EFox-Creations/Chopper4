@@ -30,7 +30,6 @@ public class ResetCommand implements ICommand {
             } else DefaultEventHandler.nightlyReset(g);
         }
         event.getHook().editOriginal("Done!").queue();
-
     }
 
     @Override
