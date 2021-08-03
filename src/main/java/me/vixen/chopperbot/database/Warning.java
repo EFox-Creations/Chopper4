@@ -1,4 +1,4 @@
-package me.vixen.chopperbot.Database;
+package me.vixen.chopperbot.database;
 
 import com.google.gson.Gson;
 import com.google.gson.annotations.SerializedName;

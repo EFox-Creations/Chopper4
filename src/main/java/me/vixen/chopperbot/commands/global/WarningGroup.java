@@ -2,10 +2,9 @@ package me.vixen.chopperbot.commands.global;
 
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import com.jagrosh.jdautilities.menu.Paginator;
-import me.vixen.chopperbot.Database.DBMember;
-import me.vixen.chopperbot.Database.Database;
-import me.vixen.chopperbot.Database.Warning;
-import me.vixen.chopperbot.Logger;
+import me.vixen.chopperbot.database.DBMember;
+import me.vixen.chopperbot.database.Database;
+import me.vixen.chopperbot.database.Warning;
 import me.vixen.chopperbot.commands.ICommand;
 import me.vixen.chopperbot.guilds.Config;
 import me.vixen.chopperbot.tools.Embeds;
@@ -19,7 +18,6 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 
-import javax.xml.crypto.Data;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;

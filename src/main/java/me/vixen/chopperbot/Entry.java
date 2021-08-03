@@ -1,8 +1,8 @@
 package me.vixen.chopperbot;
 
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
-import me.vixen.chopperbot.Database.Database;
-import me.vixen.chopperbot.Database.DatabaseHandler;
+import me.vixen.chopperbot.database.Database;
+import me.vixen.chopperbot.database.DatabaseHandler;
 import me.vixen.chopperbot.commands.GlobalCommandManager;
 import me.vixen.chopperbot.commands.ICommand;
 import me.vixen.chopperbot.guilds.GuildManager;
@@ -71,7 +71,10 @@ public class Entry {
 			if (guild == null) return;
 			List<CommandData> data = new ArrayList<>();
 			List<ICommand> localCommands = g.getLocalCommands();
-			if (localCommands == null || localCommands.isEmpty()) continue;
+			if (localCommands == null || localCommands.isEmpty()) {
+				System.out.println(g.getName() + " has no local commands");
+				continue;
+			}
 			for (ICommand c : localCommands) data.add(c.getCommandData());
 			guild.updateCommands().addCommands(data).queue();
 		}

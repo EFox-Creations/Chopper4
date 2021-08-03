@@ -2,9 +2,9 @@ package me.vixen.chopperbot.commands.global;
 
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import com.jagrosh.jdautilities.menu.Paginator;
-import me.vixen.chopperbot.Database.Command;
-import me.vixen.chopperbot.Database.DBMember;
-import me.vixen.chopperbot.Database.Database;
+import me.vixen.chopperbot.database.Command;
+import me.vixen.chopperbot.database.DBMember;
+import me.vixen.chopperbot.database.Database;
 import me.vixen.chopperbot.commands.GlobalCommandManager;
 import me.vixen.chopperbot.commands.ICommand;
 import me.vixen.chopperbot.tools.Embeds;

@@ -1,4 +1,4 @@
-package me.vixen.chopperbot.Database;
+package me.vixen.chopperbot.database;
 
 import me.vixen.chopperbot.Entry;
 import me.vixen.chopperbot.Logger;
@@ -243,11 +243,10 @@ public class Database {
 	 * @return a {@link List} with the {@link DBMember} that have more than the provided minimum coins
 	 */
 	public static List<DBMember> getDBMembersWithCoins(Guild g, int minimumCoins, String userIdToExclude) {
-		String SQL = "SELECT user_id FROM ? WHERE currency >= ? AND user_id IS NOT ?";
+		String SQL = "SELECT user_id FROM " + getGuildMemberTable(g.getId()) + " WHERE currency >= ? AND user_id IS NOT ?";
 		try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(SQL)) {
-			ps.setString(1, getGuildMemberTable(g.getId()));
-			ps.setInt(2, minimumCoins);
-			ps.setString(3, userIdToExclude);
+			ps.setInt(1, minimumCoins);
+			ps.setString(2, userIdToExclude);
 			final ResultSet resultSet = ps.executeQuery();
 			final Guild guild = Entry.jda.getGuildById(g.getId());
 			List<DBMember> dbMembers = new ArrayList<>();
@@ -352,6 +351,7 @@ public class Database {
 				return null;
 			}
 		} catch (SQLException e) {
+			Logger.log("command search error", e);
 			return null;
 		}
 	}
@@ -462,6 +462,7 @@ public class Database {
 			con.close();
 			return true;
 		} catch (SQLException e) {
+			Logger.log("change reposnse command not found", e);
 			return false;
 		}
 	}
@@ -478,7 +479,7 @@ public class Database {
 	 */
 	public static boolean upsertSticky(TextChannel channel, Message message) {
 		String SQL = "INSERT INTO sticky(channel_id, message_id) VALUES(?,?)" +
-			"ON CONFLICT (channel_id) DO" +
+			"ON CONFLICT (channel_id) DO " +
 			"UPDATE SET message_id = ? WHERE channel_id = ?";
 		try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(SQL)) {
 			ps.setString(1, channel.getId());
@@ -548,21 +549,17 @@ public class Database {
 
 		String SQL = "UPDATE " + getGuildMemberTable(g.getId()) +
 			" SET gallery_remaining = 10, chest_count = 1, robbed_today = 0, lottery_plays = 3";
-		try (Connection con = getConnection()) {
-			Statement stmt = con.createStatement();
+		try (Connection con = getConnection(); Statement stmt = con.createStatement()) {
 			stmt.executeUpdate(SQL);
 		} catch (SQLException e) {
 			e.printStackTrace();
 			Logger.log(e.getMessage());
 		}
 
-		try (Connection con = getConnection()) {
+		SQL = "UPDATE " + getGuildMemberTable(g.getId()) +
+			" SET chest_count = 2 WHERE user_id = ?";
+		try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(SQL)) {
 			con.setAutoCommit(false);
-
-			PreparedStatement ps;
-			SQL = "UPDATE " + getGuildMemberTable(g.getId()) +
-				" SET chest_count = 2 WHERE user_id = ?";
-			ps = con.prepareStatement(SQL);
 			if (basicPatreonIds != null && !basicPatreonIds.isEmpty()) {
 				for (String id : basicPatreonIds) {
 					ps.setString(1, id);
@@ -570,33 +567,38 @@ public class Database {
 				}
 				ps.executeBatch();
 			}
+		} catch (Exception e) {}
 
+
+		SQL = "UPDATE " + getGuildMemberTable(g.getId()) +
+			" SET chest_count = 3 WHERE user_id = ?";
+		try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(SQL)) {
 			if (premiumPatreonIds != null && !premiumPatreonIds.isEmpty()) {
-				SQL = "UPDATE " + getGuildMemberTable(g.getId()) +
-					" SET chest_count = 3 WHERE user_id = ?";
-				ps = con.prepareStatement(SQL);
 				for (String id : premiumPatreonIds) {
 					ps.setString(1, id);
 					ps.addBatch();
 				}
 				ps.executeBatch();
 			}
+		} catch (Exception e) {}
 
+
+		SQL = "UPDATE " + getGuildMemberTable(g.getId()) +
+			" SET chest_count = 3 WHERE user_id = ?";
+		try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(SQL)) {
 			if (chopAndBasic != null && !chopAndBasic.isEmpty()) {
-				SQL = "UPDATE " + getGuildMemberTable(g.getId()) +
-					" SET chest_count = 3 WHERE user_id = ?";
-				ps = con.prepareStatement(SQL);
 				for (String id : chopAndBasic) {
 					ps.setString(1, id);
 					ps.addBatch();
 				}
 				ps.executeBatch();
 			}
+		} catch (Exception e) {}
 
+		SQL = "UPDATE " + getGuildMemberTable(g.getId()) +
+			" SET chest_count = 4 WHERE user_id = ?";
+		try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(SQL)) {
 			if (chopAndPremium != null && !chopAndPremium.isEmpty()) {
-				SQL = "UPDATE " + getGuildMemberTable(g.getId()) +
-					" SET chest_count = 4 WHERE user_id = ?";
-				ps = con.prepareStatement(SQL);
 				for (String id : chopAndPremium) {
 					ps.setString(1, id);
 					ps.addBatch();

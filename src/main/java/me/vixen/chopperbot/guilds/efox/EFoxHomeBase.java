@@ -1,6 +1,7 @@
 package me.vixen.chopperbot.guilds.efox;
 
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
+import jdk.jfr.Event;
 import me.vixen.chopperbot.commands.ICommand;
 import me.vixen.chopperbot.guilds.IGuild;
 import net.dv8tion.jda.api.entities.*;
@@ -12,9 +13,10 @@ import java.util.stream.Collectors;
 public class EFoxHomeBase implements IGuild {
 
 	String guildId;
-	List<ICommand> localCommands;
-	public EFoxHomeBase(String guildId) {
+	private static List<ICommand> localCommands;
+	public EFoxHomeBase(String guildId, EventWaiter waiter) {
 		this.guildId = guildId;
+		setLocalCommands(waiter);
 	}
 
 	@Override

@@ -1,6 +1,6 @@
 package me.vixen.chopperbot.commands.global;
 
-import me.vixen.chopperbot.Database.Database;
+import me.vixen.chopperbot.database.Database;
 import me.vixen.chopperbot.Entry;
 import me.vixen.chopperbot.commands.ICommand;
 import me.vixen.chopperbot.tools.Embeds;

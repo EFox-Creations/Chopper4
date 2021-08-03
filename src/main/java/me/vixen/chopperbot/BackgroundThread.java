@@ -1,8 +1,8 @@
 package me.vixen.chopperbot;
 
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
-import me.vixen.chopperbot.Database.DBMember;
-import me.vixen.chopperbot.Database.Database;
+import me.vixen.chopperbot.database.DBMember;
+import me.vixen.chopperbot.database.Database;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;

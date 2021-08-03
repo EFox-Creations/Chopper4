@@ -1,6 +1,6 @@
 package me.vixen.chopperbot.guilds.bejoijoplugins;
 
-import me.vixen.chopperbot.Database.Database;
+import me.vixen.chopperbot.database.Database;
 import net.dv8tion.jda.api.entities.User;
 
 import javax.imageio.ImageIO;

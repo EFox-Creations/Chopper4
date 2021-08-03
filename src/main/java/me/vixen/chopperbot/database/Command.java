@@ -1,4 +1,4 @@
-package me.vixen.chopperbot.Database;
+package me.vixen.chopperbot.database;
 
 public class Command {
 	private final String name;
