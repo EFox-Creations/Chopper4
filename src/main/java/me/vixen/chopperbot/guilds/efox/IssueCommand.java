@@ -73,19 +73,22 @@ public class IssueCommand implements ICommand {
     }
 
     private void handleButtonClick(ButtonClickEvent bce, SlashCommandEvent sce, Message msg) {
-        switch (bce.getId().toLowerCase()) {
+        switch (bce.getComponentId().toLowerCase()) {
             case "yes" -> {
+                bce.deferEdit().queue();
                 sce.getHook().deleteOriginal().queue();
-                msg.delete().queue();
                 String response = submitIssue(sce) ? "Submitted" : "An error occurred";
                 msg.getTextChannel().sendMessage(bce.getMember().getAsMention() + "\n" + response).queue();
-                bce.getGuild().retrieveMemberById(Entry.CREATOR_ID).queue(member -> {
-                    msg.getTextChannel().sendMessage(member.getAsMention() + "New Issue Opened!").queue();
-                });
+                if (response.equals("Submitted")) {
+                    bce.getGuild().retrieveMemberById(Entry.CREATOR_ID).queue(member -> {
+                        bce.getGuild().getTextChannelById("872224056785641492")
+                            .sendMessage(member.getAsMention() + "New Issue Opened!").queue();
+                    });
+                }
             }
             case "no" -> {
                 msg.delete().queue();
-                msg.getTextChannel().sendMessage(bce.getMember().getAsMention() + "\nAborted submission").queue();
+                bce.reply(bce.getMember().getAsMention() + "\nAborted submission").queue();
                 sce.getHook().deleteOriginal().queue();
             }
         }
