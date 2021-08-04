@@ -28,7 +28,6 @@ public class BackgroundThread {
 
 	@SuppressWarnings("LoopConditionNotUpdatedInsideLoop") //This needs to run forever in the background
 	public static void go(boolean runForever, GuildManager gManager, EventWaiter waiter) {
-		System.out.println("BG Thread Started");
 		int currentHour = OffsetDateTime.now().getHour();
 		int hourToSpawn = currentHour;
 		do {
@@ -68,6 +67,7 @@ public class BackgroundThread {
 				reset = false;
 				//END RESETS
 			} else {
+				reset = true;
 				if (currentHour == hourToSpawn) {
 					for (Guild g : Entry.jda.getGuilds()) {
 						if (gManager.contains(g)) {
@@ -79,8 +79,9 @@ public class BackgroundThread {
 						}
 					}
 					hourToSpawn = OffsetDateTime.now().plusHours(new Random().nextInt(3)+4).getHour();
-				} else reset = true;
+				}
 			}
+			currentHour = OffsetDateTime.now().getHour();
 		} while (runForever);
 	}
 

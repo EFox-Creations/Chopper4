@@ -120,7 +120,7 @@ public class IssueCommand implements ICommand {
     public CommandData getCommandData() {
         return new CommandData("open-issue", "Open a new issue for Vixen to see").addOptions(
             new OptionData(OptionType.STRING, "title", "The title of the issue", true),
-            new OptionData(OptionType.STRING, "body", "describe the issue")
+            new OptionData(OptionType.STRING, "body", "describe the issue", true)
         );
     }
 }
