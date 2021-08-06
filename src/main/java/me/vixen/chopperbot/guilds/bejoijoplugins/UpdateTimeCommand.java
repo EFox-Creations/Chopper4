@@ -8,6 +8,7 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 public class UpdateTimeCommand implements ICommand {
@@ -27,7 +28,11 @@ public class UpdateTimeCommand implements ICommand {
 
 		Role newRole;
 		try {
-			if (months >= 12) {
+			if (months >= 24) {
+				//noinspection ConstantConditions cant be null
+				newRole = event.getGuild().getRolesByName("2 years", true).get(0);
+			}
+			else if (months >= 12) {
 				//noinspection ConstantConditions cant be null
 				newRole = event.getGuild().getRolesByName("1 year", true).get(0);
 			} else if (months == 1) {
@@ -38,12 +43,31 @@ public class UpdateTimeCommand implements ICommand {
 				newRole = event.getGuild().getRolesByName(months + " months", true).get(0);
 			}
 		} catch (IndexOutOfBoundsException | NullPointerException e) {
-			event.reply("I was looking for: " + (months >= 12 ? "1 Year" : months + " months") + " but couldn't find it").queue();
+			event.reply("I was looking for: " + (months >= 12 ? (months >= 24 ? "2 Years" : "1 Year") : months +
+				" months") + " but couldn't find it").queue();
 			return;
 		}
-		event.getGuild().addRoleToMember(event.getMember(), newRole).queue(
-			success -> event.reply("Role " + newRole.getName() + " added!").queue(),
-			failure -> event.reply("Could not add Role").queue());
+
+		List<Role> newRoles = modifyRoles(event.getMember().getRoles(), newRole);
+		event.getGuild().modifyMemberRoles(event.getMember(), newRoles).queue( v ->
+			event.reply("Role: `" + newRole.getName() + "` added!")
+		);
+	}
+
+	private List<Role> modifyRoles(List<Role> oldRoles, Role roleToAdd) {
+		List<String> timeRoleIds = List.of(
+			"873323152187461662", "696195867484356690", // 2Y, 1Yr
+			"773668848792502302", "773668524127682612", // 11m, 10m
+			"773668322318614619", "773668060316958741", // 9m, 8m
+			"773667953898946600", "696195824719233034", // 7m, 6m
+			"696195789038551110", "696195752975794176", // 5m, 4m
+			"696195710634164256", "696195657093873674", // 3m, 2m
+			"696195521240498197" // 1m
+		);
+
+		oldRoles.removeIf(r -> timeRoleIds.contains(r));
+		oldRoles.add(roleToAdd);
+		return oldRoles;
 	}
 
 	@Override

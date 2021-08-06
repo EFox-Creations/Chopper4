@@ -130,7 +130,7 @@ public class BejoIjoPlugins implements IGuild {
 		switch (event.getChannel().getId()) {
 			case "663796720173580317" -> { //#idea-dump
 				switch (reactionEmote.getName()) {
-					case "⬆" -> checkVotes(event);
+					case "⬆" -> checkVotes(event, reactionEmote.getName());
 					case "🐛" -> { //only staff may use these
 						if (isStaff(getGuild(), event.getMember()))
 							sendToBugChannel(event);
@@ -260,7 +260,7 @@ public class BejoIjoPlugins implements IGuild {
 		});
 	}
 
-	private void checkVotes(GuildMessageReactionAddEvent event) {
+	private void checkVotes(GuildMessageReactionAddEvent event, String upvoteEmote) {
 		final int NEEDED_VOTES = 25;
 
 		event.retrieveMessage().queue(message -> {
@@ -271,7 +271,7 @@ public class BejoIjoPlugins implements IGuild {
 				);
 			} else {
 				MessageReaction checkmark = message.getReactions().stream()
-					.filter(it -> it.getReactionEmote().getName().equals("✅"))
+					.filter(it -> it.getReactionEmote().getName().equals(upvoteEmote))
 					.findFirst()
 					.orElse(null);
 				if (checkmark == null) return;
