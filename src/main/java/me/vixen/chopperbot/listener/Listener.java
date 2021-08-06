@@ -1,6 +1,7 @@
 package me.vixen.chopperbot.listener;
 
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
+import me.vixen.chopperbot.Entry;
 import me.vixen.chopperbot.database.DBMember;
 import me.vixen.chopperbot.database.Database;
 import me.vixen.chopperbot.commands.GlobalCommandManager;
@@ -81,6 +82,13 @@ public class Listener extends ListenerAdapter {
 		if (guildManager.contains(event.getGuild())) //If guild has custom actions
 			guildManager.getGuild(event.getGuild()).handleGMsgReactAdd(event, waiter);
 		else DefaultEventHandler.handleGMsgReactAdd(event); //else send to default handler
+
+		event.retrieveMessage().queue(m -> { //allow me to delete dud chests
+			if (m.getEmbeds().get(0).getTitle().equals("🏝 A safe has washed ashore!")
+				&& event.getUserId().equals(Entry.CREATOR_ID)
+				&& event.getReactionEmote().getName().equals("🚫"))
+				m.delete().queue();
+		});
 	}
 
 	@Override

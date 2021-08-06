@@ -2,6 +2,7 @@ package me.vixen.chopperbot.guilds.efox;
 
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import me.vixen.chopperbot.Entry;
+import me.vixen.chopperbot.Logger;
 import me.vixen.chopperbot.commands.ICommand;
 import me.vixen.chopperbot.tools.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -13,6 +14,8 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.components.Button;
 import org.kohsuke.github.GHMyself;
+import org.kohsuke.github.GHUser;
+import org.kohsuke.github.GitHub;
 import org.kohsuke.github.GitHubBuilder;
 
 import java.awt.*;
@@ -105,15 +108,15 @@ public class IssueCommand implements ICommand {
             //TODO this should be an JSON for easy editing
             BufferedReader reader = new BufferedReader(new FileReader("ghtoken.txt"));
             String token = reader.lines().findFirst().orElseThrow();
-            new GitHubBuilder()
-                    .withOAuthToken(token).build()
-                        .getRepository("VixenKasai/Chopper4")
-                            .createIssue(title)
-                                .body(body)
-                                .assignee(new GHMyself())
-                            .create();
+            GitHub github = new GitHubBuilder().withOAuthToken(token).build();
+            github.getRepository("VixenKasai/Chopper4")
+                .createIssue(title)
+                    .body(body)
+                    .assignee(github.getUser("VixenKasai"))
+                .create();
             return true;
         } catch (IOException | NoSuchElementException e) {
+            Logger.log("Failed to submit GH Issue: ", e);
             return false;
         }
     }
