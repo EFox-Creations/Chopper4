@@ -12,6 +12,7 @@ import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.components.Button;
+import org.kohsuke.github.GHMyself;
 import org.kohsuke.github.GitHubBuilder;
 
 import java.awt.*;
@@ -109,6 +110,7 @@ public class IssueCommand implements ICommand {
                         .getRepository("VixenKasai/Chopper4")
                             .createIssue(title)
                                 .body(body)
+                                .assignee(new GHMyself())
                             .create();
             return true;
         } catch (IOException | NoSuchElementException e) {
