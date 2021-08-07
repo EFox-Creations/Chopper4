@@ -36,8 +36,8 @@ public class Entry {
 		reader.close();
 
 		BufferedReader reader1 = new BufferedReader(new FileReader("CreatorId.txt"));
-		CREATOR_ID = reader.lines().findFirst().orElse("");
-		reader.close();
+		CREATOR_ID = reader1.lines().findFirst().orElse("");
+		reader1.close();
 
 		//INIT STARTUP VARS
 		EnumSet<GatewayIntent> enabledIntents = EnumSet.of(
