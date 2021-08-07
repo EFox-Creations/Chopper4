@@ -1,0 +1,53 @@
+  //ONLY CHANGE THE RIGHT SIDE OF EACH OPTION
+  //IF YOU DO NOT WANT AN OPTION IT SHOULD BE 'NULL' WITHOUT QUOTES
+  //EX. "exampleNull" : null,
+  //VALID VALUES FOR 'INLINE' ARE 'true' OR 'false' WITHOUT QUOTES
+  //EX. "exampleTrue" : true,
+  //EX. "exampleFalse" : false,
+  //FOR THE COLOR, YOU NEED A WEBSITE TO GIVE YOU THE rgb VALUES
+      // https://g.co/kgs/xUiYYZ
+  //IF YOU NEED FURTHER HELP WITH JSON, VISIT THE LINK BELOW
+      // https://www.youtube.com/watch?v=GpOO5iKzOmY
+  //EXAMPLE OF WHAT EACH FIELD IS
+      // https://raw.githubusercontent.com/DV8FromTheWorld/JDA/assets/assets/docs/embeds/13-setTimestamp.png
+
+//COPY FROM BELOW THIS LINE ONLY
+{
+  "authorName" : "NAME",
+  "authorUrl" : "WEBSITE",
+  "authorAvatarUrl" : "ICON URL",
+  "thumbnailUrl" : "URL",
+  "color" : {
+    "r" : 255,
+    "g" : 255,
+    "b" : 255
+  },
+  "title" : "TITLE",
+  "titleUrl" : "URL HERE",
+  "description" : "DESCRIPTION",
+  "field1" : {
+    "name" : "TITLE",
+    "value": "DESCRIPTION",
+    "inline" : false
+  },
+  "field2" : {
+    "name" : "TITLE",
+    "value": "DESCRIPTION",
+    "inline" : false
+  },
+  "field3" : {
+    "name" : "TITLE",
+    "value": "DESCRIPTION",
+    "inline" : false
+  },
+  "field4" : {
+    "name" : "TITLE",
+    "value": "DESCRIPTION",
+    "inline" : false
+  },
+  "imageUrl" : "IMAGE URL",
+  "footerIcon" : "ICON URL",
+  "footerText" : "TEXT",
+  "includeTimestamp": false,
+  "channelId" : "123456789"
+}
