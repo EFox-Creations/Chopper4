@@ -11,6 +11,7 @@ import net.dv8tion.jda.internal.entities.UserImpl;
 
 import javax.annotation.Nonnull;
 import java.awt.*;
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -38,7 +39,7 @@ public class Embeds {
 		}
 	}
 
-	private static final String BUG_ERROR = "If is an error, please submit a bug report";
+	private static final String BUG_ERROR = "If this is an error, submit a bug report";
 
 	public static MessageEmbed getOnJoin() {
 		return new EmbedBuilder()
@@ -143,20 +144,20 @@ public class Embeds {
 
 	public static MessageEmbed getWelcomeEmbed(User user) {
 		return new EmbedBuilder()
-			.setAuthor(user.getAsTag(),
+			.setAuthor(user.getAsTag() + " joined", null,
 				user.getAvatarUrl() == null ? "https://cdn.discordapp.com/embed/avatars/0.png" : user.getAvatarUrl())
-			.setTitle("Member Joined")
-			.setDescription("Account Age" + timeBetween(OffsetDateTime.now(), user.getTimeCreated()))
+			.setDescription("Account Age: " + timeBetween(OffsetDateTime.now(), user.getTimeCreated()))
 			.setFooter("Id: " + user.getId())
+			.setTimestamp(Instant.now())
 			.setColor(Colors.WHITE.get())
 			.build();
 	}
 
 	public static MessageEmbed getLeaveEmbed(User user) {
 		return new EmbedBuilder()
-			.setAuthor(user.getAsTag(),
+			.setAuthor(user.getAsTag(), null,
 				user.getAvatarUrl() == null ? "https://cdn.discordapp.com/embed/avatars/0.png" : user.getAvatarUrl())
-			.setTitle(String.format("%s has left the guild", user.getAsTag()))
+			.setTitle("Left the guild")
 			.setFooter("Id: " + user.getId())
 			.setColor(Colors.WHITE.get())
 			.build();
@@ -164,7 +165,7 @@ public class Embeds {
 
 	public static MessageEmbed getUserInfo(User user) {
 		return new EmbedBuilder()
-			.setAuthor(user.getAsTag(),
+			.setAuthor(user.getAsTag(), null,
 				user.getAvatarUrl() == null ? "https://cdn.discordapp.com/embed/avatars/0.png" : user.getAvatarUrl())
 			.setDescription("***USER IS NOT IN THIS GUILD***")
 			.setThumbnail(user.getAvatarUrl())
@@ -182,7 +183,7 @@ public class Embeds {
 		String roles = builder.toString().trim();
 		User user = member.getUser();
 		return new EmbedBuilder()
-			.setAuthor(user.getAsTag(),
+			.setAuthor(user.getAsTag(), null,
 				user.getAvatarUrl() == null ? "https://cdn.discordapp.com/embed/avatars/0.png" : user.getAvatarUrl())
 			.setTitle(member.getAsMention())
 			.setColor(Color.CYAN)
@@ -233,9 +234,8 @@ public class Embeds {
 	public static MessageEmbed getSlashCommandLogEmbed(SlashCommandEvent event) {
 		User user = event.getUser();
 		return new EmbedBuilder()
-			.setAuthor(user.getAsTag(),
+			.setAuthor(user.getAsTag(), null,
 				user.getAvatarUrl() == null ? "https://cdn.discordapp.com/embed/avatars/0.png" : user.getAvatarUrl())
-			.setTitle("/" + event.getName())
 			.setDescription(getCommandString(event))
 			.build();
 	}

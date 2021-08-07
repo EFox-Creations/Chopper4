@@ -27,12 +27,12 @@ public class GlobalCommandManager {
 		addGlobalCommand(new AvatarCommand());
 		addGlobalCommand(new ConfigCommand());
 		addGlobalCommand(new CustomCommand());
+		addGlobalCommand(new EmbedSendCommand(waiter));
 		addGlobalCommand(new CustomGroup(this, waiter));
 		addGlobalCommand(new DailyClaimCommand(guildManager));
 		addGlobalCommand(new DonateCommand());
 		addGlobalCommand(new EchoCommand());
 		addGlobalCommand(new HelpCommand());
-
 		addGlobalCommand(new LeaderboardCommand(waiter));
 		addGlobalCommand(new LottoGroup());
 		addGlobalCommand(new ModGroup()); //houses moderation commands
