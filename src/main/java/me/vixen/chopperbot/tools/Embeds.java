@@ -5,7 +5,11 @@ import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.utils.TimeFormat;
+import net.dv8tion.jda.internal.entities.MemberImpl;
+import net.dv8tion.jda.internal.entities.RoleImpl;
+import net.dv8tion.jda.internal.entities.UserImpl;
 
+import javax.annotation.Nonnull;
 import java.awt.*;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -34,7 +38,7 @@ public class Embeds {
 		}
 	}
 
-	private static final String BUG_ERROR = "If you believe this is an error, please submit a bug report";
+	private static final String BUG_ERROR = "If is an error, please submit a bug report";
 
 	public static MessageEmbed getOnJoin() {
 		return new EmbedBuilder()
@@ -134,26 +138,25 @@ public class Embeds {
 		return new EmbedBuilder()
 			.setTitle("⚠ Please have an authorized user complete config! ⚠")
 			.setDescription("An authorized user needs to complete /config")
-			.addField("Timestamp", TimeFormat.RELATIVE.now().toString(), true)
 			.build();
 	}
 
 	public static MessageEmbed getWelcomeEmbed(User user) {
 		return new EmbedBuilder()
+			.setAuthor(user.getAsTag(),
+				user.getAvatarUrl() == null ? "https://cdn.discordapp.com/embed/avatars/0.png" : user.getAvatarUrl())
 			.setTitle("Member Joined")
-			.addField("User:", user.getAsMention() + "\n" + user.getAsTag(), false)
-			.addField("Account Age", timeBetween(OffsetDateTime.now(), user.getTimeCreated()), false)
-			.addField("Timestamp", TimeFormat.RELATIVE.now().toString(), true)
+			.setDescription("Account Age" + timeBetween(OffsetDateTime.now(), user.getTimeCreated()))
 			.setFooter("Id: " + user.getId())
-			.setThumbnail(user.getAvatarUrl() == null ? "https://cdn.discordapp.com/embed/avatars/0.png" : user.getAvatarUrl())
 			.setColor(Colors.WHITE.get())
 			.build();
 	}
 
 	public static MessageEmbed getLeaveEmbed(User user) {
 		return new EmbedBuilder()
+			.setAuthor(user.getAsTag(),
+				user.getAvatarUrl() == null ? "https://cdn.discordapp.com/embed/avatars/0.png" : user.getAvatarUrl())
 			.setTitle(String.format("%s has left the guild", user.getAsTag()))
-			.addField("Timestamp", TimeFormat.RELATIVE.now().toString(), true)
 			.setFooter("Id: " + user.getId())
 			.setColor(Colors.WHITE.get())
 			.build();
@@ -161,11 +164,11 @@ public class Embeds {
 
 	public static MessageEmbed getUserInfo(User user) {
 		return new EmbedBuilder()
-			.setTitle(user.getAsTag())
+			.setAuthor(user.getAsTag(),
+				user.getAvatarUrl() == null ? "https://cdn.discordapp.com/embed/avatars/0.png" : user.getAvatarUrl())
 			.setDescription("***USER IS NOT IN THIS GUILD***")
 			.setThumbnail(user.getAvatarUrl())
 			.setColor(Colors.BLUE.get())
-			.addField("Timestamp", TimeFormat.RELATIVE.now().toString(), true)
 			.setFooter("Id: " + user.getId())
 			.build();
 	}
@@ -177,15 +180,15 @@ public class Embeds {
 			builder.append(r.getAsMention()).append("\n");
 		}
 		String roles = builder.toString().trim();
+		User user = member.getUser();
 		return new EmbedBuilder()
-			.setTitle(member.getUser().getAsTag())
-			.setThumbnail(member.getUser().getAvatarUrl())
-			.setDescription(member.getAsMention())
+			.setAuthor(user.getAsTag(),
+				user.getAvatarUrl() == null ? "https://cdn.discordapp.com/embed/avatars/0.png" : user.getAvatarUrl())
+			.setTitle(member.getAsMention())
 			.setColor(Color.CYAN)
 			.addField("Joined", timeJoined, true)
 			.addField("Registered", member.getUser().getTimeCreated().format(DateTimeFormatter.ofPattern("EEE, MMM dd, yyyy HH:mm")), true)
 			.addField("Roles [" + member.getRoles().size() + "]", roles, false)
-			.addField("Timestamp", TimeFormat.RELATIVE.now().toString(), true)
 			.setFooter("Id: " + member.getUser().getId())
 			.build();
 	}
@@ -228,11 +231,12 @@ public class Embeds {
 	}
 
 	public static MessageEmbed getSlashCommandLogEmbed(SlashCommandEvent event) {
+		User user = event.getUser();
 		return new EmbedBuilder()
-			.setTitle(event.getUser().getAsTag() + "used /" + event.getName())
+			.setAuthor(user.getAsTag(),
+				user.getAvatarUrl() == null ? "https://cdn.discordapp.com/embed/avatars/0.png" : user.getAvatarUrl())
+			.setTitle("/" + event.getName())
 			.setDescription(getCommandString(event))
-			.setThumbnail(event.getUser().getAvatarUrl() == null ? "https://cdn.discordapp.com/embed/avatars/0.png" : event.getUser().getAvatarUrl())
-			.addField("Timestamp", TimeFormat.RELATIVE.now().toString(), true)
 			.build();
 	}
 
@@ -284,28 +288,53 @@ public class Embeds {
 		else return "0 seconds";
 	}
 
-	//TODO - Waiting on JDA PR
+	/**
+	 * Gets the slash command String for this slash command.
+	 * <br>This is similar to the String you see when clicking the interaction name in the client.
+	 *
+	 * <p>Example return for an echo command: {@code /say echo phrase: Say this}
+	 *
+	 * @return The command String for this slash command
+	 */
+	@Nonnull
 	private static String getCommandString(SlashCommandEvent event)
 	{
 		//Get text like the text that appears when you hover over the interaction in discord
 		StringBuilder builder = new StringBuilder();
 		builder.append("/").append(event.getName());
 		if (event.getSubcommandGroup() != null)
-			builder.append(event.getSubcommandGroup()).append(" ");
+			builder.append(" ").append(event.getSubcommandGroup());
 		if (event.getSubcommandName() != null)
-			builder.append(event.getSubcommandName()).append(" ");
-		builder.append(" ");
-		//build options (formatted appropriately)
+			builder.append(" ").append(event.getSubcommandName());
 		for (OptionMapping o : event.getOptions())
 		{
-			builder.append(o.getName()).append(":").append(" ");
-			switch (o.getType()) {
-				case CHANNEL -> builder.append(o.getAsGuildChannel().getName()).append(" ");
-				case USER -> builder.append(o.getAsUser().getAsTag()).append(" ");
-				case ROLE -> builder.append(o.getAsRole().getName()).append(" ");
-				default -> builder.append(o.getAsString()).append(" ");
+			builder.append(" ").append(o.getName()).append(": ");
+			switch (o.getType())
+			{
+				case CHANNEL:
+					builder.append("#").append(o.getAsGuildChannel().getName());
+					break;
+				case USER:
+					builder.append("@").append(o.getAsUser().getName());
+					break;
+				case ROLE:
+					builder.append("@").append(o.getAsRole().getName());
+					break;
+				case MENTIONABLE: //client only allows user or role mentionable as of Aug 4, 2021
+					if (o.getAsMentionable() instanceof RoleImpl)
+						builder.append("@").append(((RoleImpl) o.getAsMentionable()).getName());
+					else if (o.getAsMentionable() instanceof MemberImpl)
+						builder.append("@").append(((MemberImpl) o.getAsMentionable()).getEffectiveName());
+					else if (o.getAsMentionable() instanceof UserImpl)
+						builder.append("@").append(((UserImpl) o.getAsMentionable()).getName());
+					else
+						builder.append("@").append(o.getAsMentionable().getIdLong());
+					break;
+				default:
+					builder.append(o.getAsString());
+					break;
 			}
 		}
-		return builder.toString().trim();
+		return builder.toString();
 	}
 }
