@@ -1,10 +1,12 @@
 package me.vixen.chopperbot.guilds.efox;
 
+import com.google.gson.GsonBuilder;
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import me.vixen.chopperbot.Entry;
 import me.vixen.chopperbot.Logger;
 import me.vixen.chopperbot.commands.ICommand;
 import me.vixen.chopperbot.tools.Embeds;
+import me.vixen.chopperbot.tools.GHConfig;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
@@ -23,6 +25,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.NoSuchElementException;
+import java.util.stream.Stream;
 
 public class IssueCommand implements ICommand {
 
@@ -105,14 +108,14 @@ public class IssueCommand implements ICommand {
         String body = sce.getOption("body").getAsString();
 
         try {
-            //TODO this should be an JSON for easy editing
-            BufferedReader reader = new BufferedReader(new FileReader("ghtoken.txt"));
-            String token = reader.lines().findFirst().orElseThrow();
-            GitHub github = new GitHubBuilder().withOAuthToken(token).build();
-            github.getRepository("VixenKasai/Chopper4")
+            BufferedReader reader = new BufferedReader(new FileReader("GHconfig.json"));
+            GHConfig ghConfig = new GsonBuilder().create().fromJson(reader, GHConfig.class);
+            reader.close();
+            GitHub github = new GitHubBuilder().withOAuthToken(ghConfig.getOauth()).build();
+            github.getRepository(ghConfig.getResName())
                 .createIssue(title)
                     .body(body)
-                    .assignee(github.getUser("VixenKasai"))
+                    .assignee(github.getUser(ghConfig.getDefaultAssignee()))
                 .create();
             return true;
         } catch (IOException | NoSuchElementException e) {

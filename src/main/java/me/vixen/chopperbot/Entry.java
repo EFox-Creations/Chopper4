@@ -28,11 +28,15 @@ import java.util.List;
 public class Entry {
 	public static JDA jda;
 	public static DatabaseHandler dbHandler;
-	public static final String CREATOR_ID = "867602586257195028";
+	public static String CREATOR_ID;
 
 	public static void main(String[] args) throws IOException, LoginException, InterruptedException {
 		BufferedReader reader = new BufferedReader(new FileReader("token.txt"));
 		final String token = reader.lines().findFirst().orElse("");
+		reader.close();
+
+		BufferedReader reader1 = new BufferedReader(new FileReader("CreatorId.txt"));
+		CREATOR_ID = reader.lines().findFirst().orElse("");
 		reader.close();
 
 		//INIT STARTUP VARS
@@ -72,7 +76,7 @@ public class Entry {
 			List<CommandData> data = new ArrayList<>();
 			List<ICommand> localCommands = g.getLocalCommands();
 			if (localCommands == null || localCommands.isEmpty()) {
-				System.out.println(g.getName() + " has no local commands");
+				Logger.log(g.getName() + " has no local commands");
 				continue;
 			}
 			for (ICommand c : localCommands) data.add(c.getCommandData());
