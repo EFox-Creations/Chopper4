@@ -3,6 +3,7 @@ package me.vixen.chopperbot.commands.global;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
+import me.vixen.chopperbot.Logger;
 import me.vixen.chopperbot.commands.ICommand;
 import me.vixen.chopperbot.database.DBMember;
 import me.vixen.chopperbot.database.Database;
@@ -69,7 +70,6 @@ public class EmbedSendCommand implements ICommand {
             CustomEmbed customEmbed = new GsonBuilder().create().fromJson(json, CustomEmbed.class);
             if (customEmbed == null) {
                 sce.getHook().editOriginal("Invalid JSON. Please verify and retry").queue();
-                System.out.println("null embed");
                 return;
             }
             MessageEmbed embed = customEmbed.toMessageEmbed();
@@ -77,14 +77,12 @@ public class EmbedSendCommand implements ICommand {
                 gmre.getGuild().getTextChannelById(customEmbed.getChannelId()).sendMessageEmbeds(embed).queue();
                 sce.getHook().editOriginal("Embed Sent").queue();
             } else {
-                sce.getHook().editOriginal("Invalid JSON. Please verify and retry").queue();
-                System.out.println("embeds fucked");
+                sce.getHook().editOriginal("Invalid Embed state").queue();
             }
 
         } catch (JsonSyntaxException e) {
             sce.getHook().editOriginal("Invalid JSON. Please verify and retry").queue();
-            e.printStackTrace();
-            System.out.println("actually invalid json");
+            Logger.log("Invalid JSON", e);
             return;
         }
 
