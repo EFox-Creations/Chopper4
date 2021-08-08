@@ -75,7 +75,9 @@ public class EmbedSendCommand implements ICommand {
             MessageEmbed embed = customEmbed.toMessageEmbed();
             if (embed.isSendable() && !embed.isEmpty()) {
                 gmre.getGuild().getTextChannelById(customEmbed.getChannelId()).sendMessageEmbeds(embed).queue();
-                sce.getHook().editOriginal("Embed Sent").queue();
+                sce.getHook().editOriginal("Embed Sent").queue(v -> {
+                    sce.getHook().deleteOriginal().queueAfter(2L, TimeUnit.SECONDS);
+                });
             } else {
                 sce.getHook().editOriginal("Invalid Embed state").queue();
             }
