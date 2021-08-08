@@ -21,6 +21,7 @@ import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -141,10 +142,17 @@ public class ModGroup implements ICommand {
 			case "clear" -> {
 				int number = (int) event.getOption("nummsgs").getAsLong();
 
-				event.getTextChannel().getHistory().retrievePast(number).queue(messages ->
-					event.getTextChannel().deleteMessages(messages).queue((unused) ->
-						event.getHook().editOriginal(number + " Messages Cleared").queue())
-				);
+				try {
+					event.getTextChannel().getHistory().retrievePast(number).queue(messages ->
+						event.getTextChannel().deleteMessages(messages).queue((unused) ->
+							event.getHook().editOriginal(number + " Messages Cleared").queue(v->
+								event.getHook().deleteOriginal().queueAfter(3L, TimeUnit.SECONDS)
+							)
+						)
+					);
+				} catch (Exception e) {
+					Logger.log("Clear Error: ", e);
+				}
 			}
 			case "mute" -> {
 				OptionMapping userOpt = event.getOption("user");

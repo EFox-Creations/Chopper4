@@ -1,9 +1,11 @@
 package me.vixen.chopperbot.commands.global;
 
+import com.google.gson.GsonBuilder;
 import me.vixen.chopperbot.database.Command;
 import me.vixen.chopperbot.database.DBMember;
 import me.vixen.chopperbot.database.Database;
 import me.vixen.chopperbot.commands.ICommand;
+import me.vixen.chopperbot.tools.CustomEmbed;
 import me.vixen.chopperbot.tools.Embeds;
 import me.vixen.chopperbot.tools.Errors;
 import me.xdrop.fuzzywuzzy.FuzzySearch;
@@ -50,12 +52,21 @@ public class CustomCommand implements ICommand {
 			return;
 		}
 		OptionMapping msgidOpt = event.getOption("msgid");
+		String cmdResponse = cmd.getResponse();
 		if (msgidOpt == null)
-			event.reply(cmd.getResponse()).queue();
+			if (cmdResponse.startsWith("{")) {
+				event.replyEmbeds(
+					new GsonBuilder().create().fromJson(cmdResponse, CustomEmbed.class).toMessageEmbed()
+				).queue();
+			} else event.reply(cmdResponse).queue();
 		else {
 			String msgId = msgidOpt.getAsString();
 			event.getTextChannel().retrieveMessageById(msgId).queue(msg -> {
-				msg.reply(cmd.getResponse()).mentionRepliedUser(true).queue();
+				if (cmdResponse.startsWith("{")) {
+					msg.replyEmbeds(
+						new GsonBuilder().create().fromJson(cmdResponse, CustomEmbed.class).toMessageEmbed()
+					).queue();
+				} else msg.reply(cmdResponse).mentionRepliedUser(true).queue();
 				event.reply("Replied").setEphemeral(true).queue();
 			});
 		}

@@ -1,5 +1,7 @@
 package me.vixen.chopperbot.commands.global;
 
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonSyntaxException;
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import com.jagrosh.jdautilities.menu.Paginator;
 import me.vixen.chopperbot.database.Command;
@@ -7,9 +9,11 @@ import me.vixen.chopperbot.database.DBMember;
 import me.vixen.chopperbot.database.Database;
 import me.vixen.chopperbot.commands.GlobalCommandManager;
 import me.vixen.chopperbot.commands.ICommand;
+import me.vixen.chopperbot.tools.CustomEmbed;
 import me.vixen.chopperbot.tools.Embeds;
 import me.vixen.chopperbot.tools.Errors;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
@@ -115,7 +119,25 @@ public class CustomGroup implements ICommand {
 				}
 				//noinspection ConstantConditions
 				final String response = event.getOption("newresponse").getAsString();
-				final boolean success = Database.changeResponse(guild, commandname, response);
+				boolean success = false;
+				if (response.startsWith("{")) {
+					try {
+						MessageEmbed messageEmbed =
+							new GsonBuilder().create().fromJson(response, CustomEmbed.class)
+								.toMessageEmbed();
+						if (messageEmbed == null || messageEmbed.isEmpty() || !messageEmbed.isSendable()) {
+							event.reply("Detected invalid JSON. Please verify syntax.\n" +
+								"Embeds must not be empty and must conform to length rules\n" +
+								"If you believe this is an error, please submit a bug report").queue();
+							return;
+						} else success = Database.changeResponse(guild, commandname, response);
+					} catch (JsonSyntaxException e) {
+						event.reply("Detected invalid JSON. Please verify syntax.\n" +
+							"Custom commands that are not embeds may not start with '{'\n" +
+							"If you believe this is an error, please submit a bug report").queue();
+						return;
+					}
+				} else success = Database.changeResponse(guild, commandname, response);
 				if (success) event.reply("Command response changed successfully").queue();
 				else event.reply("An error occurred").setEphemeral(true).queue();
 			}
