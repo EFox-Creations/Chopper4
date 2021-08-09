@@ -85,7 +85,7 @@ public class Listener extends ListenerAdapter {
 
 		//Check blacklisted domain links
 		Config config = Database.getConfig(event.getGuild().getId());
-		if (config == null) return;
+		if (config == null || config.getDomains() == null || config.getDomains().isEmpty()) return;
 		String rawMsg = event.getMessage().getContentRaw();
 
 		//Check secure links
