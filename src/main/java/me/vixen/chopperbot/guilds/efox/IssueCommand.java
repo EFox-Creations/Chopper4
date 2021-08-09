@@ -108,7 +108,7 @@ public class IssueCommand implements ICommand {
         String body = sce.getOption("body").getAsString();
 
         try {
-            BufferedReader reader = new BufferedReader(new FileReader("GHconfig.json"));
+            BufferedReader reader = new BufferedReader(new FileReader("Config/GHconfig.json"));
             GHConfig ghConfig = new GsonBuilder().create().fromJson(reader, GHConfig.class);
             reader.close();
             GitHub github = new GitHubBuilder().withOAuthToken(ghConfig.getOauth()).build();

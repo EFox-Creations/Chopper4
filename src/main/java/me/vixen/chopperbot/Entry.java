@@ -31,13 +31,15 @@ public class Entry {
 	public static String CREATOR_ID;
 
 	public static void main(String[] args) throws IOException, LoginException, InterruptedException {
-		BufferedReader reader = new BufferedReader(new FileReader("token.txt"));
-		final String token = reader.lines().findFirst().orElse("");
-		reader.close();
+		ChopConfig config = ChopConfig.load();
+		if (config == null) {
+			Logger.log("Config failed to load, exiting...");
+			System.exit(1);
+			return;
+		}
 
-		BufferedReader reader1 = new BufferedReader(new FileReader("CreatorId.txt"));
-		CREATOR_ID = reader1.lines().findFirst().orElse("");
-		reader1.close();
+		String token = config.getToken();
+		CREATOR_ID = config.getCreatorId();
 
 		//INIT STARTUP VARS
 		EnumSet<GatewayIntent> enabledIntents = EnumSet.of(
