@@ -108,6 +108,9 @@ public class Listener extends ListenerAdapter {
 	private void doPunishment(GuildMessageReceivedEvent event, Config config) {
 		event.getMessage().delete().queue();
 		switch (config.getPunishment()) {
+			case NONE -> {
+				return;
+			}
 			case WARN -> {
 				DBMember member = Database.getMember(event.getGuild(), event.getAuthor().getId());
 				member.addWarning(event.getAuthor().getAsTag(), Entry.jda.getSelfUser(), "Posting blacklisted links");
