@@ -24,15 +24,22 @@ public class Config {
 	private final boolean lvlMsgOverride;
 	@SerializedName("Only Staff Polls")
 	private final boolean onlyStaffPolls;
+	@SerializedName("Enable Join/Leave")
+	private boolean enableJoinLeaveMessges;
+	@SerializedName("Join/Leave Channel")
+	private String joinLeaveMsgsChannelId;
 	@SerializedName("Domain Punishment")
 	private Punishment punishment;
 	@SerializedName("Blacklist Domains")
 	private final List<String> domains;
 
-	protected Config(String modlogId, boolean lvlMsgOverride, boolean onlyStaffPolls, Punishment punishment, List<String> domains) {
+	protected Config(String modlogId, boolean lvlMsgOverride, boolean onlyStaffPolls, boolean enableJoinLeaveMsgs,
+					 String joinLeaveMsgsChannelId, Punishment punishment, List<String> domains) {
 		this.modlogId = modlogId;
 		this.lvlMsgOverride = lvlMsgOverride;
 		this.onlyStaffPolls = onlyStaffPolls;
+		this.enableJoinLeaveMessges = enableJoinLeaveMsgs;
+		this.joinLeaveMsgsChannelId = joinLeaveMsgsChannelId;
 		this.punishment = punishment;
 		this.domains = domains;
 	}
@@ -59,6 +66,14 @@ public class Config {
 
 	public boolean isOnlyStaffPolls() {
 		return onlyStaffPolls;
+	}
+
+	public boolean areJoinLeaveMsgsEnabled() {
+		return enableJoinLeaveMessges;
+	}
+
+	public String getJoinLeaveMsgsChannelId() {
+		return joinLeaveMsgsChannelId;
 	}
 
 	public Punishment getPunishment() {

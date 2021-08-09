@@ -157,10 +157,17 @@ public class ConfigCommand implements ICommand {
 			punishment = Config.Punishment.WARN;
 		}
 
+		boolean enableJoinLeaveMessages = event.getOption("enablejoinlavemsgs").getAsBoolean();
+
+		OptionMapping optMap = event.getOption("joinleavemsgschannel");
+		String joinLeaveChannelId = optMap == null ? null : optMap.getAsString();
+
 		Config config = new ConfigBuilder()
 			.setLvlMsgOverride(!msgsdisabled)
 			.setModLogId(modlogId)
 			.setIsOnlyStaffPolls(onlyStaffPolls)
+			.setEnableJoinLeaveMessges(enableJoinLeaveMessages)
+			.setJoinLeaveMsgsChannelId(joinLeaveChannelId)
 			.setPunishment(punishment)
 			.build();
 
@@ -186,7 +193,11 @@ public class ConfigCommand implements ICommand {
 							new Command.Choice("Warn", "WARN"),
 							new Command.Choice("Kick", "KICK"),
 							new Command.Choice("Ban", "BAN")
-						)
+						),
+					new OptionData(OptionType.BOOLEAN, "enablejoinleavemsgs",
+						"Should Chop show Join and leave messages?", true),
+					new OptionData(OptionType.CHANNEL, "joinleavemsgschannel",
+						"What channel should they be shown in?\nPlease note this MUST be provided to recieve them")
 				),
 				new SubcommandData("adddomain", "Add a new doamin to the blacklist")
 					.addOption(OptionType.STRING, "domain",

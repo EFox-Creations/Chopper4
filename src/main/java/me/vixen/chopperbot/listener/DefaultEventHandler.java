@@ -63,15 +63,25 @@ public class DefaultEventHandler {
 	public static void handleGMsgReactAdd(GuildMessageReactionAddEvent event) { }
 
 	public static void handleGMemJoin(GuildMemberJoinEvent event) {
-		TextChannel systemChannel = event.getGuild().getSystemChannel();
-		if (systemChannel != null)
-			systemChannel.sendMessageEmbeds(Embeds.getWelcomeEmbed(event.getUser())).queue();
+		Config config = Database.getConfig(event.getGuild().getId());
+		if (config == null || !config.areJoinLeaveMsgsEnabled())
+			return;
+		String joinLeaveMsgsChannelId = config.getJoinLeaveMsgsChannelId();
+		if (joinLeaveMsgsChannelId == null)
+			return;
+		event.getGuild().getTextChannelById(joinLeaveMsgsChannelId)
+			.sendMessageEmbeds(Embeds.getWelcomeEmbed(event.getUser())).queue();
 	}
 
 	public static void handleGMemRemove(GuildMemberRemoveEvent event) {
-		TextChannel systemChannel = event.getGuild().getSystemChannel();
-		if (systemChannel != null)
-			systemChannel.sendMessageEmbeds(Embeds.getLeaveEmbed(event.getUser())).queue();
+		Config config = Database.getConfig(event.getGuild().getId());
+		if (config == null || !config.areJoinLeaveMsgsEnabled())
+			return;
+		String joinLeaveMsgsChannelId = config.getJoinLeaveMsgsChannelId();
+		if (joinLeaveMsgsChannelId == null)
+			return;
+		event.getGuild().getTextChannelById(joinLeaveMsgsChannelId)
+			.sendMessageEmbeds(Embeds.getLeaveEmbed(event.getUser())).queue();
 	}
 
 	@SuppressWarnings("unused")
