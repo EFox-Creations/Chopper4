@@ -12,6 +12,7 @@ import java.util.List;
 public class Config {
 
 	public enum Punishment {
+		NONE,
 		WARN,
 		KICK,
 		BAN

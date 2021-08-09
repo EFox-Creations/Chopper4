@@ -18,6 +18,8 @@ import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 
 import java.awt.*;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ConfigCommand implements ICommand {
 	@Override
@@ -43,9 +45,16 @@ public class ConfigCommand implements ICommand {
 					return;
 				}
 				String domain = event.getOption("domain").getAsString();
+				// Sanitize
+				if (domain.startsWith("https://")) domain.replaceFirst("https://", "");
+				if (domain.startsWith("http://")) domain.replaceFirst("http://", "");
+				if (domain.startsWith("www.")) domain.replaceFirst("www\\.", "");
+				//leave anything after TLD off
+				Matcher matcher = Pattern.compile("(.+\\.[^\\s\\/]{2,63})", Pattern.CASE_INSENSITIVE).matcher(domain);
+				if (matcher.find()) domain = matcher.group(0);
 				config.addDomain(domain);
 				boolean b = Database.setConfig(event.getGuild().getId(), config.serialize());
-				event.reply(b ? "Added!" : "An error occurred; aborting with Code " + Errors.CONFIG1).queue();
+				event.reply(b ? "Added!" + domain : "An error occurred; aborting with Code " + Errors.CONFIG1).queue();
 			}
 			case "deletedomain" -> {
 				Config config = Database.getConfig(event.getGuild().getId());
@@ -55,7 +64,6 @@ public class ConfigCommand implements ICommand {
 					return;
 				}
 				String domain = event.getOption("domain").getAsString();
-				config.addDomain(domain);
 				boolean b = Database.setConfig(event.getGuild().getId(), config.serialize());
 				event.reply(b ? "Deleted!" : "An error occurred; aborting with Code " + Errors.CONFIG1).queue();
 			}
@@ -174,6 +182,7 @@ public class ConfigCommand implements ICommand {
 					new OptionData(OptionType.STRING, "black-domain-punish", "How should auto-mod " +
 						"punish blacklisted domains?", true)
 						.addChoices(
+							new Command.Choice("None", "NONE"),
 							new Command.Choice("Warn", "WARN"),
 							new Command.Choice("Kick", "KICK"),
 							new Command.Choice("Ban", "BAN")
@@ -182,11 +191,11 @@ public class ConfigCommand implements ICommand {
 				new SubcommandData("adddomain", "Add a new doamin to the blacklist")
 					.addOption(OptionType.STRING, "domain",
 						"This should only be the website name and suffix" +
-						"ex. youtube.com", true),
+							" ex. youtube.com", true),
 				new SubcommandData("deletedomain", "Delete a domain from the blacklist")
 					.addOption(OptionType.STRING, "domain",
 						"This should only be the website name and suffix" +
-							"ex. youtube.com", true),
+							" ex. youtube.com", true),
 				new SubcommandData("cleardomains", "Clear all domains from the blacklist"),
 				new SubcommandData("viewdomains", "See your blacklisted domains")
 		);
