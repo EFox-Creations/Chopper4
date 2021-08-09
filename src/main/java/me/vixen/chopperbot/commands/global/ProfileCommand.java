@@ -150,7 +150,7 @@ public class ProfileCommand implements ICommand {
 		Graphics2D g2 = (Graphics2D) card.getGraphics();
 
 		//Copy blank
-		File blank = new File("blankProfile.png");
+		File blank = new File("CardBlanks/blankProfile.png");
 		BufferedImage background = ImageIO.read(blank);
 
 		g2.drawImage(background, 0, 0, card.getWidth(), card.getHeight(), 0, 0, background.getWidth(), background.getHeight(), null);
