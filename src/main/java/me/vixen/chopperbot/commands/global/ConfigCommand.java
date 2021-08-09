@@ -157,7 +157,7 @@ public class ConfigCommand implements ICommand {
 			punishment = Config.Punishment.WARN;
 		}
 
-		boolean enableJoinLeaveMessages = event.getOption("enablejoinlavemsgs").getAsBoolean();
+		boolean enableJoinLeaveMessages = event.getOption("enablejoinleavemsgs").getAsBoolean();
 
 		OptionMapping optMap = event.getOption("joinleavemsgschannel");
 		String joinLeaveChannelId = optMap == null ? null : optMap.getAsString();
