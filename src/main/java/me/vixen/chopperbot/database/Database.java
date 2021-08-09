@@ -1007,6 +1007,12 @@ public class Database {
 	// *                      Config Methods                      *
 	// ************************************************************
 
+	/**
+	 *
+	 * @param guildId The Id of the guild to look for
+	 * @return The {@link Config Config} or null, if there isn't one
+	 */
+	@Nullable
 	public static Config getConfig(String guildId) {
 		String SQL = "SELECT config FROM configs WHERE guild_id = " + guildId;
 		try (Connection con = getConnection(); Statement stmt = con.createStatement()) {

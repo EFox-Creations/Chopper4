@@ -89,6 +89,6 @@ public class Entry {
 		//Start treasure thread
 		Thread thread1 = new Thread(() -> BackgroundThread.go(true, guildManager, waiter));
 		thread1.setName("Background Thread");
-		thread1.start();
+		//TODO thread1.start();
 	}
 }
