@@ -72,7 +72,7 @@ public class Entry {
 		//Load local Commands
 		for (IGuild g : guildManager.getGuilds()) { //Local first
 			final Guild guild = jda.getGuildById(g.getId());
-			if (guild == null) return;
+			if (guild == null) continue;
 			List<CommandData> data = new ArrayList<>();
 			List<ICommand> localCommands = g.getLocalCommands();
 			if (localCommands == null || localCommands.isEmpty()) {
