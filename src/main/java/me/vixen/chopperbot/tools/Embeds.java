@@ -50,7 +50,7 @@ public class Embeds {
 					+ "Since I just joined, only the Owner, and my Creator, are authorized. Only authorized members may authorize" +
 					"new people with /mod authorize", false)
 			.addField("Additionally:", "Some commands may not function correctly until an authorized member completes" +
-				" the `/config` setup", false)
+				" the `/config set` setup", false)
 			.addField("Any other questions?", "Use [Home Base](https://discord.gg/PmmWAka) to ask!", false)
 			.build();
 	}
@@ -138,7 +138,7 @@ public class Embeds {
 	public static MessageEmbed getPleaseDoConfig() {
 		return new EmbedBuilder()
 			.setTitle("⚠ Please have an authorized user complete config! ⚠")
-			.setDescription("An authorized user needs to complete /config")
+			.setDescription("An authorized user needs to complete /config set")
 			.build();
 	}
 

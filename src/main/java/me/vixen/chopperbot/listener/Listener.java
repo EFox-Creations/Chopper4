@@ -5,8 +5,11 @@ import me.vixen.chopperbot.Entry;
 import me.vixen.chopperbot.database.DBMember;
 import me.vixen.chopperbot.database.Database;
 import me.vixen.chopperbot.commands.GlobalCommandManager;
+import me.vixen.chopperbot.guilds.Config;
 import me.vixen.chopperbot.guilds.GuildManager;
 import me.vixen.chopperbot.tools.Embeds;
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
@@ -17,7 +20,11 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
+
+import java.awt.*;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Listener extends ListenerAdapter {
 	private final EventWaiter waiter;
@@ -75,6 +82,60 @@ public class Listener extends ListenerAdapter {
 		if (guildManager.contains(event.getGuild())) //If guild has custom actions
 			guildManager.getGuild(event.getGuild()).handleGMsgReceived(event, waiter);
 		else DefaultEventHandler.handleGMsgReceived(event); //else send to default handler
+
+		//Check blacklisted domain links
+		Config config = Database.getConfig(event.getGuild().getId());
+		if (config == null || config.getDomains() == null || config.getDomains().isEmpty()) return;
+		String rawMsg = event.getMessage().getContentRaw();
+
+		//Check secure links
+		Matcher matcher = Pattern.compile("(https:\\/\\/.+\\.)[^\\/]{2,63}", Pattern.CASE_INSENSITIVE)
+			.matcher(rawMsg.replaceFirst("www\\.", ""));
+		while (matcher.find()) {
+			if (config.getDomains().contains(matcher.group(0).replace("https://", "")))
+				doPunishment(event, config);
+		}
+
+		//Check regular links
+		Matcher matcher1 = Pattern.compile("(http:\\/\\/.+\\.)[^\\/]{2,63}", Pattern.CASE_INSENSITIVE)
+			.matcher(rawMsg.replaceFirst("www\\.", ""));
+		while (matcher1.find()){
+			if (config.getDomains().contains(matcher1.group(0).replace("http://", "")))
+				doPunishment(event, config);
+		}
+	}
+
+	private void doPunishment(GuildMessageReceivedEvent event, Config config) {
+		event.getMessage().delete().queue();
+		switch (config.getPunishment()) {
+			case WARN -> {
+				DBMember member = Database.getMember(event.getGuild(), event.getAuthor().getId());
+				member.addWarning(event.getAuthor().getAsTag(), Entry.jda.getSelfUser(), "Posting blacklisted links");
+				member.update();
+				MessageEmbed embed = new EmbedBuilder()
+					.setTitle("New Warning Given!")
+					.addField(Entry.jda.getSelfUser().getAsTag() + " warned " + event.getAuthor().getAsTag(),
+						"Posting blacklisted links", false)
+					.setColor(Color.YELLOW)
+					.build();
+				event.getGuild().getTextChannelById(config.getModlogId()).sendMessageEmbeds(embed).queue();
+				event.getChannel().sendMessageEmbeds(embed).queue();
+			}
+			case KICK -> {
+				event.getMember().kick("Posting blacklisted links").queue(v -> {
+					event.getGuild().getTextChannelById(config.getModlogId()).sendMessageEmbeds(
+						Embeds.getKickedEmbed(event.getAuthor(), Entry.jda.getSelfUser(), "Posting blacklisted links")
+					).queue();
+				});
+			}
+			case BAN -> {
+				event.getMember().ban(7, "Posting blacklisted links").queue(v -> {
+					event.getGuild().getTextChannelById(config.getModlogId()).sendMessageEmbeds(
+						Embeds.getBannedEmbed(event.getAuthor(), Entry.jda.getSelfUser(), "Posting blacklisted links")
+					).queue();
+				});
+			}
+		}
 	}
 
 	@Override

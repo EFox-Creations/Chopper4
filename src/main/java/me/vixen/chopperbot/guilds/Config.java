@@ -6,8 +6,16 @@ import com.google.gson.annotations.SerializedName;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Config {
+
+	public enum Punishment {
+		WARN,
+		KICK,
+		BAN
+	}
 
 	@SerializedName("Modlog ID")
 	private final String modlogId;
@@ -15,11 +23,17 @@ public class Config {
 	private final boolean lvlMsgOverride;
 	@SerializedName("Only Staff Polls")
 	private final boolean onlyStaffPolls;
+	@SerializedName("Domain Punishment")
+	private Punishment punishment;
+	@SerializedName("Blacklist Domains")
+	private final List<String> domains;
 
-	protected Config(String modlogId, boolean lvlMsgOverride, boolean onlyStaffPolls) {
+	protected Config(String modlogId, boolean lvlMsgOverride, boolean onlyStaffPolls, Punishment punishment, List<String> domains) {
 		this.modlogId = modlogId;
 		this.lvlMsgOverride = lvlMsgOverride;
 		this.onlyStaffPolls = onlyStaffPolls;
+		this.punishment = punishment;
+		this.domains = domains;
 	}
 
 	public static Config deserializeConfig(String Json) {
@@ -37,6 +51,7 @@ public class Config {
 	public String getModlogId() {
 		return modlogId;
 	}
+
 	public boolean arelvlMsgOverridden() {
 		return lvlMsgOverride;
 	}
@@ -45,5 +60,24 @@ public class Config {
 		return onlyStaffPolls;
 	}
 
+	public Punishment getPunishment() {
+		return punishment;
+	}
+
+	public void addDomain(String domain) {
+		domains.add(domain);
+	}
+
+	public List<String> getDomains() {
+		return domains;
+	}
+
+	public boolean deleteDomain(String domain) {
+		return domains.remove(domain);
+	}
+
+	public void clearDomains() {
+		domains.clear();
+	}
 }
 
