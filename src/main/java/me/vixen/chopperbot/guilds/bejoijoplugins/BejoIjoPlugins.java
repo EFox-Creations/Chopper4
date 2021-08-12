@@ -17,6 +17,8 @@ import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
+import net.dv8tion.jda.api.interactions.components.Button;
+import net.dv8tion.jda.api.interactions.components.ButtonStyle;
 
 import java.awt.*;
 import java.io.File;
@@ -177,7 +179,10 @@ public class BejoIjoPlugins implements IGuild {
 	public void handleGMemJoin(GuildMemberJoinEvent event, EventWaiter waiter) {
 		TextChannel welcome = event.getGuild().getTextChannelById("678667071437144151");
 		if (welcome != null)
-			welcome.sendMessageEmbeds(Embeds.getWelcomeEmbed(event.getUser())).queue();
+			welcome.sendMessageEmbeds(Embeds.getWelcomeEmbed(event.getUser()))
+				.setActionRow(Button.of(ButtonStyle.SECONDARY, "getjoinid", "User Id")
+					.withEmoji(Emoji.fromUnicode("📋")))
+			.queue();
 	}
 
 	@Override
