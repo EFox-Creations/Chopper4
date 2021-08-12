@@ -1,5 +1,6 @@
 package me.vixen.chopperbot.listener;
 
+import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import me.vixen.chopperbot.database.DBMember;
 import me.vixen.chopperbot.database.Database;
 import me.vixen.chopperbot.commands.GlobalCommandManager;
@@ -13,9 +14,12 @@ import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceJoinEvent;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceLeaveEvent;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceMoveEvent;
+import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
+import net.dv8tion.jda.api.interactions.components.Button;
+import net.dv8tion.jda.api.interactions.components.ButtonStyle;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -62,7 +66,7 @@ public class DefaultEventHandler {
 	@SuppressWarnings("unused")
 	public static void handleGMsgReactAdd(GuildMessageReactionAddEvent event) { }
 
-	public static void handleGMemJoin(GuildMemberJoinEvent event) {
+	public static void handleGMemJoin(GuildMemberJoinEvent event, EventWaiter waiter) {
 		Config config = Database.getConfig(event.getGuild().getId());
 		if (config == null || !config.areJoinLeaveMsgsEnabled())
 			return;
@@ -70,7 +74,10 @@ public class DefaultEventHandler {
 		if (joinLeaveMsgsChannelId == null)
 			return;
 		event.getGuild().getTextChannelById(joinLeaveMsgsChannelId)
-			.sendMessageEmbeds(Embeds.getWelcomeEmbed(event.getUser())).queue();
+			.sendMessageEmbeds(Embeds.getWelcomeEmbed(event.getUser()))
+			.setActionRow(Button.of(ButtonStyle.SECONDARY, "getjoinid", "User Id")
+				.withEmoji(Emoji.fromUnicode("📋")))
+			.queue();
 	}
 
 	public static void handleGMemRemove(GuildMemberRemoveEvent event) {

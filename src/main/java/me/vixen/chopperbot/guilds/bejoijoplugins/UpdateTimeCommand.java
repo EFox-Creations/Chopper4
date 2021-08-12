@@ -31,8 +31,7 @@ public class UpdateTimeCommand implements ICommand {
 			if (months >= 24) {
 				//noinspection ConstantConditions cant be null
 				newRole = event.getGuild().getRolesByName("2 years", true).get(0);
-			}
-			else if (months >= 12) {
+			} else if (months >= 12) {
 				//noinspection ConstantConditions cant be null
 				newRole = event.getGuild().getRolesByName("1 year", true).get(0);
 			} else if (months == 1) {
@@ -43,8 +42,14 @@ public class UpdateTimeCommand implements ICommand {
 				newRole = event.getGuild().getRolesByName(months + " months", true).get(0);
 			}
 		} catch (IndexOutOfBoundsException | NullPointerException e) {
-			event.reply("I was looking for: " + (months >= 12 ? (months >= 24 ? "2 Years" : "1 Year") : months +
-				" months") + " but couldn't find it").queue();
+			String search;
+			if (months >= 24)
+				search = "2 Years";
+			else if (months >= 12)
+				search = "1 Year";
+			else
+				search = months + " months";
+			event.reply("I was looking for: " + search + " but couldn't find it").queue();
 			return;
 		}
 

@@ -83,7 +83,7 @@ public interface IGuild {
 		DefaultEventHandler.handleGMsgReactAdd(event);
 	}
 	default void handleGMemJoin(GuildMemberJoinEvent event, EventWaiter waiter) {
-		DefaultEventHandler.handleGMemJoin(event);
+		DefaultEventHandler.handleGMemJoin(event, waiter);
 	}
 	default void handleGMemRemove(GuildMemberRemoveEvent event, EventWaiter waiter) {
 		DefaultEventHandler.handleGMemRemove(event);
