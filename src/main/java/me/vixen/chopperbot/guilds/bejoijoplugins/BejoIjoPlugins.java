@@ -101,20 +101,22 @@ public class BejoIjoPlugins implements IGuild {
 		final Message message = event.getMessage();
 		if (event.getChannel().getId().equals("671729684693778483")) { //If in gallery
 			final DBMember member = Database.getMember(event.getGuild(), event.getAuthor().getId());
-			if (member == null) return;
-			//Delete message if it is not a link, attachment, or the user has exceeded the limit
-			if (member.getGalleryImgsLeft() <= 0 ||
-				(message.getAttachments().isEmpty() && !message.getContentRaw().contains("https://"))) {
-				message.delete().queue(unused ->
-					event.getChannel().sendMessageEmbeds(Embeds.getGalleryRestrict()).append(event.getAuthor().getAsMention()).queue(msg ->
-						msg.delete().queueAfter(5L, TimeUnit.SECONDS))
-				);
-			} else {
-				member.adjustGalleryImgsLeft(message.getAttachments().isEmpty() ? -1 : -1*message.getAttachments().size());
-				member.update();
+			Role ss = event.getGuild().getRoleById("781608704633471036");
+			if (member != null && !event.getMember().getRoles().contains(ss)
+				&& !event.getAuthor().getId().equals(Entry.CREATOR_ID)) {
+				//Delete message if it is not a link, attachment, or the user has exceeded the limit
+				if (member.getGalleryImgsLeft() <= 0 ||
+					(message.getAttachments().isEmpty() && !message.getContentRaw().contains("https://"))) {
+					message.delete().queue(unused ->
+						event.getChannel().sendMessageEmbeds(Embeds.getGalleryRestrict()).append(event.getAuthor().getAsMention()).queue(msg ->
+							msg.delete().queueAfter(5L, TimeUnit.SECONDS))
+					);
+				} else {
+					member.adjustGalleryImgsLeft(message.getAttachments().isEmpty() ? -1 : -1*message.getAttachments().size());
+					member.update();
+				}
 			}
 		}
-
 		DefaultEventHandler.handleGMsgReceived(event); //update stickies and award exp
 	}
 

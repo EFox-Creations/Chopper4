@@ -15,6 +15,7 @@ import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
+import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
@@ -23,6 +24,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -162,7 +164,18 @@ public class Listener extends ListenerAdapter {
 	public void onGuildMemberJoin(@NotNull GuildMemberJoinEvent event) {
 		if (guildManager.contains(event.getGuild())) //If guild has custom actions
 			guildManager.getGuild(event.getGuild()).handleGMemJoin(event, waiter);
-		else DefaultEventHandler.handleGMemJoin(event); //else send to default handler
+		else DefaultEventHandler.handleGMemJoin(event, waiter); //else send to default handler
+	}
+
+	@Override
+	public void onButtonClick(@NotNull ButtonClickEvent event) {
+		switch (event.getComponentId()) {
+			case "getJoinId" -> {
+				event.getChannel().sendMessage(
+					event.getMessage().getEmbeds().get(0).getFooter().getText().replaceFirst("Id: ", "")
+				).mention(event.getMember()).queue(msg -> msg.delete().queueAfter(10L, TimeUnit.SECONDS));
+			}
+		}
 	}
 
 	@Override

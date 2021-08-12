@@ -3,7 +3,6 @@ package me.vixen.chopperbot;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.annotations.SerializedName;
-import sun.jvm.hotspot.ui.tree.FloatTreeNodeAdapter;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;

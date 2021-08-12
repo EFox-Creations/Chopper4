@@ -20,6 +20,7 @@ import net.dv8tion.jda.api.entities.*;
 //import java.awt.*;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 //import java.util.Random;
 
 public class BackgroundThread {
@@ -192,7 +193,7 @@ public class BackgroundThread {
 							)
 							.setFooter("Skill increased by 2!")
 							.build()
-					).queue();
+					).queue(msg -> msg.delete().queueAfter(5L, TimeUnit.SECONDS));
 				});
 			} else {
 				event.retrieveMessage().queue(message -> {
@@ -203,7 +204,7 @@ public class BackgroundThread {
 							.setColor(Color.RED)
 							.setFooter("Skill increased by 1 anyway!")
 							.build()
-					).queue();
+					).queue(msg -> msg.delete().queueAfter(5L, TimeUnit.SECONDS));
 				});
 			}
 		});
