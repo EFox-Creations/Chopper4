@@ -222,11 +222,11 @@ public class ModGroup implements ICommand {
 		}
 	}
 
-	private static final Pattern YEAR_CAPTURE = Pattern.compile("(\\d[yY])");
-	private static final Pattern DAY_CAPTURE = Pattern.compile("(\\d[dD])");
-	private static final Pattern HOUR_CAPTURE = Pattern.compile("(\\d[hH])");
-	private static final Pattern MIN_CAPTURE = Pattern.compile("(\\d[mM])");
-	private static final Pattern SEC_CAPTURE = Pattern.compile("(\\d[sS])");
+	private static final Pattern YEAR_CAPTURE = Pattern.compile("(\\d+[yY])");
+	private static final Pattern DAY_CAPTURE = Pattern.compile("(\\d+[dD])");
+	private static final Pattern HOUR_CAPTURE = Pattern.compile("(\\d+[hH])");
+	private static final Pattern MIN_CAPTURE = Pattern.compile("(\\d+[mM])");
+	private static final Pattern SEC_CAPTURE = Pattern.compile("(\\d+[sS])");
 
 	//Time looks like 1d2h3m4s
 	private OffsetDateTime resolveUnmuteTime(String input) {
@@ -252,8 +252,6 @@ public class ModGroup implements ICommand {
 		if (matcherS.find()) {
 			sec = Integer.parseInt(matcherS.group(0).toLowerCase().replaceAll("s", ""));
 		}
-
-		System.out.println(years + " " + days + " " + hours + " " + min + " " + sec);
 
 		OffsetDateTime unmuteTime = OffsetDateTime.now()
 			.plus(years, ChronoUnit.YEARS)
