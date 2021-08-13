@@ -119,22 +119,24 @@ public class CustomGroup implements ICommand {
 				}
 				//noinspection ConstantConditions
 				final String response = event.getOption("newresponse").getAsString();
-				boolean success = false;
+				boolean success;
 				if (response.startsWith("{")) {
 					try {
 						MessageEmbed messageEmbed =
-							new GsonBuilder().create().fromJson(response, CustomEmbed.class)
+							new GsonBuilder().create().fromJson(response.replaceAll("\"","'"), CustomEmbed.class)
 								.toMessageEmbed();
 						if (messageEmbed == null || messageEmbed.isEmpty() || !messageEmbed.isSendable()) {
-							event.reply("Detected invalid JSON. Please verify syntax.\n" +
-								"Embeds must not be empty and must conform to length rules\n" +
-								"If you believe this is an error, please submit a bug report").queue();
+							event.reply("""
+								Detected invalid JSON. Please verify syntax.
+								Embeds must not be empty and must conform to length rules
+								If you believe this is an error, please submit a bug report""").queue();
 							return;
 						} else success = Database.changeResponse(guild, commandname, response);
 					} catch (JsonSyntaxException e) {
-						event.reply("Detected invalid JSON. Please verify syntax.\n" +
-							"Custom commands that are not embeds may not start with '{'\n" +
-							"If you believe this is an error, please submit a bug report").queue();
+						event.reply("""
+							Detected invalid JSON. Please verify syntax.
+							Custom commands that are not embeds may not start with '{'
+							If you believe this is an error, please submit a bug report""").queue();
 						return;
 					}
 				} else success = Database.changeResponse(guild, commandname, response);

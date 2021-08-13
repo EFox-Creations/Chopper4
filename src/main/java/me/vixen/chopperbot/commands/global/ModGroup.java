@@ -169,25 +169,22 @@ public class ModGroup implements ICommand {
 					return;
 				}
 
-				OptionMapping unmuteTimeOpt = event.getOption("unmutetime");
+				OptionMapping unmuteTimeOpt = event.getOption("muteduration");
 				OffsetDateTime unmutetime;
-				if (unmuteTimeOpt != null) {
-					try {
-						unmutetime = resolveUnmuteTime(unmuteTimeOpt.getAsString());
-					} catch (IllegalArgumentException e) {
-						event.getHook().editOriginalEmbeds(
-							Embeds.getInvalidArgumentEmbed("unmutetime", "Not a valid input\nShould be in format of \"1d2h3m4s\"")
-						).queue();
-						return;
-					}
-				}
-				else {
+				if (unmuteTimeOpt == null) {
 					event.getHook().editOriginalEmbeds(
-						Embeds.getInvalidArgumentEmbed("unmuteTime", "Is not provided")
+						Embeds.getInvalidArgumentEmbed("muteduration", "Is not provided")
 					).queue();
 					return;
 				}
-
+				try {
+					unmutetime = resolveUnmuteTime(unmuteTimeOpt.getAsString());
+				} catch (IllegalArgumentException e) {
+					event.getHook().editOriginalEmbeds(
+						Embeds.getInvalidArgumentEmbed("muteduration", "Not a valid input\nShould be in format of \"1d2h3m4s\"")
+					).queue();
+					return;
+				}
 				final DBMember targetDB = Database.getMember(guild, target.getId());
 				targetDB.setMuted(unmutetime);
 				targetDB.update();
@@ -219,6 +216,8 @@ public class ModGroup implements ICommand {
 			}
 		}
 	}
+
+	private static final Pattern YEAR_CAPTURE = Pattern.compile("(\\d[yY])");
 	private static final Pattern DAY_CAPTURE = Pattern.compile("(\\d[dD])");
 	private static final Pattern HOUR_CAPTURE = Pattern.compile("(\\d[hH])");
 	private static final Pattern MIN_CAPTURE = Pattern.compile("(\\d[mM])");
@@ -226,26 +225,31 @@ public class ModGroup implements ICommand {
 
 	//Time looks like 1d2h3m4s
 	private OffsetDateTime resolveUnmuteTime(String input) throws IllegalArgumentException {
+		int years = 0, days = 0, hours = 0, min = 0, sec = 0;
 
-		Matcher matcher = DAY_CAPTURE.matcher(input);
-		int days = 0, hours = 0, min = 0, sec = 0;
-		if (matcher.find()) {
-			days = Integer.parseInt(matcher.group(0).toLowerCase().replaceAll("d", ""));
+		Matcher matcherY = YEAR_CAPTURE.matcher(input);
+		if (matcherY.find()) {
+			years = Integer.parseInt(matcherY.group(0).toLowerCase().replaceAll("d", ""));
 		}
-		Matcher matcher1 = HOUR_CAPTURE.matcher(input);
-		if (matcher1.find()) {
-			hours = Integer.parseInt(matcher.group(0).toLowerCase().replaceAll("h", ""));
+		Matcher matcherD = DAY_CAPTURE.matcher(input);
+		if (matcherD.find()) {
+			days = Integer.parseInt(matcherD.group(0).toLowerCase().replaceAll("d", ""));
 		}
-		Matcher matcher2 = MIN_CAPTURE.matcher(input);
-		if (matcher2.find()) {
-			min = Integer.parseInt(matcher.group(0).toLowerCase().replaceAll("m", ""));
+		Matcher matcherH = HOUR_CAPTURE.matcher(input);
+		if (matcherH.find()) {
+			hours = Integer.parseInt(matcherH.group(0).toLowerCase().replaceAll("h", ""));
 		}
-		Matcher matcher3 = SEC_CAPTURE.matcher(input);
-		if (matcher3.find()) {
-			sec = Integer.parseInt(matcher.group(0).toLowerCase().replaceAll("s", ""));
+		Matcher matcherM = MIN_CAPTURE.matcher(input);
+		if (matcherM.find()) {
+			min = Integer.parseInt(matcherM.group(0).toLowerCase().replaceAll("m", ""));
+		}
+		Matcher matcherS = SEC_CAPTURE.matcher(input);
+		if (matcherS.find()) {
+			sec = Integer.parseInt(matcherS.group(0).toLowerCase().replaceAll("s", ""));
 		}
 
 		OffsetDateTime unmuteTime = OffsetDateTime.now()
+			.plus(years, ChronoUnit.YEARS)
 			.plus(days, ChronoUnit.DAYS)
 			.plus(hours, ChronoUnit.HOURS)
 			.plus(min, ChronoUnit.MINUTES)

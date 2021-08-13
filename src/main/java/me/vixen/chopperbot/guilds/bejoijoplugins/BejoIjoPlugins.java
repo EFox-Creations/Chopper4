@@ -176,16 +176,6 @@ public class BejoIjoPlugins implements IGuild {
 	}
 
 	@Override
-	public void handleGMemJoin(GuildMemberJoinEvent event, EventWaiter waiter) {
-		TextChannel welcome = event.getGuild().getTextChannelById("678667071437144151");
-		if (welcome != null)
-			welcome.sendMessageEmbeds(Embeds.getWelcomeEmbed(event.getUser()))
-				.setActionRow(Button.of(ButtonStyle.SECONDARY, "getjoinid", "User Id")
-					.withEmoji(Emoji.fromUnicode("📋")))
-			.queue();
-	}
-
-	@Override
 	public void handleGMemRemove(GuildMemberRemoveEvent event, EventWaiter waiter) {
 		TextChannel welcome = event.getGuild().getTextChannelById("678667071437144151");
 		if (welcome != null)
