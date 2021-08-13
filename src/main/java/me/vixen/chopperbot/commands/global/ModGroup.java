@@ -20,6 +20,7 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 
 import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -189,12 +190,14 @@ public class ModGroup implements ICommand {
 				targetDB.setMuted(unmutetime);
 				targetDB.update();
 
+				String until = unmutetime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd @ HH:mm:ss"));
 				Config config = Database.getConfig(guild.getId());
-				if (config != null)
+				if (config != null) {
 					event.getGuild().getTextChannelById(config.getModlogId()).sendMessage(
-						moderator.getAsMention() + " Muted " + target.getEffectiveName() + " for " + unmuteTimeOpt.getAsString()
+						moderator.getAsMention() + " Muted " + target.getEffectiveName() + " until " + until
 					).queue();
-				else event.getTextChannel().sendMessageEmbeds(Embeds.getPleaseDoConfig()).queue();
+					event.getHook().editOriginal(moderator.getAsMention() + " Muted " + target.getEffectiveName() + " until " + until).queue();
+				} else event.getTextChannel().sendMessageEmbeds(Embeds.getPleaseDoConfig()).queue();
 			}
 			case "unmute" -> {
 				OptionMapping userOpt = event.getOption("user");
@@ -213,6 +216,8 @@ public class ModGroup implements ICommand {
 				DBMember targetDB = Database.getMember(guild, target.getUser().getId());
 				targetDB.unmute();
 				targetDB.update();
+
+				event.getHook().editOriginal(target.getAsMention() + " has been unmuted").queue();
 			}
 		}
 	}
@@ -224,12 +229,12 @@ public class ModGroup implements ICommand {
 	private static final Pattern SEC_CAPTURE = Pattern.compile("(\\d[sS])");
 
 	//Time looks like 1d2h3m4s
-	private OffsetDateTime resolveUnmuteTime(String input) throws IllegalArgumentException {
+	private OffsetDateTime resolveUnmuteTime(String input) {
 		int years = 0, days = 0, hours = 0, min = 0, sec = 0;
 
 		Matcher matcherY = YEAR_CAPTURE.matcher(input);
 		if (matcherY.find()) {
-			years = Integer.parseInt(matcherY.group(0).toLowerCase().replaceAll("d", ""));
+			years = Integer.parseInt(matcherY.group(0).toLowerCase().replaceAll("y", ""));
 		}
 		Matcher matcherD = DAY_CAPTURE.matcher(input);
 		if (matcherD.find()) {
@@ -247,6 +252,8 @@ public class ModGroup implements ICommand {
 		if (matcherS.find()) {
 			sec = Integer.parseInt(matcherS.group(0).toLowerCase().replaceAll("s", ""));
 		}
+
+		System.out.println(years + " " + days + " " + hours + " " + min + " " + sec);
 
 		OffsetDateTime unmuteTime = OffsetDateTime.now()
 			.plus(years, ChronoUnit.YEARS)
