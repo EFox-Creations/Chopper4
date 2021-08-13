@@ -170,7 +170,8 @@ public class Listener extends ListenerAdapter {
 	@Override
 	public void onButtonClick(@NotNull ButtonClickEvent event) {
 		switch (event.getComponentId()) {
-			case "getJoinId" -> {
+			case "getjoinid" -> {
+				event.deferEdit().queue();
 				event.getChannel().sendMessage(
 					event.getMessage().getEmbeds().get(0).getFooter().getText().replaceFirst("Id: ", "")
 				).mention(event.getMember()).queue(msg -> msg.delete().queueAfter(10L, TimeUnit.SECONDS));
