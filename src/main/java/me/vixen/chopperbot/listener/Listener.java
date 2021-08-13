@@ -64,8 +64,14 @@ public class Listener extends ListenerAdapter {
 	@Override
 	public void onSlashCommand(@NotNull SlashCommandEvent event) {
 		if (event.getUser().isBot()) return;
+		DBMember dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
+		if (dbMember != null && dbMember.isMuted()) {
+			event.deferReply().queue();
+			event.getHook().deleteOriginal().queue();
+			return;
+		}
 		//noinspection ConstantConditions cant be null
-		if (Database.getMember(event.getGuild(), event.getUser().getId()) == null && !event.getUser().isBot()) {
+		if (dbMember == null && !event.getUser().isBot()) {
 			//noinspection ConstantConditions cant be null
 			Database.upsertMember(event.getGuild(), new DBMember(event.getMember(), event.getGuild(), false));
 		}
@@ -77,7 +83,12 @@ public class Listener extends ListenerAdapter {
 	@Override
 	public void onGuildMessageReceived(@NotNull GuildMessageReceivedEvent event) {
 		if (event.getAuthor().isBot()) return;
-		if (Database.getMember(event.getGuild(), event.getAuthor().getId()) == null && !event.getAuthor().isBot()) {
+		DBMember dbMember = Database.getMember(event.getGuild(), event.getAuthor().getId());
+		if (dbMember != null && dbMember.isMuted()) {
+			event.getMessage().delete().queue();
+			return;
+		}
+		if (dbMember == null && !event.getAuthor().isBot()) {
 			//noinspection ConstantConditions cant be null
 			Database.upsertMember(event.getGuild(), new DBMember(event.getMember(), event.getGuild(), false));
 		}
