@@ -22,6 +22,7 @@ import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -142,6 +143,13 @@ public class ModGroup implements ICommand {
 			}
 			case "clear" -> {
 				int number = (int) event.getOption("nummsgs").getAsLong();
+
+				if (number == 1) {
+					event.getTextChannel().getHistory().retrievePast(1)
+						.flatMap(msgs -> msgs.get(0).delete())
+					.queue();
+					return;
+				}
 
 				try {
 					event.getTextChannel().getHistory().retrievePast(number).queue(messages ->

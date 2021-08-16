@@ -5,6 +5,7 @@ import me.vixen.chopperbot.database.DBMember;
 import me.vixen.chopperbot.database.Database;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
 
 import java.awt.*;
@@ -15,6 +16,7 @@ import me.vixen.chopperbot.guilds.IGuild;
 import me.vixen.chopperbot.listener.DefaultEventHandler;
 //import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.interactions.components.Button;
 //import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
 
 //import java.awt.*;
@@ -24,7 +26,6 @@ import java.util.concurrent.TimeUnit;
 //import java.util.Random;
 
 public class BackgroundThread {
-	private static final Color TREASURE_COLOR = new Color(0,143,186);
 	private static boolean reset = true;
 
 	@SuppressWarnings("LoopConditionNotUpdatedInsideLoop") //This needs to run forever in the background
@@ -73,10 +74,10 @@ public class BackgroundThread {
 					for (Guild g : Entry.jda.getGuilds()) {
 						if (gManager.contains(g)) {
 							final IGuild ig = gManager.getGuild(g);
-							makeTreasureChest(ig.getTreasureChannels(), waiter);
+							makeTreasureChest(ig.getTreasureChannels());
 						} else {
 							final List<TextChannel> defaultTreasureChannels = DefaultEventHandler.getDefaultTreasureChannels(g);
-							makeTreasureChest(defaultTreasureChannels, waiter);
+							makeTreasureChest(defaultTreasureChannels);
 						}
 					}
 					hourToSpawn = OffsetDateTime.now().plusHours(new Random().nextInt(3)+4).getHour();
@@ -104,109 +105,15 @@ public class BackgroundThread {
 	}
 	*/
 
-	private enum ChestRewardsEnum {
-		Empty,
-		ForgottenTreasure,
-		Spoils,
-		Fortune,
-		Motherload,
-		FoxbeardsHorde;
-
-		private static int getValue(ChestRewardsEnum reward) {
-			return switch (reward) {
-				case Empty -> 0;
-				case ForgottenTreasure -> new Random().nextInt(4) + 1;
-				case Spoils -> new Random().nextInt(4) + 6;
-				case Fortune -> new Random().nextInt(4) + 11;
-				case Motherload -> new Random().nextInt(4) + 16;
-				case FoxbeardsHorde -> new Random().nextInt(4) + 21;
-			};
-		}
-
-		private static ChestRewardsEnum getRandom() {
-			int rand = new Random().nextInt(100)+1;
-			if (isBetween(rand, 0, 10)) return Empty; //10%
-			if (isBetween(rand, 11, 30)) return ForgottenTreasure; //20%
-			if (isBetween(rand, 31, 60)) return Spoils; //30%
-			if (isBetween(rand, 61, 85)) return Fortune; //25%
-			if (isBetween(rand, 86, 95)) return Motherload; //10%
-			if (isBetween(rand, 95, 100)) return FoxbeardsHorde; //5%
-			else return getRandom();
-		}
-
-		private static boolean isBetween(int x, int lower, int upper) {
-			return lower <= x && x <= upper;
-		}
-
-		private static String getName(ChestRewardsEnum reward) {
-			return switch (reward) {
-				case Empty -> "Empty";
-				case ForgottenTreasure -> "Forgotten Treasure";
-				case Spoils -> "Spoils";
-				case Fortune -> "Fortune";
-				case Motherload -> "Motherload";
-				case FoxbeardsHorde -> "Foxbeard's Horde";
-			};
-		}
-	} //End Enum
-
-	public static void makeTreasureChest(List<TextChannel> availableChannels, EventWaiter waiter) {
+	public static void makeTreasureChest(List<TextChannel> availableChannels) {
 		if (availableChannels.isEmpty()) return;
 		final TextChannel targetChannel = availableChannels.get(new Random().nextInt(availableChannels.size()));
-		final ChestRewardsEnum rewardName = ChestRewardsEnum.getRandom();
 		targetChannel.sendMessageEmbeds(
 			new EmbedBuilder()
-				.setColor(TREASURE_COLOR)
+				.setColor(new Color(0,143,186))
 				.setTitle("🏝 A safe has washed ashore!")
 				.setDescription("React with 🔑 to pick the lock!")
 				.build()
-		).queue(message ->
-			waiter.waitForEvent(
-				GuildMessageReactionAddEvent.class,
-				(e) -> e.getMessageId().equals(message.getId()) && e.getReactionEmote().getName().equals("🔑"),
-				(e) -> rewardUser(e, rewardName)
-			)
-		);
-	}
-
-	private static void rewardUser(GuildMessageReactionAddEvent event, ChestRewardsEnum reward) {
-		int value = ChestRewardsEnum.getValue(reward);
-		event.retrieveMember().queue(member -> {
-			final DBMember dbMember = Database.getMember(member.getGuild(), member.getUser().getId());
-			if (dbMember == null) return; //something fucky happened
-			final int skill = dbMember.getSkill();
-			final int rand = skill < 10 ? new Random().nextInt(10)+1 : new Random().nextInt(100)+1;
-			boolean opened = skill > rand;
-			dbMember.adjustSkill(opened ? 1 : 2);
-			dbMember.adjustCoins(opened ? value : 0);
-			dbMember.update();
-
-			if (opened) {
-				event.retrieveMessage().queue(message -> {
-					message.clearReactions().queue();
-					message.editMessageEmbeds(
-						new EmbedBuilder()
-							.setTitle(ChestRewardsEnum.getName(reward))
-							.setColor(TREASURE_COLOR)
-							.setDescription(
-								String.format("You found %d coins!", value)
-							)
-							.setFooter("Skill increased by 2!")
-							.build()
-					).queue(msg -> msg.delete().queueAfter(5L, TimeUnit.SECONDS));
-				});
-			} else {
-				event.retrieveMessage().queue(message -> {
-					message.clearReactions().queue();
-					message.editMessageEmbeds(
-						new EmbedBuilder()
-							.setTitle("⛔ The lock broke!")
-							.setColor(Color.RED)
-							.setFooter("Skill increased by 1 anyway!")
-							.build()
-					).queue(msg -> msg.delete().queueAfter(5L, TimeUnit.SECONDS));
-				});
-			}
-		});
+		).setActionRow(Button.primary("treasureclaim", "Claim").withEmoji(Emoji.fromUnicode("🔑"))).queue();
 	}
 }

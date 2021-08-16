@@ -9,6 +9,7 @@ import me.vixen.chopperbot.guilds.Config;
 import me.vixen.chopperbot.guilds.GuildManager;
 import me.vixen.chopperbot.tools.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.ReadyEvent;
@@ -20,6 +21,8 @@ import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.interactions.InteractionHook;
+import net.dv8tion.jda.api.interactions.components.ActionRow;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
@@ -186,6 +189,16 @@ public class Listener extends ListenerAdapter {
 				event.getChannel().sendMessage(
 					event.getMessage().getEmbeds().get(0).getFooter().getText().replaceFirst("Id: ", "")
 				).mention(event.getMember()).queue(msg -> msg.delete().queueAfter(10L, TimeUnit.SECONDS));
+			}
+			case "treasureclaim" -> {
+				//noinspection ConstantConditions this can't be null as it will always be from a guild
+				event.deferEdit()
+					.flatMap(InteractionHook::retrieveOriginal)
+					.flatMap((msg) -> msg.editMessageEmbeds(
+						Embeds.getTreasureEmbed(event.getMember()))
+						.setActionRows()
+					)
+					.queue((msg) -> msg.delete().queueAfter(10L, TimeUnit.SECONDS));
 			}
 		}
 	}

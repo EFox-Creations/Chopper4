@@ -37,10 +37,10 @@ public class SummonCommand implements ICommand {
 		for (Guild g : guilds) {
 			if (gManager.contains(g)) {
 				final IGuild ig = gManager.getGuild(g);
-				BackgroundThread.makeTreasureChest(ig.getTreasureChannels(), waiter);
+				BackgroundThread.makeTreasureChest(ig.getTreasureChannels());
 			} else {
 				final List<TextChannel> defaultTreasureChannels = DefaultEventHandler.getDefaultTreasureChannels(g);
-				BackgroundThread.makeTreasureChest(defaultTreasureChannels, waiter);
+				BackgroundThread.makeTreasureChest(defaultTreasureChannels);
 			}
 		}
 

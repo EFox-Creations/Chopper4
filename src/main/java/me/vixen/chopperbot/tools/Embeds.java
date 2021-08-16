@@ -1,7 +1,11 @@
 package me.vixen.chopperbot.tools;
 
+import me.vixen.chopperbot.BackgroundThread;
+import me.vixen.chopperbot.database.DBMember;
+import me.vixen.chopperbot.database.Database;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.utils.TimeFormat;
@@ -15,6 +19,8 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 public class Embeds {
 
@@ -236,7 +242,7 @@ public class Embeds {
 		return new EmbedBuilder()
 			.setAuthor(user.getAsTag(), null,
 				user.getAvatarUrl() == null ? "https://cdn.discordapp.com/embed/avatars/0.png" : user.getAvatarUrl())
-			.setDescription(getCommandString(event))
+			.setDescription(event.getCommandString())
 			.build();
 	}
 
@@ -288,53 +294,76 @@ public class Embeds {
 		else return "0 seconds";
 	}
 
-	/**
-	 * Gets the slash command String for this slash command.
-	 * <br>This is similar to the String you see when clicking the interaction name in the client.
-	 *
-	 * <p>Example return for an echo command: {@code /say echo phrase: Say this}
-	 *
-	 * @return The command String for this slash command
-	 */
-	@Nonnull
-	private static String getCommandString(SlashCommandEvent event)
-	{
-		//Get text like the text that appears when you hover over the interaction in discord
-		StringBuilder builder = new StringBuilder();
-		builder.append("/").append(event.getName());
-		if (event.getSubcommandGroup() != null)
-			builder.append(" ").append(event.getSubcommandGroup());
-		if (event.getSubcommandName() != null)
-			builder.append(" ").append(event.getSubcommandName());
-		for (OptionMapping o : event.getOptions())
-		{
-			builder.append(" ").append(o.getName()).append(": ");
-			switch (o.getType())
-			{
-				case CHANNEL:
-					builder.append("#").append(o.getAsGuildChannel().getName());
-					break;
-				case USER:
-					builder.append("@").append(o.getAsUser().getName());
-					break;
-				case ROLE:
-					builder.append("@").append(o.getAsRole().getName());
-					break;
-				case MENTIONABLE: //client only allows user or role mentionable as of Aug 4, 2021
-					if (o.getAsMentionable() instanceof RoleImpl)
-						builder.append("@").append(((RoleImpl) o.getAsMentionable()).getName());
-					else if (o.getAsMentionable() instanceof MemberImpl)
-						builder.append("@").append(((MemberImpl) o.getAsMentionable()).getEffectiveName());
-					else if (o.getAsMentionable() instanceof UserImpl)
-						builder.append("@").append(((UserImpl) o.getAsMentionable()).getName());
-					else
-						builder.append("@").append(o.getAsMentionable().getIdLong());
-					break;
-				default:
-					builder.append(o.getAsString());
-					break;
-			}
-		}
-		return builder.toString();
+	public static MessageEmbed getTreasureEmbed(Member member) {
+		ChestRewardsEnum reward = ChestRewardsEnum.getRandom();
+		int value = ChestRewardsEnum.getValue(reward);
+		final DBMember dbMember = Database.getMember(member.getGuild(), member.getUser().getId());
+		if (dbMember == null) return null; //something fucky happened
+		final int skill = dbMember.getSkill();
+		final int rand = skill < 10 ? new Random().nextInt(10)+1 : new Random().nextInt(100)+1;
+		boolean opened = skill > rand;
+		dbMember.adjustSkill(opened ? 1 : 2);
+		dbMember.adjustCoins(opened ? value : 0);
+		dbMember.update();
+
+		if (opened)
+			return new EmbedBuilder()
+				.setTitle(ChestRewardsEnum.getName(reward))
+				.setColor(new Color(0,143,186))
+				.setDescription(String.format("You found %d coins!", value))
+				.setFooter("Skill increased by 2!")
+				.build();
+
+		return new EmbedBuilder()
+			.setTitle("⛔ The lock broke!")
+			.setColor(Color.RED)
+			.setFooter("Skill increased by 1 anyway!")
+			.build();
 	}
+
+	private enum ChestRewardsEnum {
+		Empty,
+		ForgottenTreasure,
+		Spoils,
+		Fortune,
+		Motherload,
+		FoxbeardsHorde;
+
+		private static int getValue(ChestRewardsEnum reward) {
+			return switch (reward) {
+				case Empty -> 0;
+				case ForgottenTreasure -> new Random().nextInt(4) + 1;
+				case Spoils -> new Random().nextInt(4) + 6;
+				case Fortune -> new Random().nextInt(4) + 11;
+				case Motherload -> new Random().nextInt(4) + 16;
+				case FoxbeardsHorde -> new Random().nextInt(4) + 21;
+			};
+		}
+
+		private static ChestRewardsEnum getRandom() {
+			int rand = new Random().nextInt(100)+1;
+			if (isBetween(rand, 0, 10)) return Empty; //10%
+			if (isBetween(rand, 11, 30)) return ForgottenTreasure; //20%
+			if (isBetween(rand, 31, 60)) return Spoils; //30%
+			if (isBetween(rand, 61, 85)) return Fortune; //25%
+			if (isBetween(rand, 86, 95)) return Motherload; //10%
+			if (isBetween(rand, 95, 100)) return FoxbeardsHorde; //5%
+			else return getRandom();
+		}
+
+		private static boolean isBetween(int x, int lower, int upper) {
+			return lower <= x && x <= upper;
+		}
+
+		private static String getName(ChestRewardsEnum reward) {
+			return switch (reward) {
+				case Empty -> "Empty";
+				case ForgottenTreasure -> "Forgotten Treasure";
+				case Spoils -> "Spoils";
+				case Fortune -> "Fortune";
+				case Motherload -> "Motherload";
+				case FoxbeardsHorde -> "Foxbeard's Horde";
+			};
+		}
+	} //End Enum
 }
