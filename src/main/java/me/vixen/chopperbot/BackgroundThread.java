@@ -3,6 +3,7 @@ package me.vixen.chopperbot;
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import me.vixen.chopperbot.database.DBMember;
 import me.vixen.chopperbot.database.Database;
+import me.vixen.chopperbot.guilds.Config;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
@@ -23,6 +24,7 @@ import net.dv8tion.jda.api.interactions.components.Button;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 //import java.util.Random;
 
 public class BackgroundThread {
@@ -72,19 +74,33 @@ public class BackgroundThread {
 				reset = true;
 				if (currentHour == hourToSpawn) {
 					for (Guild g : Entry.jda.getGuilds()) {
-						if (gManager.contains(g)) {
-							final IGuild ig = gManager.getGuild(g);
-							makeTreasureChest(ig.getTreasureChannels());
-						} else {
-							final List<TextChannel> defaultTreasureChannels = DefaultEventHandler.getDefaultTreasureChannels(g);
-							makeTreasureChest(defaultTreasureChannels);
+						Config config = Database.getConfig(g.getId());
+						if (config == null) {
+							DefaultEventHandler.getDefaultTreasureChannels(g);
+							continue; //Skip to next guild
 						}
+
+						List<GuildChannel> treasureChannels = g.getChannels()
+							.stream()
+							.filter(it -> shouldInclude(it, config)) //Remove all but appointed channels
+							.filter(it -> it.getType().equals(ChannelType.TEXT)) //Remove non-text channels
+							.collect(Collectors.toList());
+						BackgroundThread.makeTreasureChest(treasureChannels);
 					}
 					hourToSpawn = OffsetDateTime.now().plusHours(new Random().nextInt(3)+4).getHour();
 				}
 			}
 			currentHour = OffsetDateTime.now().getHour();
 		} while (runForever);
+	}
+
+	public static boolean shouldInclude(GuildChannel gc, Config c) {
+		Config.TreasureMode mode = c.getMode();
+		if (mode.equals(Config.TreasureMode.BLACKLIST))
+			return !c.getChannels().contains(gc.getId());
+		else if (mode.equals(Config.TreasureMode.WHITELIST))
+			return c.getChannels().contains(gc.getId());
+		else return false;
 	}
 
 	/*
@@ -105,9 +121,17 @@ public class BackgroundThread {
 	}
 	*/
 
-	public static void makeTreasureChest(List<TextChannel> availableChannels) {
+	public static void makeTreasureChest(List<GuildChannel> availableChannels) {
 		if (availableChannels.isEmpty()) return;
-		final TextChannel targetChannel = availableChannels.get(new Random().nextInt(availableChannels.size()));
+		final TextChannel targetChannel;
+		GuildChannel selectedChannel = availableChannels.get(new Random().nextInt(availableChannels.size()));
+		try {
+			targetChannel = (TextChannel) selectedChannel;
+		} catch (ClassCastException e) {
+			Logger.log("Could not create treasure in " + selectedChannel.getName()
+				+ "::" + selectedChannel.getGuild().getName(), e);
+			return;
+		}
 		targetChannel.sendMessageEmbeds(
 			new EmbedBuilder()
 				.setColor(new Color(0,143,186))

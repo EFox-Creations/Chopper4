@@ -57,20 +57,6 @@ public interface IGuild {
 		DefaultEventHandler.nightlyReset(Entry.jda.getGuildById(getId()));
 	}
 
-	default List<TextChannel> getTreasureChannels() {
-		final Guild g = getGuild();
-		final List<TextChannel> textChannels = g.getTextChannels();
-		final Role publicRole = g.getPublicRole();
-		return textChannels.stream().filter(it ->
-			publicRole.hasPermission(it, List.of(
-				Permission.MESSAGE_WRITE,
-				Permission.MESSAGE_READ,
-				Permission.MESSAGE_HISTORY,
-				Permission.MESSAGE_ADD_REACTION
-			))
-		).collect(Collectors.toList());
-	}
-
 	default void handleSlashCommand(SlashCommandEvent event, EventWaiter waiter, GlobalCommandManager cManager) {
 		DefaultEventHandler.handleSlashCommand(event, cManager);
 	}

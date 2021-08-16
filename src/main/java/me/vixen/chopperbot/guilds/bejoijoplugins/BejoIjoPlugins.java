@@ -69,19 +69,6 @@ public class BejoIjoPlugins implements IGuild {
 	}
 
 	@Override
-	public List<TextChannel> getTreasureChannels() {
-		List<String> whitelist = List.of(
-			"663796410130628641", "692962949295243297", "671729684693778483",
-			"696220432592011336", "663796646878117908", "698985553986584686"
-		);
-
-		return getGuild().getTextChannels().stream()
-			.filter(it -> whitelist.contains(it.getId()))
-			.collect(Collectors.toList()
-			);
-	}
-
-	@Override
 	public void handleSlashCommand(SlashCommandEvent event, EventWaiter waiter, GlobalCommandManager cManager) {
 		boolean found = false;
 		for (ICommand c : getLocalCommands()) {

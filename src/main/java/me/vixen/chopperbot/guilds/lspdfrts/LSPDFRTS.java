@@ -35,17 +35,6 @@ public class LSPDFRTS implements IGuild {
 	}
 
 	@Override
-	public List<TextChannel> getTreasureChannels() {
-		List<String> channelIds = List.of(
-			"788821946312687656", "815733622216589332",
-			"790373472173555719"
-		);
-		return getGuild().getTextChannels().stream().filter(it ->
-			channelIds.contains(it.getId()))
-			.collect(Collectors.toList());
-	}
-
-	@Override
 	public void handleGMemJoin(GuildMemberJoinEvent event, EventWaiter waiter) {
 		TextChannel welcome = getGuild().getTextChannelById("811247930836779038");
 		if (welcome != null)
