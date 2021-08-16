@@ -57,8 +57,6 @@ public class SummonCommand implements ICommand {
 		event.getHook().editOriginal("Done").queue();
 	}
 
-
-
 	@Override
 	public CommandData getCommandData() {
 		return new CommandData("summon", "Summon safes in all discords (Only works for Creator)");
