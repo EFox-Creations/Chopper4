@@ -196,7 +196,7 @@ public class Listener extends ListenerAdapter {
 					.flatMap(InteractionHook::retrieveOriginal)
 					.flatMap((msg) -> msg.editMessageEmbeds(
 						Embeds.getTreasureEmbed(event.getMember()))
-						.setActionRows()
+						.override(true)
 					)
 					.queue((msg) -> msg.delete().queueAfter(10L, TimeUnit.SECONDS));
 			}
