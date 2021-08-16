@@ -75,7 +75,7 @@ public class BackgroundThread {
 				if (currentHour == hourToSpawn) {
 					for (Guild g : Entry.jda.getGuilds()) {
 						Config config = Database.getConfig(g.getId());
-						if (config == null || config.getChannels().isEmpty()) {
+						if (config == null) {
 							DefaultEventHandler.getDefaultTreasureChannels(g);
 							continue; //Skip to next guild
 						}

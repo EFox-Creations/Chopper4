@@ -50,6 +50,16 @@ public class ConfigBuilder{
 		return this;
 	}
 
+	public ConfigBuilder setDomains(List<String> domains) {
+		this.domains = domains;
+		return this;
+	}
+
+	public ConfigBuilder setTreasureChannels(List<String> treasureChannels) {
+		this.treasureChannels = treasureChannels;
+		return this;
+	}
+
 	public Config build() {
 		return new Config(modLogId, lvlMsgOverride, onlyStaffPolls, enableJoinLeaveMessges, joinLeaveMsgsChannelId,
 			punishment, domains, mode, treasureChannels);

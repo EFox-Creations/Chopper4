@@ -20,6 +20,7 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -43,7 +44,6 @@ public class ConfigCommand implements ICommand {
 			case "set" -> setConfig(event);
 			case "adddomain" -> {
 				Config config = Database.getConfig(event.getGuild().getId());
-
 				if (config == null) {
 					event.replyEmbeds(Embeds.getPleaseDoConfig()).queue();
 					return;
@@ -247,7 +247,15 @@ public class ConfigCommand implements ICommand {
 		//noinspection ConstantConditions is required, can't be null
 		Config.TreasureMode mode = Config.TreasureMode.valueOf(treasureMode.getAsString());
 
-		Config config = new ConfigBuilder()
+		List<String> domains = new ArrayList<>();
+		List<String> channels = new ArrayList<>();
+		Config config = Database.getConfig(event.getGuild().getId());
+		if (config != null) {
+			domains = config.getDomains();
+			channels = config.getChannels();
+		}
+
+		Config newConfig = new ConfigBuilder()
 			.setLvlMsgOverride(!msgsdisabled)
 			.setModLogId(modlogId)
 			.setIsOnlyStaffPolls(onlyStaffPolls)
@@ -255,9 +263,11 @@ public class ConfigCommand implements ICommand {
 			.setJoinLeaveMsgsChannelId(joinLeaveChannelId)
 			.setPunishment(punishment)
 			.setTreasureMode(mode)
+			.setDomains(domains)
+			.setTreasureChannels(channels)
 			.build();
 
-		boolean b = Database.setConfig(event.getGuild().getId(), config.serialize());
+		boolean b = Database.setConfig(event.getGuild().getId(), newConfig.serialize());
 		event.reply(b ? "Config set!" : "An error occurred; aborting with Code " + Errors.CONFIG1).queue();
 	}
 
