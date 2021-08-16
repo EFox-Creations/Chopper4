@@ -4,16 +4,21 @@ import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import me.vixen.chopperbot.BackgroundThread;
 import me.vixen.chopperbot.Entry;
 import me.vixen.chopperbot.commands.ICommand;
+import me.vixen.chopperbot.database.Database;
+import me.vixen.chopperbot.guilds.Config;
 import me.vixen.chopperbot.guilds.GuildManager;
 import me.vixen.chopperbot.guilds.IGuild;
 import me.vixen.chopperbot.listener.DefaultEventHandler;
 import me.vixen.chopperbot.tools.Embeds;
+import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.GuildChannel;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class SummonCommand implements ICommand {
 
@@ -34,18 +39,25 @@ public class SummonCommand implements ICommand {
 
 		event.reply("Summoning in " + guilds.size() + " guilds...").queue();
 
-		for (Guild g : guilds) {
-			if (gManager.contains(g)) {
-				final IGuild ig = gManager.getGuild(g);
-				BackgroundThread.makeTreasureChest(ig.getTreasureChannels());
-			} else {
-				final List<TextChannel> defaultTreasureChannels = DefaultEventHandler.getDefaultTreasureChannels(g);
-				BackgroundThread.makeTreasureChest(defaultTreasureChannels);
+		for (Guild g : Entry.jda.getGuilds()) {
+			Config config = Database.getConfig(g.getId());
+			if (config == null || config.getChannels().isEmpty()) {
+				DefaultEventHandler.getDefaultTreasureChannels(g);
+				continue; //Skip to next guild
 			}
+
+			List<GuildChannel> treasureChannels = g.getChannels()
+				.stream()
+				.filter(it -> BackgroundThread.shouldInclude(it, config)) //Remove all but appointed channels
+				.filter(it -> it.getType().equals(ChannelType.TEXT)) //Remove non-text channels
+				.collect(Collectors.toList());
+			BackgroundThread.makeTreasureChest(treasureChannels);
 		}
 
 		event.getHook().editOriginal("Done").queue();
 	}
+
+
 
 	@Override
 	public CommandData getCommandData() {

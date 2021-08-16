@@ -8,6 +8,9 @@ import me.vixen.chopperbot.guilds.ConfigBuilder;
 import me.vixen.chopperbot.tools.Embeds;
 import me.vixen.chopperbot.tools.Errors;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.ChannelType;
+import net.dv8tion.jda.api.entities.GuildChannel;
+import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
@@ -20,6 +23,7 @@ import java.awt.*;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class ConfigCommand implements ICommand {
 	@Override
@@ -54,7 +58,7 @@ public class ConfigCommand implements ICommand {
 				if (matcher.find()) domain = matcher.group(0);
 				config.addDomain(domain);
 				boolean b = Database.setConfig(event.getGuild().getId(), config.serialize());
-				event.reply(b ? "Added!" + domain : "An error occurred; aborting with Code " + Errors.CONFIG1).queue();
+				event.reply(b ? "Added! " + domain : "An error occurred; aborting with Code " + Errors.CONFIG1).queue();
 			}
 			case "deletedomain" -> {
 				Config config = Database.getConfig(event.getGuild().getId());
@@ -64,6 +68,7 @@ public class ConfigCommand implements ICommand {
 					return;
 				}
 				String domain = event.getOption("domain").getAsString();
+				config.deleteDomain(domain);
 				boolean b = Database.setConfig(event.getGuild().getId(), config.serialize());
 				event.reply(b ? "Deleted!" : "An error occurred; aborting with Code " + Errors.CONFIG1).queue();
 			}
@@ -100,6 +105,82 @@ public class ConfigCommand implements ICommand {
 							.build()
 					).queue();
 				}
+			}
+
+			case "addchannel" -> {
+				Config config = Database.getConfig(event.getGuild().getId());
+				if (config == null) {
+					event.replyEmbeds(Embeds.getPleaseDoConfig()).queue();
+					return;
+				}
+				GuildChannel channel = event.getOption("channel").getAsGuildChannel();
+				if (!channel.getType().equals(ChannelType.TEXT)) {
+					event.reply("That is not a valid text channel!").queue();
+					return;
+				}
+
+				config.addChannel(channel.getId());
+				boolean b = Database.setConfig(event.getGuild().getId(), config.serialize());
+
+				event.reply(
+					b ?
+					"Added " + channel.getAsMention() + " to the " + config.getMode().capitalize()
+					: "An error occurred; aborting with Code " + Errors.CONFIG1)
+				.queue();
+			}
+
+			case "deletechannel" -> {
+				Config config = Database.getConfig(event.getGuild().getId());
+				if (config == null) {
+					event.replyEmbeds(Embeds.getPleaseDoConfig()).queue();
+					return;
+				}
+				GuildChannel channel = event.getOption("channel").getAsGuildChannel();
+				String channelId = channel.getId();
+				config.removeChannel(channelId);
+				boolean b = Database.setConfig(event.getGuild().getId(), config.serialize());
+				event.reply(
+					b ?
+					"Deleted " + channel.getAsMention() + " from the " + config.getMode().capitalize()
+					: "An error occurred; aborting with Code " + Errors.CONFIG1)
+				.queue();
+			}
+
+			case "clearchannels" -> {
+				Config config = Database.getConfig(event.getGuild().getId());
+				if (config == null) {
+					event.replyEmbeds(Embeds.getPleaseDoConfig()).queue();
+					return;
+				}
+				config.clearChannels();
+				boolean b = Database.setConfig(event.getGuild().getId(), config.serialize());
+				event.reply(b ? "Cleared!" : "An error occurred; aborting with Code " + Errors.CONFIG1).queue();
+			}
+
+			case "viewchannels" -> {
+				Config config = Database.getConfig(event.getGuild().getId());
+				if (config == null) {
+					event.replyEmbeds(Embeds.getPleaseDoConfig()).queue();
+					return;
+				}
+
+				List<GuildChannel> listedChannels =
+					event.getGuild().getChannels()
+						.stream().filter(
+							it -> config.getChannels().contains(it.getId()))
+						.collect(Collectors.toList());
+
+				StringBuilder builder = new StringBuilder();
+				for (GuildChannel ch : listedChannels)
+					builder.append(ch.getAsMention()).append("\n");
+
+				event.replyEmbeds(
+					new EmbedBuilder()
+						.setColor(Color.CYAN)
+						.setTitle("Current mode: " + config.getMode())
+						.setDescription(builder.toString())
+						.build()
+				).queue();
 			}
 		}
 	}
@@ -159,8 +240,12 @@ public class ConfigCommand implements ICommand {
 
 		boolean enableJoinLeaveMessages = event.getOption("enablejoinleavemsgs").getAsBoolean();
 
-		OptionMapping optMap = event.getOption("joinleavemsgschannel");
-		String joinLeaveChannelId = optMap == null ? null : optMap.getAsString();
+		OptionMapping channelSetting = event.getOption("joinleavemsgschannel");
+		String joinLeaveChannelId = channelSetting == null ? null : channelSetting.getAsString();
+
+		OptionMapping treasureMode = event.getOption("treasuremode");
+		//noinspection ConstantConditions is required, can't be null
+		Config.TreasureMode mode = Config.TreasureMode.valueOf(treasureMode.getAsString());
 
 		Config config = new ConfigBuilder()
 			.setLvlMsgOverride(!msgsdisabled)
@@ -169,6 +254,7 @@ public class ConfigCommand implements ICommand {
 			.setEnableJoinLeaveMessges(enableJoinLeaveMessages)
 			.setJoinLeaveMsgsChannelId(joinLeaveChannelId)
 			.setPunishment(punishment)
+			.setTreasureMode(mode)
 			.build();
 
 		boolean b = Database.setConfig(event.getGuild().getId(), config.serialize());
@@ -197,7 +283,9 @@ public class ConfigCommand implements ICommand {
 					new OptionData(OptionType.BOOLEAN, "enablejoinleavemsgs",
 						"Should Chop show Join and leave messages?", true),
 					new OptionData(OptionType.CHANNEL, "joinleavemsgschannel",
-						"What channel should they be shown in?\nPlease note this MUST be provided to recieve them")
+						"What channel should they be shown in?\nPlease note this MUST be provided to recieve them"),
+					new OptionData(OptionType.STRING, "treasuremode", "The mode for your treasure channel list", true)
+						.addChoice("Blacklist", "BLACKLIST").addChoice("Whitelist", "WHITELIST")
 				),
 				new SubcommandData("adddomain", "Add a new doamin to the blacklist")
 					.addOption(OptionType.STRING, "domain",
@@ -208,7 +296,13 @@ public class ConfigCommand implements ICommand {
 						"This should only be the website name and suffix" +
 							" ex. youtube.com", true),
 				new SubcommandData("cleardomains", "Clear all domains from the blacklist"),
-				new SubcommandData("viewdomains", "See your blacklisted domains")
+				new SubcommandData("viewdomains", "See your blacklisted domains"),
+				new SubcommandData("addchannel", "Add a channel to the Black/White list")
+					.addOption(OptionType.CHANNEL, "channel", "The channel to add", true),
+				new SubcommandData("deletechannel", "Delete a channel from the Black/White list")
+					.addOption(OptionType.CHANNEL, "channel", "The channel to delete", true),
+				new SubcommandData("clearchannels", "Clear all channels from the Black/White list"),
+				new SubcommandData("viewchannels", "View all current Black/White listed channels")
 		);
 	}
 }

@@ -3,11 +3,13 @@ package me.vixen.chopperbot.guilds;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
+import net.dv8tion.jda.api.entities.TextChannel;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class Config {
 
@@ -16,6 +18,15 @@ public class Config {
 		WARN,
 		KICK,
 		BAN
+	}
+
+	public enum TreasureMode {
+		BLACKLIST,
+		WHITELIST;
+
+		public String capitalize() {
+			return Character.toString(this.toString().charAt(0)).toUpperCase() + this.toString().toLowerCase().substring(1);
+		}
 	}
 
 	@SerializedName("Modlog ID")
@@ -32,9 +43,14 @@ public class Config {
 	private Punishment punishment;
 	@SerializedName("Blacklist Domains")
 	private final List<String> domains;
+	@SerializedName("Treasure Mode")
+	private final TreasureMode mode;
+	@SerializedName("Treasure Channels")
+	private final List<String> channels;
 
 	protected Config(String modlogId, boolean lvlMsgOverride, boolean onlyStaffPolls, boolean enableJoinLeaveMsgs,
-					 String joinLeaveMsgsChannelId, Punishment punishment, List<String> domains) {
+					 String joinLeaveMsgsChannelId, Punishment punishment, List<String> domains, TreasureMode mode,
+					 List<String> channels) {
 		this.modlogId = modlogId;
 		this.lvlMsgOverride = lvlMsgOverride;
 		this.onlyStaffPolls = onlyStaffPolls;
@@ -42,6 +58,8 @@ public class Config {
 		this.joinLeaveMsgsChannelId = joinLeaveMsgsChannelId;
 		this.punishment = punishment;
 		this.domains = domains;
+		this.mode = mode;
+		this.channels = channels;
 	}
 
 	public static Config deserializeConfig(String Json) {
@@ -89,11 +107,31 @@ public class Config {
 	}
 
 	public boolean deleteDomain(String domain) {
-		return domains.remove(domain);
+		return domains.removeIf(it -> it.equals(domain));
 	}
 
 	public void clearDomains() {
 		domains.clear();
+	}
+
+	public TreasureMode getMode() {
+		return mode;
+	}
+
+	public List<String> getChannels() {
+		return channels;
+	}
+
+	public void addChannel(String channelId) {
+		this.channels.add(channelId);
+	}
+
+	public void removeChannel(String channelId) {
+		this.channels.removeIf(it -> it.equals(channelId));
+	}
+
+	public void clearChannels() {
+		this.channels.clear();
 	}
 }
 
