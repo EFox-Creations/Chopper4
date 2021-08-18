@@ -295,9 +295,8 @@ public class ConfigCommand implements ICommand {
 					new OptionData(OptionType.STRING, "treasuremode", "The mode for your treasure channel list", true)
 						.addChoice("Blacklist", "BLACKLIST").addChoice("Whitelist", "WHITELIST"),
 					new OptionData(OptionType.CHANNEL, "joinleavemsgschannel",
-						"What channel should they be shown in?\nPlease note this MUST be provided to recieve them"),
-					new OptionData(OptionType.STRING, "treasuremode", "The mode for your treasure channel list", true)
-						.addChoice("Blacklist", "BLACKLIST").addChoice("Whitelist", "WHITELIST")
+						"What channel should they be shown in?\nPlease note this MUST be provided to recieve them")
+
 				),
 				new SubcommandData("adddomain", "Add a new doamin to the blacklist")
 					.addOption(OptionType.STRING, "domain",

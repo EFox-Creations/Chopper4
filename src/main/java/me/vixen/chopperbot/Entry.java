@@ -16,6 +16,8 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
+import net.dv8tion.jda.api.utils.MemberCachePolicy;
+import net.dv8tion.jda.api.utils.cache.CacheFlag;
 
 import javax.security.auth.login.LoginException;
 import java.io.BufferedReader;
@@ -47,7 +49,8 @@ public class Entry {
 			GatewayIntent.GUILD_BANS,
 			GatewayIntent.GUILD_MEMBERS,
 			GatewayIntent.GUILD_MESSAGE_REACTIONS,
-			GatewayIntent.GUILD_EMOJIS
+			GatewayIntent.GUILD_EMOJIS,
+			GatewayIntent.GUILD_VOICE_STATES
 		);
 
 		EventWaiter waiter = new EventWaiter();
@@ -58,8 +61,9 @@ public class Entry {
 		jda = JDABuilder.createDefault(token, enabledIntents)
 			.addEventListeners(waiter, new Listener(waiter, commandManager, guildManager))
 			.setActivity(Activity.listening("/help"))
+			.enableCache(CacheFlag.VOICE_STATE)
+			.setMemberCachePolicy(MemberCachePolicy.VOICE)
 			.setChunkingFilter(ChunkingFilter.NONE)
-			.disableIntents(GatewayIntent.GUILD_VOICE_STATES)
 			.setStatus(OnlineStatus.ONLINE).build().awaitReady();
 		Database.initDatabase(jda.getGuilds());
 
