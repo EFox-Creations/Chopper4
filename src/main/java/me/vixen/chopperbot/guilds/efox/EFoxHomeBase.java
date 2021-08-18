@@ -45,17 +45,6 @@ public class EFoxHomeBase implements IGuild {
 		return guildId;
 	}
 
-	@Override
-	public List<TextChannel> getTreasureChannels() {
-		List<String> channelIds = List.of(
-			"762470329759039499", "768325475923001385",
-			"795147170785001522"
-		);
-		return getGuild().getTextChannels().stream().filter(it ->
-			channelIds.contains(it.getId()))
-			.collect(Collectors.toList());
-	}
-
 	protected static boolean isTicketTeam(Member member) {
 		Guild guild = member.getGuild();
 		Role vixen = guild.getRoleById("869659092174667806");

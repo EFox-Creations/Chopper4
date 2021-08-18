@@ -12,6 +12,8 @@ public class ConfigBuilder{
 	private String joinLeaveMsgsChannelId;
 	private Config.Punishment punishment;
 	private List<String> domains = new ArrayList<>();
+	private Config.TreasureMode mode;
+	private List<String> treasureChannels = new ArrayList<>();
 
 	public ConfigBuilder setModLogId(String modLogId) {
 		this.modLogId = modLogId;
@@ -43,13 +45,23 @@ public class ConfigBuilder{
 		return this;
 	}
 
-	public ConfigBuilder setBlacklistDomains(List<String> domains) {
+	public ConfigBuilder setTreasureMode(Config.TreasureMode mode) {
+		this.mode = mode;
+		return this;
+	}
+
+	public ConfigBuilder setDomains(List<String> domains) {
 		this.domains = domains;
+		return this;
+	}
+
+	public ConfigBuilder setTreasureChannels(List<String> treasureChannels) {
+		this.treasureChannels = treasureChannels;
 		return this;
 	}
 
 	public Config build() {
 		return new Config(modLogId, lvlMsgOverride, onlyStaffPolls, enableJoinLeaveMessges, joinLeaveMsgsChannelId,
-			punishment, domains);
+			punishment, domains, mode, treasureChannels);
 	}
 }

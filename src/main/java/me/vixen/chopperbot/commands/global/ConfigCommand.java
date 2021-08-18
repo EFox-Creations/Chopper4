@@ -123,7 +123,7 @@ public class ConfigCommand implements ICommand {
 				config.addChannel(channel.getId());
 				boolean b = Database.setConfig(event.getGuild().getId(), config.serialize());
 
-				event.getHook().editOriginal(
+          event.getHook().editOriginal(
 					b ?
 					"Added " + channel.getAsMention() + " to the " + config.getMode().capitalize()
 					: "An error occurred; aborting with Code " + Errors.CONFIG1)
@@ -174,7 +174,6 @@ public class ConfigCommand implements ICommand {
 				StringBuilder builder = new StringBuilder();
 				for (GuildChannel ch : listedChannels)
 					builder.append(ch.getAsMention()).append("\n");
-
 				event.getHook().editOriginalEmbeds(
 					new EmbedBuilder()
 						.setColor(Color.CYAN)
@@ -296,7 +295,9 @@ public class ConfigCommand implements ICommand {
 					new OptionData(OptionType.STRING, "treasuremode", "The mode for your treasure channel list", true)
 						.addChoice("Blacklist", "BLACKLIST").addChoice("Whitelist", "WHITELIST"),
 					new OptionData(OptionType.CHANNEL, "joinleavemsgschannel",
-						"What channel should they be shown in?\nPlease note this MUST be provided to recieve them")
+						"What channel should they be shown in?\nPlease note this MUST be provided to recieve them"),
+					new OptionData(OptionType.STRING, "treasuremode", "The mode for your treasure channel list", true)
+						.addChoice("Blacklist", "BLACKLIST").addChoice("Whitelist", "WHITELIST")
 				),
 				new SubcommandData("adddomain", "Add a new doamin to the blacklist")
 					.addOption(OptionType.STRING, "domain",
