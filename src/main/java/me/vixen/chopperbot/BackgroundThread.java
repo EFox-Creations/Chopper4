@@ -136,7 +136,7 @@ public class BackgroundThread {
 			new EmbedBuilder()
 				.setColor(new Color(0,143,186))
 				.setTitle("🏝 A safe has washed ashore!")
-				.setDescription("React with 🔑 to pick the lock!")
+				.setDescription("Click 🔑 to pick the lock!")
 				.build()
 		).setActionRow(Button.primary("treasureclaim", "Claim").withEmoji(Emoji.fromUnicode("🔑"))).queue();
 	}
