@@ -29,14 +29,15 @@ import java.util.stream.Collectors;
 public class ConfigCommand implements ICommand {
 	@Override
 	public void handle(SlashCommandEvent event) {
+		event.deferReply().queue();
 		@SuppressWarnings("ConstantConditions") //This cant be null as we don't accept DM SCE
 		DBMember dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
 		if (dbMember == null) {
-			event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
+			event.getHook().editOriginal("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
 			return;
 		}
 		if (!dbMember.isAuthorized()) {
-			event.replyEmbeds(Embeds.getPermissionMissing()).queue();
+			event.getHook().editOriginalEmbeds(Embeds.getPermissionMissing()).queue();
 			return;
 		}
 
@@ -45,7 +46,7 @@ public class ConfigCommand implements ICommand {
 			case "adddomain" -> {
 				Config config = Database.getConfig(event.getGuild().getId());
 				if (config == null) {
-					event.replyEmbeds(Embeds.getPleaseDoConfig()).queue();
+					event.getHook().editOriginalEmbeds(Embeds.getPleaseDoConfig()).queue();
 					return;
 				}
 				String domain = event.getOption("domain").getAsString();
@@ -58,46 +59,46 @@ public class ConfigCommand implements ICommand {
 				if (matcher.find()) domain = matcher.group(0);
 				config.addDomain(domain);
 				boolean b = Database.setConfig(event.getGuild().getId(), config.serialize());
-				event.reply(b ? "Added! " + domain : "An error occurred; aborting with Code " + Errors.CONFIG1).queue();
+				event.getHook().editOriginal(b ? "Added! " + domain : "An error occurred; aborting with Code " + Errors.CONFIG1).queue();
 			}
 			case "deletedomain" -> {
 				Config config = Database.getConfig(event.getGuild().getId());
 
 				if (config == null) {
-					event.replyEmbeds(Embeds.getPleaseDoConfig()).queue();
+					event.getHook().editOriginalEmbeds(Embeds.getPleaseDoConfig()).queue();
 					return;
 				}
 				String domain = event.getOption("domain").getAsString();
 				config.deleteDomain(domain);
 				boolean b = Database.setConfig(event.getGuild().getId(), config.serialize());
-				event.reply(b ? "Deleted!" : "An error occurred; aborting with Code " + Errors.CONFIG1).queue();
+				event.getHook().editOriginal(b ? "Deleted!" : "An error occurred; aborting with Code " + Errors.CONFIG1).queue();
 			}
 			case "cleardomains" -> {
 				Config config = Database.getConfig(event.getGuild().getId());
 
 				if (config == null) {
-					event.replyEmbeds(Embeds.getPleaseDoConfig()).queue();
+					event.getHook().editOriginalEmbeds(Embeds.getPleaseDoConfig()).queue();
 					return;
 				}
 				config.clearDomains();
 				boolean b = Database.setConfig(event.getGuild().getId(), config.serialize());
-				event.reply(b ? "Cleared!" : "An error occurred; aborting with Code " + Errors.CONFIG1).queue();
+				event.getHook().editOriginal(b ? "Cleared!" : "An error occurred; aborting with Code " + Errors.CONFIG1).queue();
 			}
 			case "viewdomains" -> {
 				Config config = Database.getConfig(event.getGuild().getId());
 
 				if (config == null) {
-					event.replyEmbeds(Embeds.getPleaseDoConfig()).queue();
+					event.getHook().editOriginalEmbeds(Embeds.getPleaseDoConfig()).queue();
 					return;
 				}
 				if (config.getDomains() == null || config.getDomains().isEmpty()){
-					event.reply("You have no blacklisted domains").queue();
+					event.getHook().editOriginal("You have no blacklisted domains").queue();
 					return;
 				} else {
 					StringBuilder builder = new StringBuilder();
 					for (String s : config.getDomains())
 						builder.append(s).append("\n");
-					event.replyEmbeds(
+					event.getHook().editOriginalEmbeds(
 						new EmbedBuilder()
 							.setColor(Color.ORANGE)
 							.setTitle("Blacklisted domains for this Guild")
@@ -110,19 +111,19 @@ public class ConfigCommand implements ICommand {
 			case "addchannel" -> {
 				Config config = Database.getConfig(event.getGuild().getId());
 				if (config == null) {
-					event.replyEmbeds(Embeds.getPleaseDoConfig()).queue();
+					event.getHook().editOriginalEmbeds(Embeds.getPleaseDoConfig()).queue();
 					return;
 				}
 				GuildChannel channel = event.getOption("channel").getAsGuildChannel();
 				if (!channel.getType().equals(ChannelType.TEXT)) {
-					event.reply("That is not a valid text channel!").queue();
+					event.getHook().editOriginal("That is not a valid text channel!").queue();
 					return;
 				}
 
 				config.addChannel(channel.getId());
 				boolean b = Database.setConfig(event.getGuild().getId(), config.serialize());
 
-				event.reply(
+          event.getHook().editOriginal(
 					b ?
 					"Added " + channel.getAsMention() + " to the " + config.getMode().capitalize()
 					: "An error occurred; aborting with Code " + Errors.CONFIG1)
@@ -132,14 +133,14 @@ public class ConfigCommand implements ICommand {
 			case "deletechannel" -> {
 				Config config = Database.getConfig(event.getGuild().getId());
 				if (config == null) {
-					event.replyEmbeds(Embeds.getPleaseDoConfig()).queue();
+					event.getHook().editOriginalEmbeds(Embeds.getPleaseDoConfig()).queue();
 					return;
 				}
 				GuildChannel channel = event.getOption("channel").getAsGuildChannel();
 				String channelId = channel.getId();
 				config.removeChannel(channelId);
 				boolean b = Database.setConfig(event.getGuild().getId(), config.serialize());
-				event.reply(
+				event.getHook().editOriginal(
 					b ?
 					"Deleted " + channel.getAsMention() + " from the " + config.getMode().capitalize()
 					: "An error occurred; aborting with Code " + Errors.CONFIG1)
@@ -149,18 +150,18 @@ public class ConfigCommand implements ICommand {
 			case "clearchannels" -> {
 				Config config = Database.getConfig(event.getGuild().getId());
 				if (config == null) {
-					event.replyEmbeds(Embeds.getPleaseDoConfig()).queue();
+					event.getHook().editOriginalEmbeds(Embeds.getPleaseDoConfig()).queue();
 					return;
 				}
 				config.clearChannels();
 				boolean b = Database.setConfig(event.getGuild().getId(), config.serialize());
-				event.reply(b ? "Cleared!" : "An error occurred; aborting with Code " + Errors.CONFIG1).queue();
+				event.getHook().editOriginal(b ? "Cleared!" : "An error occurred; aborting with Code " + Errors.CONFIG1).queue();
 			}
 
 			case "viewchannels" -> {
 				Config config = Database.getConfig(event.getGuild().getId());
 				if (config == null) {
-					event.replyEmbeds(Embeds.getPleaseDoConfig()).queue();
+					event.getHook().editOriginalEmbeds(Embeds.getPleaseDoConfig()).queue();
 					return;
 				}
 
@@ -173,8 +174,7 @@ public class ConfigCommand implements ICommand {
 				StringBuilder builder = new StringBuilder();
 				for (GuildChannel ch : listedChannels)
 					builder.append(ch.getAsMention()).append("\n");
-
-				event.replyEmbeds(
+				event.getHook().editOriginalEmbeds(
 					new EmbedBuilder()
 						.setColor(Color.CYAN)
 						.setTitle("Current mode: " + config.getMode())
@@ -191,7 +191,7 @@ public class ConfigCommand implements ICommand {
 		if (modlog != null && modlog.getAsMessageChannel() != null)
 			modlogId = modlog.getAsMessageChannel().getId();
 		else {
-			event.replyEmbeds(Embeds.getInvalidArgumentEmbed("modlog", "Must be a text channel")).queue();
+			event.getHook().editOriginalEmbeds(Embeds.getInvalidArgumentEmbed("modlog", "Must be a text channel")).queue();
 			return;
 		}
 
@@ -201,13 +201,13 @@ public class ConfigCommand implements ICommand {
 			try {
 				msgsdisabled = disablelvlmsgs.getAsBoolean();
 			} catch (IllegalArgumentException e) {
-				event.replyEmbeds(
+				event.getHook().editOriginalEmbeds(
 						Embeds.getInvalidArgumentEmbed("disablelvlmsgs", "Must be \"True\" or \"False\""))
 					.queue();
 				return;
 			}
 		} else {
-			event.replyEmbeds(
+			event.getHook().editOriginalEmbeds(
 					Embeds.getInvalidArgumentEmbed("disablelvlmsgs", "Must be \"True\" or \"False\""))
 				.queue();
 			return;
@@ -219,13 +219,13 @@ public class ConfigCommand implements ICommand {
 			try {
 				onlyStaffPolls = onlyStaffPollsOpt.getAsBoolean();
 			} catch (IllegalArgumentException e) {
-				event.replyEmbeds(
+				event.getHook().editOriginalEmbeds(
 						Embeds.getInvalidArgumentEmbed("onlyallowstaffpolls", "Must be \"True\" or \"False\""))
 					.queue();
 				return;
 			}
 		} else {
-			event.replyEmbeds(
+			event.getHook().editOriginalEmbeds(
 					Embeds.getInvalidArgumentEmbed("onlyallowstaffpolls", "Must be \"True\" or \"False\""))
 				.queue();
 			return;
@@ -268,7 +268,7 @@ public class ConfigCommand implements ICommand {
 			.build();
 
 		boolean b = Database.setConfig(event.getGuild().getId(), newConfig.serialize());
-		event.reply(b ? "Config set!" : "An error occurred; aborting with Code " + Errors.CONFIG1).queue();
+		event.getHook().editOriginal(b ? "Config set!" : "An error occurred; aborting with Code " + Errors.CONFIG1).queue();
 	}
 
 	@Override
@@ -292,6 +292,8 @@ public class ConfigCommand implements ICommand {
 						),
 					new OptionData(OptionType.BOOLEAN, "enablejoinleavemsgs",
 						"Should Chop show Join and leave messages?", true),
+					new OptionData(OptionType.STRING, "treasuremode", "The mode for your treasure channel list", true)
+						.addChoice("Blacklist", "BLACKLIST").addChoice("Whitelist", "WHITELIST"),
 					new OptionData(OptionType.CHANNEL, "joinleavemsgschannel",
 						"What channel should they be shown in?\nPlease note this MUST be provided to recieve them"),
 					new OptionData(OptionType.STRING, "treasuremode", "The mode for your treasure channel list", true)

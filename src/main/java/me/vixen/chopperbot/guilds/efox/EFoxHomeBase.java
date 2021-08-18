@@ -4,10 +4,16 @@ import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import jdk.jfr.Event;
 import me.vixen.chopperbot.commands.GlobalCommandManager;
 import me.vixen.chopperbot.commands.ICommand;
+import me.vixen.chopperbot.database.Database;
+import me.vixen.chopperbot.guilds.Config;
 import me.vixen.chopperbot.guilds.IGuild;
 import me.vixen.chopperbot.listener.DefaultEventHandler;
+import me.vixen.chopperbot.tools.Embeds;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
+import net.dv8tion.jda.api.interactions.components.Button;
+import net.dv8tion.jda.api.interactions.components.ButtonStyle;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -57,5 +63,18 @@ public class EFoxHomeBase implements IGuild {
 			}
 		}
 		if (!found) DefaultEventHandler.handleSlashCommand(event, cManager);
+	}
+
+	@Override
+	public void handleGMemJoin(GuildMemberJoinEvent event, EventWaiter waiter) {
+		Config config = Database.getConfig(event.getGuild().getId());
+		if (config == null || !config.areJoinLeaveMsgsEnabled())
+			return;
+		String joinLeaveMsgsChannelId = config.getJoinLeaveMsgsChannelId();
+		if (joinLeaveMsgsChannelId == null)
+			return;
+		event.getGuild().getTextChannelById(joinLeaveMsgsChannelId)
+			.sendMessageEmbeds(Embeds.getWelcomeEmbed(event.getUser()))
+			.queue();
 	}
 }

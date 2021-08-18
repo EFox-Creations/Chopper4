@@ -74,7 +74,7 @@ public class BejoIjoPlugins implements IGuild {
 		for (ICommand c : getLocalCommands()) {
 			if (c.getName().equals(event.getName())) {
 				c.handle(event);
-				found = true;
+				return;
 			}
 		}
 		if (!found) DefaultEventHandler.handleSlashCommand(event, cManager);
