@@ -16,6 +16,9 @@ import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
+import net.dv8tion.jda.api.events.guild.voice.GuildVoiceJoinEvent;
+import net.dv8tion.jda.api.events.guild.voice.GuildVoiceLeaveEvent;
+import net.dv8tion.jda.api.events.guild.voice.GuildVoiceMoveEvent;
 import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
@@ -206,5 +209,26 @@ public class Listener extends ListenerAdapter {
 		if (guildManager.contains(event.getGuild())) //If guild has custom actions
 			guildManager.getGuild(event.getGuild()).handleGMemRemove(event, waiter);
 		else DefaultEventHandler.handleGMemRemove(event); //else send to default handler
+	}
+
+	@Override
+	public void onGuildVoiceJoin(@NotNull GuildVoiceJoinEvent event) {
+		if (guildManager.contains(event.getGuild())) //If guild has custom actions
+			guildManager.getGuild(event.getGuild()).handleGVoiceJoin(event);
+		else DefaultEventHandler.handleGVoiceJoin(event); //else send to default handler
+	}
+
+	@Override
+	public void onGuildVoiceLeave(@NotNull GuildVoiceLeaveEvent event) {
+		if (guildManager.contains(event.getGuild())) //If guild has custom actions
+			guildManager.getGuild(event.getGuild()).handleGVoiceLeave(event);
+		else DefaultEventHandler.handleGVoiceLeave(event); //else send to default handler
+	}
+
+	@Override
+	public void onGuildVoiceMove(@NotNull GuildVoiceMoveEvent event) {
+		if (guildManager.contains(event.getGuild())) //If guild has custom actions
+			guildManager.getGuild(event.getGuild()).handleGVoiceMove(event);
+		else DefaultEventHandler.handleGVoiceMove(event); //else send to default handler
 	}
 }

@@ -4,6 +4,7 @@ import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import me.vixen.chopperbot.guilds.bejoijoplugins.BejoIjoPlugins;
 import me.vixen.chopperbot.guilds.efox.EFoxHomeBase;
 import me.vixen.chopperbot.guilds.lspdfrts.LSPDFRTS;
+import me.vixen.chopperbot.guilds.outlierscoaching.OutliersCoaching;
 import me.vixen.chopperbot.guilds.vincentgsmmods.VincentsGMMods;
 import net.dv8tion.jda.api.entities.Guild;
 
@@ -18,6 +19,7 @@ public class GuildManager {
 		addGuild(new LSPDFRTS("788491012553179217"));
 		addGuild(new EFoxHomeBase("761703507546996786", waiter));
 		addGuild(new VincentsGMMods("692321202508922931", waiter));
+		addGuild(new OutliersCoaching("613412156460761109", waiter));
 	}
 
 	private void addGuild(IGuild guild) {
