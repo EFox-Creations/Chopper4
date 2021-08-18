@@ -36,7 +36,7 @@ public class FindCommand implements ICommand {
 			event.reply("You do not have the correct permissions").setEphemeral(true).queue();
 			return;
 		}
-
+		event.deferReply().queue();
 		event.getGuild().loadMembers()
 			.onSuccess(m-> {
 				List<Member> members = new ArrayList<>(m);
@@ -46,7 +46,7 @@ public class FindCommand implements ICommand {
 					.collect(Collectors.toList());
 
 				if (filtered.isEmpty()) {
-					event.reply("There are no members older than 5 days with 0 roles").queue();
+					event.getHook().editOriginal("There are no members older than 5 days with 0 roles").queue();
 					return;
 				}
 
@@ -71,10 +71,10 @@ public class FindCommand implements ICommand {
 					.addUsers(event.getUser())
 					.build();
 
-				event.reply("See Menu Below").setEphemeral(true).queue();
+				event.getHook().deleteOriginal().queue();
 				pager.paginate(event.getTextChannel(), 1);
 			})
-			.onError(voided -> event.reply("An error occurred").setEphemeral(true).queue());
+			.onError(voided -> event.getHook().editOriginal("An error occurred").queue());
 	}
 
 	@Override

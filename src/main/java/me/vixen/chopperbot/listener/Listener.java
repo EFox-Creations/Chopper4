@@ -26,6 +26,7 @@ import net.dv8tion.jda.api.interactions.components.ActionRow;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
+import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -68,15 +69,13 @@ public class Listener extends ListenerAdapter {
 	public void onSlashCommand(@NotNull SlashCommandEvent event) {
 		if (event.getUser().isBot()) return;
 		DBMember dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
-		if (dbMember != null && dbMember.isMuted()) {
-			event.deferReply().queue();
-			event.getHook().deleteOriginal().queue();
-			return;
-		}
-		//noinspection ConstantConditions cant be null
-		if (dbMember == null && !event.getUser().isBot()) {
+		if (dbMember == null) {
 			//noinspection ConstantConditions cant be null
 			Database.upsertMember(event.getGuild(), new DBMember(event.getMember(), event.getGuild(), false));
+		} else if (dbMember.isMuted()) { //DB isn't null && mute checks dont apply to new users
+			event.reply("You are muted in this guild").setEphemeral(true).queue();
+			event.getHook().deleteOriginal().queue();
+			return;
 		}
 		if (guildManager.contains(event.getGuild())) //If guild has custom actions
 			guildManager.getGuild(event.getGuild()).handleSlashCommand(event, waiter, commandManager);
@@ -87,13 +86,12 @@ public class Listener extends ListenerAdapter {
 	public void onGuildMessageReceived(@NotNull GuildMessageReceivedEvent event) {
 		if (event.getAuthor().isBot()) return;
 		DBMember dbMember = Database.getMember(event.getGuild(), event.getAuthor().getId());
-		if (dbMember != null && dbMember.isMuted()) {
-			event.getMessage().delete().queue();
-			return;
-		}
-		if (dbMember == null && !event.getAuthor().isBot()) {
+		if (dbMember == null) {
 			//noinspection ConstantConditions cant be null
 			Database.upsertMember(event.getGuild(), new DBMember(event.getMember(), event.getGuild(), false));
+		} else if (dbMember.isMuted()) {
+			event.getMessage().delete().queue();
+			return;
 		}
 		if (guildManager.contains(event.getGuild())) //If guild has custom actions
 			guildManager.getGuild(event.getGuild()).handleGMsgReceived(event, waiter);
