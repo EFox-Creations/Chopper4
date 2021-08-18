@@ -17,6 +17,11 @@ public class VoiceGroup implements ICommand {
             return;
         }
 
+        if (!voiceState.getChannel().getParent().getName().equalsIgnoreCase("Dynamic Lobbies")) {
+            event.reply("You may not alter an channels outside of the Dynamic Lobbies category").queue();
+            return;
+        }
+
         String subcommandName = event.getSubcommandName();
         //noinspection ConstantConditions
         switch (subcommandName) {
