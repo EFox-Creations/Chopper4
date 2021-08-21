@@ -92,9 +92,8 @@ public class Entry {
 		jda.updateCommands().addCommands(commandManager.getAllGlobalCommandData()).queue();
 
 		Logger.log("JDA for Chopper4 fully loaded; globals awaiting update on discord (up to 1hr response time)");
-		//Start treasure thread
-		Thread thread1 = new Thread(() -> BackgroundThread.go(true, guildManager, waiter));
-		thread1.setName("Background Thread");
-		thread1.start();
+
+		//Start scheduling
+		Scheduling.startScheduling(guildManager);
 	}
 }

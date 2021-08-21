@@ -33,8 +33,7 @@ public class GlobalCommandManager {
 		addGlobalCommand(new DonateCommand());
 		addGlobalCommand(new EchoCommand());
 		addGlobalCommand(new HelpCommand());
-		addGlobalCommand(new LeaderboardCommand(waiter));
-		addGlobalCommand(new LottoGroup());
+		//addGlobalCommand(new LottoGroup());
 		addGlobalCommand(new ModGroup()); //houses moderation commands
 		addGlobalCommand(new OddsCommand()); //displays GOC odds
 		addGlobalCommand(new PollCommand());

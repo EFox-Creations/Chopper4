@@ -2,9 +2,9 @@ package me.vixen.chopperbot.guilds.bejoijoplugins;
 
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import com.jagrosh.jdautilities.menu.Paginator;
-import me.vixen.chopperbot.database.DBMember;
 import me.vixen.chopperbot.database.Database;
 import me.vixen.chopperbot.commands.ICommand;
+import me.vixen.chopperbot.database.UserProfile;
 import me.vixen.chopperbot.tools.Embeds;
 import me.vixen.chopperbot.tools.Errors;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -124,7 +124,7 @@ public class CardGroup implements ICommand {
 
 	private void buyCard(SlashCommandEvent event) {
 		//noinspection ConstantConditions cant be null
-		DBMember dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
+		UserProfile dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
 		if (dbMember == null) {
 			event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
 			return;
@@ -134,6 +134,7 @@ public class CardGroup implements ICommand {
 			return;
 		}
 
+		//TODO this should be buttons
 		event.reply("Follow instructions below").setEphemeral(true).queue();
 		event.getTextChannel().sendMessage("Confirm buy card for " + cardCost + " coins?").queue(message -> {
 			message.addReaction("✅").queue();
@@ -148,7 +149,7 @@ public class CardGroup implements ICommand {
 
 	private void confirmBuy(SlashCommandEvent event, GuildMessageReactionAddEvent e, Message msg) {
 		//noinspection ConstantConditions cant be null
-		DBMember dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
+		UserProfile dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
 		if (dbMember == null) {
 			event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
 			return;
@@ -158,7 +159,7 @@ public class CardGroup implements ICommand {
 			event.getHook().editOriginal("Buy card canceled").queue();
 		} else if (e.getReactionEmote().getName().equalsIgnoreCase("✅")) {
 			dbMember.adjustCoins(cardCost);
-			dbMember.update();
+			dbMember.update(event.getMember());
 			//noinspection ConstantConditions cant be null
 			final String userId = event.getMember().getId();
 
@@ -221,6 +222,7 @@ public class CardGroup implements ICommand {
 		}
 	}
 
+	//TODO this should be buttons
 	private void waitForConfirm(SlashCommandEvent event, Message msg, int price, int cardId) {
 		msg.addReaction("✅").queue();
 		msg.addReaction("❌").queue();
@@ -238,7 +240,7 @@ public class CardGroup implements ICommand {
 	}
 
 	private void confirmSale(Message msg, GuildMessageReactionAddEvent e, int price, int cardId) {
-		DBMember dbMember = Database.getMember(e.getGuild(), e.getUser().getId());
+		UserProfile dbMember = Database.getMember(e.getGuild(), e.getUser().getId());
 		if (dbMember == null) {
 			e.getChannel().sendMessage("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
 			return;
@@ -246,7 +248,7 @@ public class CardGroup implements ICommand {
 		switch (e.getReactionEmote().getName()) {
 			case "✅" -> {
 				dbMember.adjustCoins(price);
-				dbMember.update();
+				dbMember.update(e.getMember());
 				final boolean success = Database.deleteCard(cardId);
 				msg.clearReactions().queue();
 				if (success) {
@@ -338,13 +340,13 @@ public class CardGroup implements ICommand {
 			event.getHook().editOriginal("Cashed out! Received 2000 coins!").queue();
 			event.getTextChannel().sendFile(new File("CardBlanks/CashOut.png")).queue();
 			//noinspection ConstantConditions cant be null
-			DBMember dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
+			UserProfile dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
 			if (dbMember == null) {
 				event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
 				return;
 			}
 			dbMember.adjustCoins(2000);
-			dbMember.update();
+			dbMember.update(event.getMember());
 			List<Integer> cardIds = List.of(mythicId, legendaryId, rareId, uncommonId, commonId);
 			Database.deleteCards(cardIds);
 		} else {

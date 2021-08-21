@@ -1,10 +1,10 @@
 package me.vixen.chopperbot.listener;
 
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
-import me.vixen.chopperbot.database.DBMember;
 import me.vixen.chopperbot.database.Database;
 import me.vixen.chopperbot.commands.GlobalCommandManager;
 import me.vixen.chopperbot.commands.ICommand;
+import me.vixen.chopperbot.database.UserProfile;
 import me.vixen.chopperbot.guilds.Config;
 import me.vixen.chopperbot.tools.Embeds;
 import net.dv8tion.jda.api.Permission;
@@ -14,13 +14,11 @@ import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceJoinEvent;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceLeaveEvent;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceMoveEvent;
-import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
 import net.dv8tion.jda.api.interactions.components.Button;
 import net.dv8tion.jda.api.interactions.components.ButtonStyle;
-
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -31,6 +29,11 @@ public class DefaultEventHandler {
 		if (command == null) event.replyEmbeds(Embeds.getCommandMissing()).queue();
 		else command.handle(event);
 		updateStickies((TextChannel) event.getChannel());
+		UserProfile member = Database.getMember(event.getGuild(), event.getUser().getId());
+		if (member != null) {
+			member.awardExp(false);
+			member.update(event.getMember());
+		}
 	}
 
 	public static void updateStickies(TextChannel channel) {
@@ -50,7 +53,7 @@ public class DefaultEventHandler {
 
 	public static void handleGMsgReceived(GuildMessageReceivedEvent event) {
 		updateStickies(event.getChannel());
-		DBMember member = Database.getMember(event.getGuild(), event.getAuthor().getId());
+		UserProfile member = Database.getMember(event.getGuild(), event.getAuthor().getId());
 		if (member != null) {
 			Config config = Database.getConfig(event.getGuild().getId());
 			if (member.awardExp(false) && config != null && !config.arelvlMsgOverridden()) {
@@ -68,7 +71,7 @@ public class DefaultEventHandler {
 
 	public static void handleGMemJoin(GuildMemberJoinEvent event, EventWaiter waiter) {
 		Config config = Database.getConfig(event.getGuild().getId());
-		if (config == null || !config.areJoinLeaveMsgsEnabled())
+		if (config == null || config.areJoinLeaveMsgsDisabled())
 			return;
 		String joinLeaveMsgsChannelId = config.getJoinLeaveMsgsChannelId();
 		if (joinLeaveMsgsChannelId == null)
@@ -82,7 +85,7 @@ public class DefaultEventHandler {
 
 	public static void handleGMemRemove(GuildMemberRemoveEvent event) {
 		Config config = Database.getConfig(event.getGuild().getId());
-		if (config == null || !config.areJoinLeaveMsgsEnabled())
+		if (config == null || config.areJoinLeaveMsgsDisabled())
 			return;
 		String joinLeaveMsgsChannelId = config.getJoinLeaveMsgsChannelId();
 		if (joinLeaveMsgsChannelId == null)

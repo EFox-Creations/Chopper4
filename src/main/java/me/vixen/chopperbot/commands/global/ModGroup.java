@@ -1,9 +1,9 @@
 package me.vixen.chopperbot.commands.global;
 
-import me.vixen.chopperbot.database.DBMember;
 import me.vixen.chopperbot.database.Database;
 import me.vixen.chopperbot.Logger;
 import me.vixen.chopperbot.commands.ICommand;
+import me.vixen.chopperbot.database.UserProfile;
 import me.vixen.chopperbot.guilds.Config;
 import me.vixen.chopperbot.tools.Embeds;
 import me.vixen.chopperbot.tools.Errors;
@@ -34,7 +34,7 @@ public class ModGroup implements ICommand {
 		Guild guild = event.getGuild();
 		User moderator = event.getUser();
 		String moderatorId = moderator.getId();
-		DBMember moderatorDB = Database.getMember(guild, moderatorId);
+		UserProfile moderatorDB = Database.getMember(guild, moderatorId);
 		if (!moderatorDB.isAuthorized()) {
 			event.replyEmbeds(Embeds.getPermissionMissing()).queue();
 			return;
@@ -46,14 +46,14 @@ public class ModGroup implements ICommand {
 			case "authorize" -> {
 				try {
 					final Member targetMem = event.getOption("user").getAsMember();
-					DBMember targetDB = Database.getMember(guild, targetMem.getId());
+					UserProfile targetDB = Database.getMember(guild, targetMem.getId());
 					if (targetDB == null) {
 						event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
 						return;
 					}
 					final boolean authorize = event.getOption("setauthorized").getAsBoolean();
 					targetDB.setAuthorized(authorize);
-					targetDB.update();
+					targetDB.update(null);
 					event.getHook().editOriginal("Set " + targetMem.getAsMention() + " authorization as " + authorize).queue();
 				} catch (NullPointerException e) {
 					Logger.log("NPE caught:", e);
@@ -194,9 +194,9 @@ public class ModGroup implements ICommand {
 					).queue();
 					return;
 				}
-				final DBMember targetDB = Database.getMember(guild, target.getId());
+				final UserProfile targetDB = Database.getMember(guild, target.getId());
 				targetDB.setMuted(unmutetime);
-				targetDB.update();
+				targetDB.update(null);
 
 				String until = unmutetime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd @ HH:mm:ss"));
 				Config config = Database.getConfig(guild.getId());
@@ -221,9 +221,9 @@ public class ModGroup implements ICommand {
 					event.getHook().editOriginalEmbeds(Embeds.getUnknownMember()).queue();
 					return;
 				}
-				DBMember targetDB = Database.getMember(guild, target.getUser().getId());
+				UserProfile targetDB = Database.getMember(guild, target.getUser().getId());
 				targetDB.unmute();
-				targetDB.update();
+				targetDB.update(null);
 
 				event.getHook().editOriginal(target.getAsMention() + " has been unmuted").queue();
 			}

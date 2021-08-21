@@ -1,19 +1,17 @@
 package me.vixen.chopperbot.commands.global;
 
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
-import me.vixen.chopperbot.BackgroundThread;
 import me.vixen.chopperbot.Entry;
+import me.vixen.chopperbot.Scheduling;
 import me.vixen.chopperbot.commands.ICommand;
 import me.vixen.chopperbot.database.Database;
 import me.vixen.chopperbot.guilds.Config;
 import me.vixen.chopperbot.guilds.GuildManager;
-import me.vixen.chopperbot.guilds.IGuild;
 import me.vixen.chopperbot.listener.DefaultEventHandler;
 import me.vixen.chopperbot.tools.Embeds;
 import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.GuildChannel;
-import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 
@@ -48,10 +46,10 @@ public class SummonCommand implements ICommand {
 
 			List<GuildChannel> treasureChannels = g.getChannels()
 				.stream()
-				.filter(it -> BackgroundThread.shouldInclude(it, config)) //Remove all but appointed channels
+				.filter(it -> Scheduling.shouldInclude(it, config)) //Remove all but appointed channels
 				.filter(it -> it.getType().equals(ChannelType.TEXT)) //Remove non-text channels
 				.collect(Collectors.toList());
-			BackgroundThread.makeTreasureChest(treasureChannels);
+			Scheduling.makeTreasureChest(treasureChannels);
 		}
 
 		event.getHook().editOriginal("Done").queue();

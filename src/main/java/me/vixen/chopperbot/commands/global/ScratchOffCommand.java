@@ -1,8 +1,8 @@
 package me.vixen.chopperbot.commands.global;
 
-import me.vixen.chopperbot.database.DBMember;
 import me.vixen.chopperbot.database.Database;
 import me.vixen.chopperbot.commands.ICommand;
+import me.vixen.chopperbot.database.UserProfile;
 import me.vixen.chopperbot.tools.Embeds;
 import me.vixen.chopperbot.tools.Errors;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -21,7 +21,7 @@ public class ScratchOffCommand implements ICommand {
 		Guild guild = event.getGuild();
 		String userId = event.getUser().getId();
 		//noinspection ConstantConditions cant be null
-		DBMember member = Database.getMember(guild, userId);
+		UserProfile member = Database.getMember(guild, userId);
 		if (member == null) {
 			event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
 			return;
@@ -68,7 +68,7 @@ public class ScratchOffCommand implements ICommand {
 		member.adjustCoins(payout-bet);
 		member.playLotto();
 		event.replyEmbeds(embed).queue();
-		member.update();
+		member.update(null);
 	}
 
 	@Override

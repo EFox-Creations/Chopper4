@@ -14,6 +14,8 @@ import java.util.List;
 public class GuildManager {
 	List<IGuild> guilds = new ArrayList<>();
 
+
+	//TODO all guilds overriding GMsgRec need to award EXP
 	public GuildManager(EventWaiter waiter) {
 		addGuild(new BejoIjoPlugins("663796409635569664", waiter));
 		addGuild(new LSPDFRTS("788491012553179217"));

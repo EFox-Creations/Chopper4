@@ -1,10 +1,12 @@
 package me.vixen.chopperbot.database;
 
+import com.google.gson.*;
 import me.vixen.chopperbot.Entry;
 import me.vixen.chopperbot.Logger;
 import me.vixen.chopperbot.guilds.Config;
 import me.vixen.chopperbot.guilds.bejoijoplugins.Card;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.steppschuh.markdowngenerator.table.Table;
@@ -12,11 +14,34 @@ import net.steppschuh.markdowngenerator.table.Table;
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.annotation.Annotation;
 import java.sql.*;
 import java.time.OffsetDateTime;
 import java.util.*;
 
 public class Database {
+
+	private static final ExclusionStrategy SERIALIZE_STRATEGY = new ExclusionStrategy() {
+		@Override
+		public boolean shouldSkipField(FieldAttributes f) {
+			return f.getAnnotation(ExcludeSerialize.class) != null;
+		}
+		@Override
+		public boolean shouldSkipClass(Class<?> clazz) {
+			return false;
+		}
+	};
+
+	private static final ExclusionStrategy DESERIALIZE_STRATEGY = new ExclusionStrategy() {
+		@Override
+		public boolean shouldSkipField(FieldAttributes f) {
+			return f.getAnnotation(ExcludeDeserialize.class) != null;
+		}
+		@Override
+		public boolean shouldSkipClass(Class<?> clazz) {
+			return false;
+		}
+	};
 
 	private static Connection getConnection() {
 		return Entry.dbHandler.getConnection();
@@ -47,21 +72,8 @@ public class Database {
 			String guildMemberTable = getGuildMemberTable(g.getId());
 			String SQL = " CREATE TABLE IF NOT EXISTS " + guildMemberTable + "(" +
 				"user_id TEXT NOT NULL UNIQUE,\s" +
-				"nickname TEXT NOT NULL,\s" +
-				"authorized BOOL NOT NULL DEFAULT FALSE,\s" +
-				"level_up_messages BOOL NOT NULL DEFAULT TRUE,\s" +
-				"muted BOOL NOT NULL DEFAULT FALSE,\s" +
-				"lst_msg_time TEXT,\s" +
-				"unmute_time TEXT DEFAULT NULL,\s" +
-				"gallery_remaining INTEGER NOT NULL DEFAULT 10,\s" +
-				"chest_count INTEGER NOT NULL DEFAULT 1,\s" +
-				"lockpick_skill INTEGER NOT NULL DEFAULT 1,\s" +
-				"lock_count INTEGER NOT NULL DEFAULT 0,\s" +
-				"exp INTEGER NOT NULL DEFAULT 0,\s" +
-				"level INTEGER NOT NULL DEFAULT 0,\s" +
-				"currency INTEGER NOT NULL DEFAULT 0,\s" +
-				"lottery_plays INTEGER NOT NULL DEFAULT 0,\s" +
-				"robbed_today BOOLEAN NOT NULL DEFAULT 0" +
+				"profile_json TEXT NOT NULL DEFAULT \" \",\s" + //TODO add default json here
+				"chest_count INTEGER NOT NULL DEFAULT 1" +
 				");";
 			try (Connection con = getConnection(); Statement statement = con.createStatement()) {
 				statement.execute(SQL);
@@ -140,39 +152,36 @@ public class Database {
 	// *                     Member Methods                      *
 	// ************************************************************
 
-	public static DBMember getMember(Guild g, String userId) {
-		final String guildId = g.getId();
+	public static UserProfile getMember(Guild g, String userId) {
+		Gson gson = new GsonBuilder().setExclusionStrategies(DESERIALIZE_STRATEGY).create();
+
 		String guildMemberTable = getGuildMemberTable(g.getId());
 		String SQL = "SELECT * FROM " + guildMemberTable + " WHERE user_id = ?";
 		try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(SQL)) {
 			ps.setString(1, userId);
 			ResultSet rs = ps.executeQuery();
 			if (rs.next()) {
-				final String nickname = rs.getString("nickname");
-				final boolean authorized = rs.getBoolean("authorized");
-				final boolean lvlMessages = rs.getBoolean("level_up_messages");
-				final String lstMsgTime = rs.getString("lst_msg_time");
-				final String unmuteTime = rs.getString("unmute_time");
-				final int galleryRemaining = rs.getInt("gallery_remaining");
+				final String profileJson = rs.getString("profile_json");
 				final int chestCount = rs.getInt("chest_count");
-				final int lockpickSkill = rs.getInt("lockpick_skill");
-				final int lockCount = rs.getInt("lock_count");
-				final int exp = rs.getInt("exp");
-				final int level = rs.getInt("level");
-				final int currency = rs.getInt("currency");
-				final int lotteryPlays = rs.getInt("lottery_plays");
 				final boolean robbedToday = rs.getBoolean("robbed_today");
+				final int lottoPlays = rs.getInt("lottery_plays");
 				ps.close();
 				con.close();
-				return new DBMember(userId, guildId, nickname, authorized, lvlMessages,
-					OffsetDateTime.parse(lstMsgTime), resolveUnmuteTime(unmuteTime), galleryRemaining,
-					chestCount, lockpickSkill, lockCount, exp, level, currency, lotteryPlays, robbedToday);
+
+				JsonObject profile = gson.fromJson(profileJson, JsonObject.class);
+				profile.addProperty("chestCount", chestCount);
+				profile.addProperty("successOnRobToday", robbedToday);
+				profile.addProperty("lottoPlaysLeft", lottoPlays);
+				return gson.fromJson(profile, UserProfile.class);
 			}
 			ps.close();
 			con.close();
 			return null;
 		} catch (SQLException e) {
 			Logger.log("Couldn't retrieve member", e);
+			return null;
+		} catch (JsonSyntaxException e) {
+			Logger.log("Invalid JSON", e);
 			return null;
 		}
 	}
@@ -183,109 +192,89 @@ public class Database {
 	}
 
 	/**
-	 * Inserts a new or Updates an existing {@link DBMember} profile
+	 * Inserts a new or Updates an existing {@link UserProfile} profile
 	 *
-	 * @param dbmember The {@link DBMember} object
+	 * @param profile The {@link UserProfile} object
 	 */
-	public static void upsertMember(Guild guild, DBMember dbmember) {
+	public static void upsertMember(Guild guild, UserProfile profile) {
+
+		//TODO needs testing
+		Gson gson = new GsonBuilder().setExclusionStrategies(SERIALIZE_STRATEGY).serializeNulls().create();
+		String profileJson = gson.toJson(profile);
+
 		String guildMemberTable = getGuildMemberTable(guild.getId());
-		String SQL = "INSERT INTO " + guildMemberTable + "(user_id,nickname,authorized,level_up_messages,muted,lst_msg_time," +
+
+		String SQL = "INSERT INTO " + guildMemberTable + "(user_id,profile_json,lottery_plays,robbed_today,chest_count) VALUES(?,?,?,?,?) " +
+			"ON CONFLICT (user_id) DO " +
+			"UPDATE SET profile_json = ?, lottery_plays = ?, robbed_today = ?, chest_count = ? WHERE user_id = ?";
+		try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(SQL)) {
+			ps.setString(1, profile.getUserId());
+			ps.setString(2, profileJson);
+			ps.setInt(3, profile.getLottoPlaysLeft());
+			ps.setBoolean(4, profile.hasRobbed());
+			ps.setInt(5, profile.getChestCount());
+
+			ps.setString(6, profileJson);
+			ps.setInt(7, profile.getLottoPlaysLeft());
+			ps.setBoolean(8, profile.hasRobbed());
+			ps.setInt(9, profile.getChestCount());
+			ps.setString(10, profile.getUserId());
+		} catch (SQLException e) {
+			e.printStackTrace();
+			Logger.log("Couldn't Upsert Member", e);
+		}
+
+
+		/*String SQL = "INSERT INTO " + guildMemberTable + "(user_id,nickname,authorized,level_up_messages,muted,lst_msg_time," +
 			"unmute_time,gallery_remaining,chest_count,lockpick_skill,lock_count,exp," +
-			"level,currency,lottery_plays, robbed_today) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)" +
+			"level,currency,lottery_plays, robbed_today) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) " +
 			"ON CONFLICT (user_id) DO " +
 			"UPDATE SET nickname = ?, muted = ?, level_up_messages = ?, lst_msg_time = ?, unmute_time = ?, " +
 			"gallery_remaining = ?, authorized = ?, chest_count = ?, lockpick_skill = ?, lock_count = ?, exp = ?, " +
 			"level = ?, currency = ?, lottery_plays = ?, robbed_today = ? WHERE user_id = ?";
 		try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(SQL)) {
-			ps.setString(1, dbmember.getUserId());
-			ps.setString(2, dbmember.getNickname());
-			ps.setBoolean(3, dbmember.isAuthorized());
-			ps.setBoolean(4, dbmember.areLvlMsgsEnabled());
-			ps.setBoolean(5, dbmember.isMuted());
-			ps.setString(6, dbmember.getLstMsgTime().toString());
-			ps.setString(7, dbmember.getUnmuteTime());
-			ps.setInt(8, dbmember.getGalleryImgsLeft());
-			ps.setInt(9, dbmember.getDailyChests());
-			ps.setInt(10, dbmember.getSkill());
-			ps.setInt(11, dbmember.getLockCount());
-			ps.setInt(12, dbmember.getExp());
-			ps.setInt(13, dbmember.getLevel());
-			ps.setInt(14, dbmember.getCoins());
-			ps.setInt(15, dbmember.getLottoPlaysLeft());
-			ps.setBoolean(16, dbmember.hasRobbed());
-			ps.setString(17, dbmember.getNickname());
-			ps.setBoolean(18, dbmember.isMuted());
-			ps.setBoolean(19, dbmember.areLvlMsgsEnabled());
-			ps.setString(20, dbmember.getLstMsgTime().toString());
-			ps.setString(21, dbmember.getUnmuteTime());
-			ps.setInt(22, dbmember.getGalleryImgsLeft());
-			ps.setBoolean(23, dbmember.isAuthorized());
-			ps.setInt(24, dbmember.getDailyChests());
-			ps.setInt(25, dbmember.getSkill());
-			ps.setInt(26, dbmember.getLockCount());
-			ps.setInt(27, dbmember.getExp());
-			ps.setInt(28, dbmember.getLevel());
-			ps.setInt(29, dbmember.getCoins());
-			ps.setInt(30, dbmember.getLottoPlaysLeft());
-			ps.setBoolean(31, dbmember.hasRobbed());
-			ps.setString(32, dbmember.getUserId());
+			ps.setString(1, profile.getUserId());
+			ps.setString(2, profile.getNickname());
+			ps.setBoolean(3, profile.isAuthorized());
+			ps.setBoolean(4, profile.areLvlMsgsEnabled());
+			ps.setBoolean(5, profile.isMuted());
+			ps.setString(6, profile.getLstMsgTime().toString());
+			ps.setString(7, profile.getUnmuteTime());
+			ps.setInt(8, profile.getGalleryImgsLeft());
+			ps.setInt(9, profile.getChestCount());
+			ps.setInt(10, profile.getSkill());
+			ps.setInt(11, profile.getLockCount());
+			ps.setInt(12, profile.getExp());
+			ps.setInt(13, profile.getLevel());
+			ps.setInt(14, profile.getCoins());
+			ps.setInt(15, profile.getLottoPlaysLeft());
+			ps.setBoolean(16, profile.hasRobbed());
+			ps.setString(17, profile.getNickname());
+			ps.setBoolean(18, profile.isMuted());
+			ps.setBoolean(19, profile.areLvlMsgsEnabled());
+			ps.setString(20, profile.getLstMsgTime().toString());
+			ps.setString(21, profile.getUnmuteTime());
+			ps.setInt(22, profile.getGalleryImgsLeft());
+			ps.setBoolean(23, profile.isAuthorized());
+			ps.setInt(24, profile.getChestCount());
+			ps.setInt(25, profile.getSkill());
+			ps.setInt(26, profile.getLockCount());
+			ps.setInt(27, profile.getExp());
+			ps.setInt(28, profile.getLevel());
+			ps.setInt(29, profile.getCoins());
+			ps.setInt(30, profile.getLottoPlaysLeft());
+			ps.setBoolean(31, profile.hasRobbed());
+			ps.setString(32, profile.getUserId());
 			ps.executeUpdate();
 		} catch (SQLException e) {
 			e.printStackTrace();
 			Logger.log("Couldn't Upsert Member", e);
-		}
+		}*/
 	}
 
-	/**
-	 *
-	 * @param g The guild to search in
-	 * @param minimumCoins The minimum number of coins a profile must have to be included
-	 * @return a {@link List} with the {@link DBMember} that have more than the provided minimum coins
-	 */
-	public static List<DBMember> getDBMembersWithCoins(Guild g, int minimumCoins, String userIdToExclude) {
-		String SQL = "SELECT user_id FROM " + getGuildMemberTable(g.getId()) + " WHERE currency >= ? AND user_id IS NOT ?";
-		try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(SQL)) {
-			ps.setInt(1, minimumCoins);
-			ps.setString(2, userIdToExclude);
-			final ResultSet resultSet = ps.executeQuery();
-			final Guild guild = Entry.jda.getGuildById(g.getId());
-			List<DBMember> dbMembers = new ArrayList<>();
-			while (resultSet.next())
-				//noinspection ConstantConditions 99.99% likely to be non-null
-				dbMembers.add(getMember(guild, resultSet.getString("user_id")));
-			ps.close();
-			con.close();
-			return dbMembers;
-		} catch (SQLException e) {
-			return new ArrayList<>();
-		}
-	}
-
-	/**
-	 *
-	 * @param numOfEntries The number of entries to return
-	 * @return A String[] of {@link DBMember} names, exp, and coins ordered by exp DESC
-	 */
-	public static String[] getLeaderboard(Guild g, int numOfEntries) {
-		String SQL = "SELECT nickname, exp, currency FROM " + getGuildMemberTable(g.getId()) +
-			" ORDER BY exp DESC LIMIT " + numOfEntries;
-		try (Connection con = getConnection(); Statement stmt = con.createStatement()) {
-			final ResultSet rs = stmt.executeQuery(SQL);
-			List<String> entries = new ArrayList<>();
-			while (rs.next()) {
-				String nickname = (rs.getString("nickname") + (" ".repeat(15))).substring(0, 9) + "    ";
-				String exp = (rs.getString("exp_value") + (" ".repeat(15))).substring(0,14);
-				String currency = (rs.getString("currency_value") +  (" ".repeat(15))).substring(0,14);
-				entries.add("`" + nickname + exp + currency + "`");
-			}
-			stmt.close();
-			con.close();
-			if (entries.isEmpty())
-				return null;
-			return (String[]) entries.toArray();
-		} catch (SQLException e) {
-			return null;
-		}
+	public static UserProfile getRandomProfile(Guild g, String robberSelfId) {
+		//TODO this needs to be implemented
+		return null;
 	}
 
 	// ************************************************************
@@ -636,7 +625,7 @@ public class Database {
 		}
 	}
 
-	public static void setWarnings(DBMember member) {
+	public static void setWarnings(UserProfile member) {
 		String tableName = getGuildWarningTable(member.getGuildId());
 		String userId = member.getUserId();
 		String json = member.warningsAsJSON();
@@ -790,26 +779,6 @@ public class Database {
 		}
 	}
 
-//	/**
-//	 *
-//	 * @param cardId The id of the {@link Card}
-//	 * @param newOwnerId The user id of the new owner
-//	 * @return True, if changed successfully
-//	 */
-//	public static boolean setNewCardOwner(int cardId, String newOwnerId) {
-//		String SQL = "UPDATE cards SET user_id = ? WHERE card_id = ?";
-//		try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(SQL)) {
-//			ps.setString(1, newOwnerId);
-//			ps.setInt(2, cardId);
-//			ps.executeUpdate();
-//			ps.close();
-//			con.close();
-//			return true;
-//		} catch (SQLException e) {
-//			return false;
-//		}
-//	}
-
 	/**
 	 *
 	 * @param cardId The id of the {@link Card} to delete
@@ -885,6 +854,8 @@ public class Database {
 	// *                      Lotto Methods                       *
 	// ************************************************************
 
+    /* TEMPORARILY REMOVED
+
 	public static int getPot() {
 		String SQL = "SELECT value FROM lotto WHERE key = ?";
 		try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(SQL)) {
@@ -907,7 +878,7 @@ public class Database {
 		}
 	}
 
-	/*
+
 	public static boolean setPot(int amount) {
 		String SQL = String.format("UPDATE lotto SET value = %s WHERE key = \"pot\"", amount);
 		try (Connection con = getConnection(); Statement stmt = con.createStatement()) {
@@ -919,7 +890,7 @@ public class Database {
 			return false;
 		}
 	}
-	*/
+
 
 	public static boolean addToPot(int amount) {
 		final int pot = getPot();
@@ -957,9 +928,8 @@ public class Database {
 		}
 	}
 
-	/*
-	 *   Bet String:  "84,32,63,87,90"
-	 */
+
+	// Bet String:  "84,32,63,87,90"
 	public static boolean addBet(String userId, String betString) {
 		String SQL = "INSERT INTO bets(user_id,bet) VALUES(?,?)";
 		try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(SQL)) {
@@ -973,27 +943,29 @@ public class Database {
 			return false;
 		}
 	}
+	TEMPORARILY REMOVED */
 
 //	/**
 //	 *
 //	 * @param winBetString The winning bet
 //	 * @return Possibly null Id String of user that made the first winning bet
 //	 */
-//	public static String getWinningBet(String winBetString) {
-//		String SQL = "SELECT user_id FROM bets WHERE bet = " + winBetString;
-//		try (Connection con = getConnection(); Statement stmt = con.createStatement()) {
-//			final ResultSet rs = stmt.executeQuery(SQL);
-//			String winnerId = null;
-//			while (rs.next()) winnerId = rs.getString("user_id");
-//			stmt.close();
-//			con.close();
-//			return winnerId;
-//		} catch (SQLException e) {
-//			return null;
-//		}
-//	}
+	/* TEMPORARILY REMOVED
+	public static String getWinningBet(String winBetString) {
+		String SQL = "SELECT user_id FROM bets WHERE bet = " + winBetString;
+		try (Connection con = getConnection(); Statement stmt = con.createStatement()) {
+			final ResultSet rs = stmt.executeQuery(SQL);
+			String winnerId = null;
+			while (rs.next()) winnerId = rs.getString("user_id");
+			stmt.close();
+			con.close();
+			return winnerId;
+		} catch (SQLException e) {
+			return null;
+		}
+	}
 
-	/*
+
 	public static void deleteAllBets() {
 		String SQL = "DELETE FROM bets";
 		try (Connection con = getConnection(); Statement stmt = con.createStatement()) {
@@ -1001,7 +973,8 @@ public class Database {
 		} catch (SQLException e) {
 			Logger.log("Failed to delete lotto bets", e);
 		}
-	}*/
+	}
+	TEMPORARILY REMOVED */
 
 	// ************************************************************
 	// *                      Config Methods                      *

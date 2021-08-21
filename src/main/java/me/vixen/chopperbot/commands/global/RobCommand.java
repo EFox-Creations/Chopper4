@@ -1,8 +1,8 @@
 package me.vixen.chopperbot.commands.global;
 
-import me.vixen.chopperbot.database.DBMember;
 import me.vixen.chopperbot.database.Database;
 import me.vixen.chopperbot.commands.ICommand;
+import me.vixen.chopperbot.database.UserProfile;
 import me.vixen.chopperbot.tools.Errors;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
@@ -13,7 +13,7 @@ public class RobCommand implements ICommand {
 	@Override
 	public void handle(SlashCommandEvent event) {
 		//noinspection ConstantConditions cant be null
-		DBMember dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
+		UserProfile dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
 		if (dbMember == null) {
 			event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
 			return;
@@ -32,18 +32,16 @@ public class RobCommand implements ICommand {
 			}
 			case NOTHING -> event.reply("You tried your best but came up empty handed").queue();
 			case SUCCESS -> {
-				final List<DBMember> dbMembersWithCoins =
-					Database.getDBMembersWithCoins(event.getGuild(), 10, event.getUser().getId());
-
-				DBMember unfortunateSoul = dbMembersWithCoins.get(new Random().nextInt(dbMembersWithCoins.size()));
+				final UserProfile unfortunateSoul =
+					Database.getRandomProfile(event.getGuild(), event.getUser().getId());
 
 				final int tenPercent = (int) Math.floor(unfortunateSoul.getCoins() * .10);
 
 				unfortunateSoul.adjustCoins(-tenPercent);
-				unfortunateSoul.update();
+				unfortunateSoul.update(null);
 				dbMember.adjustCoins(tenPercent);
 				dbMember.rob();
-				dbMember.update();
+				dbMember.update(event.getMember());
 				event.reply("You stole " + tenPercent + " coins from " + unfortunateSoul.getNickname()).queue();
 			}
 		}

@@ -1,8 +1,8 @@
 package me.vixen.chopperbot.commands.global;
 
-import me.vixen.chopperbot.database.DBMember;
 import me.vixen.chopperbot.database.Database;
 import me.vixen.chopperbot.commands.ICommand;
+import me.vixen.chopperbot.database.UserProfile;
 import me.vixen.chopperbot.tools.Embeds;
 import me.vixen.chopperbot.tools.Errors;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -39,7 +39,7 @@ public class ProfileCommand implements ICommand {
 				event.getHook().editOriginal(draw).queue(unused -> draw.delete());
 			} catch (IOException e) {
 				//noinspection ConstantConditions cant be null
-				DBMember dbMember = Database.getMember(event.getGuild(), member.getId());
+				UserProfile dbMember = Database.getMember(event.getGuild(), member.getId());
 				if (dbMember == null) {
 					event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
 					return;
@@ -86,7 +86,7 @@ public class ProfileCommand implements ICommand {
 					event.getHook().editOriginal(draw).queue(unused -> draw.delete());
 				} catch (IOException e) {
 					//noinspection ConstantConditions cant be null
-					DBMember dbMember = Database.getMember(event.getGuild(), member.getId());
+					UserProfile dbMember = Database.getMember(event.getGuild(), member.getId());
 					if (dbMember == null) {
 						event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
 						return;
@@ -129,7 +129,7 @@ public class ProfileCommand implements ICommand {
 	}
 
 	private static File draw(Guild g, Member m) throws IOException {
-		DBMember dbMember = Database.getMember(g, m.getId());
+		UserProfile dbMember = Database.getMember(g, m.getId());
 		if (dbMember == null) {
 			return null;
 		}

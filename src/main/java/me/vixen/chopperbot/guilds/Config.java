@@ -3,13 +3,9 @@ package me.vixen.chopperbot.guilds;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
-import net.dv8tion.jda.api.entities.TextChannel;
-
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 public class Config {
 
@@ -86,8 +82,8 @@ public class Config {
 		return onlyStaffPolls;
 	}
 
-	public boolean areJoinLeaveMsgsEnabled() {
-		return enableJoinLeaveMessges;
+	public boolean areJoinLeaveMsgsDisabled() {
+		return !enableJoinLeaveMessges;
 	}
 
 	public String getJoinLeaveMsgsChannelId() {

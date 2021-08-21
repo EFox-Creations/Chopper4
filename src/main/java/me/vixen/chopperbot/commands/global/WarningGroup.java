@@ -2,8 +2,8 @@ package me.vixen.chopperbot.commands.global;
 
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import com.jagrosh.jdautilities.menu.Paginator;
-import me.vixen.chopperbot.database.DBMember;
 import me.vixen.chopperbot.database.Database;
+import me.vixen.chopperbot.database.UserProfile;
 import me.vixen.chopperbot.database.Warning;
 import me.vixen.chopperbot.commands.ICommand;
 import me.vixen.chopperbot.guilds.Config;
@@ -33,7 +33,7 @@ public class WarningGroup implements ICommand {
 	@Override
 	public void handle(SlashCommandEvent event) {
 		//noinspection ConstantConditions cant be null
-		DBMember moderator = Database.getMember(event.getGuild(), event.getUser().getId());
+		UserProfile moderator = Database.getMember(event.getGuild(), event.getUser().getId());
 		if (moderator == null) {
 			event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
 			return;
@@ -49,7 +49,7 @@ public class WarningGroup implements ICommand {
 		}
 
 		User user = userOpt.getAsUser();
-		DBMember target = Database.getMember(event.getGuild(), user.getId());
+		UserProfile target = Database.getMember(event.getGuild(), user.getId());
 		if (target == null) {
 			event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
 			return;
@@ -67,7 +67,7 @@ public class WarningGroup implements ICommand {
 				Warning warning = target.getWarnings().stream().filter(it -> it.getWarningNumber() == id).findFirst().orElse(null);
 				if (warning != null) {
 					target.removeWarning(warning);
-					target.update();
+					target.update(null);
 					event.getHook().editOriginal("Warning removed successfully!").queue();
 				} else event.getHook().editOriginal("An error occurred! Most likely an Invalid Id#").queue();
 			}
@@ -90,12 +90,12 @@ public class WarningGroup implements ICommand {
 		);
 	}
 
-	private static void warn(SlashCommandEvent event, DBMember target, DBMember moderator) {
-		//noinspection ConstantConditions cant be null
+	private static void warn(SlashCommandEvent event, UserProfile target, UserProfile moderator) {
 		if (target.getUserId().equals(moderator.getUserId())) {
 			event.reply("You cannot warn yourself").queue();
 			return;
 		}
+		//noinspection ConstantConditions this will not be null as we do not accept slashcommands from private channels
 		event.getGuild().retrieveMembersByIds(target.getUserId(), moderator.getUserId()).onSuccess(members -> {
 			Member targetMem = null, modMem = null;
 			for (Member m : members) {
@@ -108,7 +108,7 @@ public class WarningGroup implements ICommand {
 			}
 			//noinspection ConstantConditions cant be null
 			target.addWarning(targetMem.getId(), modMem.getUser(), event.getOption("reason").getAsString());
-			target.update();
+			target.update(null);
 
 			//noinspection ConstantConditions cant be null
 			MessageEmbed embed = new EmbedBuilder()
@@ -132,7 +132,7 @@ public class WarningGroup implements ICommand {
 		});
 	}
 
-	private void getInfractions(SlashCommandEvent event, DBMember target) {
+	private void getInfractions(SlashCommandEvent event, UserProfile target) {
 		List<Warning> warnings = Database.getWarnings(target.getGuildId(), target.getUserId());
 		if (warnings == null || warnings.isEmpty()) {
 			event.reply("This user has no infractions in this server").queue();
