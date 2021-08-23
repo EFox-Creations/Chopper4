@@ -88,7 +88,14 @@ public class Listener extends ListenerAdapter {
 		UserProfile dbMember = Database.getMember(event.getGuild(), event.getAuthor().getId());
 		if (dbMember == null) {
 			//noinspection ConstantConditions cant be null
-			Database.upsertMember(event.getGuild(), UserProfile.createNewProfile(event.getAuthor().getId(), event.getGuild().getId(), event.getMember().getEffectiveName()));
+			Database.upsertMember(event.getGuild(),
+				UserProfile.createNewProfile(
+					event.getAuthor().getId(),
+					event.getGuild().getId(),
+					event.getMember().getEffectiveName()
+				)
+			);
+			return;
 		} else if (dbMember.isMuted()) {
 			event.getMessage().delete().queue();
 			return;

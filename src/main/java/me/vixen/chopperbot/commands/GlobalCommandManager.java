@@ -17,7 +17,6 @@ public class GlobalCommandManager {
 		//Admin Commands
 		addGlobalCommand(new ChangelogCommand());
 		addGlobalCommand(new EmoteIdCommand());
-		addGlobalCommand(new ErrorTrackingCommand());
 		addGlobalCommand(new InjectionCommand());
 		addGlobalCommand(new QueryCommand());
 		addGlobalCommand(new ResetCommand(guildManager));

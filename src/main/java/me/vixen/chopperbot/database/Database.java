@@ -21,28 +21,6 @@ import java.util.*;
 
 public class Database {
 
-	private static final ExclusionStrategy SERIALIZE_STRATEGY = new ExclusionStrategy() {
-		@Override
-		public boolean shouldSkipField(FieldAttributes f) {
-			return f.getAnnotation(ExcludeSerialize.class) != null;
-		}
-		@Override
-		public boolean shouldSkipClass(Class<?> clazz) {
-			return false;
-		}
-	};
-
-	private static final ExclusionStrategy DESERIALIZE_STRATEGY = new ExclusionStrategy() {
-		@Override
-		public boolean shouldSkipField(FieldAttributes f) {
-			return f.getAnnotation(ExcludeDeserialize.class) != null;
-		}
-		@Override
-		public boolean shouldSkipClass(Class<?> clazz) {
-			return false;
-		}
-	};
-
 	private static Connection getConnection() {
 		return Entry.dbHandler.getConnection();
 	}
@@ -56,11 +34,11 @@ public class Database {
 	}
 
 	public static String getGuildMemberTable(String guildId) {
-		return String.format("'%s members'", guildId).replaceAll(" ", "");
+		return ("'" + guildId + "members'");
 	}
 
 	public static String getGuildWarningTable(String guildId) {
-		return String.format("'%s warnings'", guildId).replaceAll(" ", "");
+		return ("'" + guildId + "warnings'");
 	}
 
 	// ************************************************************
@@ -72,8 +50,10 @@ public class Database {
 			String guildMemberTable = getGuildMemberTable(g.getId());
 			String SQL = " CREATE TABLE IF NOT EXISTS " + guildMemberTable + "(" +
 				"user_id TEXT NOT NULL UNIQUE,\s" +
-				"profile_json TEXT NOT NULL DEFAULT \" \",\s" + //TODO add default json here
-				"chest_count INTEGER NOT NULL DEFAULT 1" +
+				"profile_json TEXT NOT NULL DEFAULT \"{}\",\s" +
+				"chest_count INTEGER NOT NULL DEFAULT 1,\s" +
+				"lottery_plays INTEGER NOT NULL DEFAULT 3,\s" +
+				"robbed_today BOOL DEFAULT 0" +
 				");";
 			try (Connection con = getConnection(); Statement statement = con.createStatement()) {
 				statement.execute(SQL);
@@ -153,7 +133,7 @@ public class Database {
 	// ************************************************************
 
 	public static UserProfile getMember(Guild g, String userId) {
-		Gson gson = new GsonBuilder().setExclusionStrategies(DESERIALIZE_STRATEGY).create();
+		Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
 
 		String guildMemberTable = getGuildMemberTable(g.getId());
 		String SQL = "SELECT * FROM " + guildMemberTable + " WHERE user_id = ?";
@@ -186,20 +166,13 @@ public class Database {
 		}
 	}
 
-	private static OffsetDateTime resolveUnmuteTime(String unmuteString) {
-		if (unmuteString == null || unmuteString.equalsIgnoreCase("NULL")) return null;
-		else return OffsetDateTime.parse(unmuteString);
-	}
-
 	/**
 	 * Inserts a new or Updates an existing {@link UserProfile} profile
 	 *
 	 * @param profile The {@link UserProfile} object
 	 */
 	public static void upsertMember(Guild guild, UserProfile profile) {
-
-		//TODO needs testing
-		Gson gson = new GsonBuilder().setExclusionStrategies(SERIALIZE_STRATEGY).serializeNulls().create();
+		Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().serializeNulls().create();
 		String profileJson = gson.toJson(profile);
 
 		String guildMemberTable = getGuildMemberTable(guild.getId());
@@ -219,62 +192,40 @@ public class Database {
 			ps.setBoolean(8, profile.hasRobbed());
 			ps.setInt(9, profile.getChestCount());
 			ps.setString(10, profile.getUserId());
+			ps.executeUpdate();
+			System.out.println("PFC: " + profile.getChestCount());
 		} catch (SQLException e) {
 			e.printStackTrace();
 			Logger.log("Couldn't Upsert Member", e);
 		}
-
-
-		/*String SQL = "INSERT INTO " + guildMemberTable + "(user_id,nickname,authorized,level_up_messages,muted,lst_msg_time," +
-			"unmute_time,gallery_remaining,chest_count,lockpick_skill,lock_count,exp," +
-			"level,currency,lottery_plays, robbed_today) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) " +
-			"ON CONFLICT (user_id) DO " +
-			"UPDATE SET nickname = ?, muted = ?, level_up_messages = ?, lst_msg_time = ?, unmute_time = ?, " +
-			"gallery_remaining = ?, authorized = ?, chest_count = ?, lockpick_skill = ?, lock_count = ?, exp = ?, " +
-			"level = ?, currency = ?, lottery_plays = ?, robbed_today = ? WHERE user_id = ?";
-		try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(SQL)) {
-			ps.setString(1, profile.getUserId());
-			ps.setString(2, profile.getNickname());
-			ps.setBoolean(3, profile.isAuthorized());
-			ps.setBoolean(4, profile.areLvlMsgsEnabled());
-			ps.setBoolean(5, profile.isMuted());
-			ps.setString(6, profile.getLstMsgTime().toString());
-			ps.setString(7, profile.getUnmuteTime());
-			ps.setInt(8, profile.getGalleryImgsLeft());
-			ps.setInt(9, profile.getChestCount());
-			ps.setInt(10, profile.getSkill());
-			ps.setInt(11, profile.getLockCount());
-			ps.setInt(12, profile.getExp());
-			ps.setInt(13, profile.getLevel());
-			ps.setInt(14, profile.getCoins());
-			ps.setInt(15, profile.getLottoPlaysLeft());
-			ps.setBoolean(16, profile.hasRobbed());
-			ps.setString(17, profile.getNickname());
-			ps.setBoolean(18, profile.isMuted());
-			ps.setBoolean(19, profile.areLvlMsgsEnabled());
-			ps.setString(20, profile.getLstMsgTime().toString());
-			ps.setString(21, profile.getUnmuteTime());
-			ps.setInt(22, profile.getGalleryImgsLeft());
-			ps.setBoolean(23, profile.isAuthorized());
-			ps.setInt(24, profile.getChestCount());
-			ps.setInt(25, profile.getSkill());
-			ps.setInt(26, profile.getLockCount());
-			ps.setInt(27, profile.getExp());
-			ps.setInt(28, profile.getLevel());
-			ps.setInt(29, profile.getCoins());
-			ps.setInt(30, profile.getLottoPlaysLeft());
-			ps.setBoolean(31, profile.hasRobbed());
-			ps.setString(32, profile.getUserId());
-			ps.executeUpdate();
-		} catch (SQLException e) {
-			e.printStackTrace();
-			Logger.log("Couldn't Upsert Member", e);
-		}*/
 	}
 
 	public static UserProfile getRandomProfile(Guild g, String robberSelfId) {
-		//TODO this needs to be implemented
-		return null;
+		Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
+		String SQL = "SELECT * FROM " + getGuildMemberTable(g.getId()) + " ORDER BY RAND() LIMIT 1";
+		try (Connection con = getConnection(); Statement stmt = con.createStatement()) {
+			ResultSet rs = stmt.executeQuery(SQL);
+			if (rs.next()) {
+				final String profileJson = rs.getString("profile_json");
+				final int chestCount = rs.getInt("chest_count");
+				final boolean robbedToday = rs.getBoolean("robbed_today");
+				final int lottoPlays = rs.getInt("lottery_plays");
+				stmt.close();
+				con.close();
+
+				JsonObject profile = gson.fromJson(profileJson, JsonObject.class);
+				profile.addProperty("chestCount", chestCount);
+				profile.addProperty("successOnRobToday", robbedToday);
+				profile.addProperty("lottoPlaysLeft", lottoPlays);
+				return gson.fromJson(profile, UserProfile.class);
+			}
+			stmt.close();
+			con.close();
+			return null;
+		} catch (SQLException e) {
+			Logger.log("Failed to select random user");
+			return null;
+		}
 	}
 
 	// ************************************************************

@@ -2,51 +2,62 @@ package me.vixen.chopperbot.database;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import me.vixen.chopperbot.Entry;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
 import java.time.OffsetDateTime;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 public class UserProfile {
+	@Expose
 	@SerializedName("UserId")
 	private final String userId;
+	@Expose
 	@SerializedName("GuildId")
 	private final String guildId;
+	@Expose
 	@SerializedName("Nickname")
 	private String nickname;
+	@Expose
 	@SerializedName("IsAuthorized")
 	private boolean authorized;
+	@Expose
 	@SerializedName("Has Level Msgs On")
 	private boolean lvlMsgsEnabled = true;
+	@Expose
 	@SerializedName("Last Msg Time")
-	private OffsetDateTime lstMsgTime = OffsetDateTime.now().minus(5L, ChronoUnit.MINUTES);
+	private String lstMsgTime = OffsetDateTime.now().minus(5L, ChronoUnit.MINUTES).toString();
+	@Expose
 	@SerializedName("Unmute Time")
-	private OffsetDateTime unmuteTime = null;
+	private String unmuteTime = null;
+	@Expose
 	@SerializedName("Gallery Posts Left")
 	private int galleryImgsLeft = 10;
+	@Expose
 	@SerializedName("Skill")
 	private int skill = 1;
+	@Expose
 	@SerializedName("Lock Count")
 	private int lockCount = 0;
+	@Expose
 	@SerializedName("Exp")
 	private long exp = 0;
+	@Expose
 	@SerializedName("Level")
 	private int level = 0;
+	@Expose
 	@SerializedName("Coins")
 	private int coins = 0;
 
-	@ExcludeSerialize
-	private int lottoPlaysLeft = 3;
-	@ExcludeSerialize
+	private int lottoPlaysLeft;
 	private boolean successOnRobToday = false;
-	@ExcludeSerialize
-	private int chestCount = 1;
+	private int chestCount;
 
-	@ExcludeSerialize @ExcludeDeserialize
 	private List<Warning> warnings = new ArrayList<>();
 
 	private UserProfile(String userId, String guildId, String nickname, boolean authorized) {
@@ -54,6 +65,8 @@ public class UserProfile {
 		this.guildId = guildId;
 		this.nickname = nickname;
 		this.authorized = authorized;
+		this.lottoPlaysLeft = 3;
+		this.chestCount = 1;
 	}
 
 	public static UserProfile createNewProfile(String userId, String guildId, String nickname) {
@@ -104,13 +117,18 @@ public class UserProfile {
 	}
 
 	public OffsetDateTime getLstMsgTime() {
-		if (lstMsgTime == null)
-			lstMsgTime = OffsetDateTime.now().minus(5L, ChronoUnit.MINUTES);
-		return lstMsgTime;
+		try {
+			OffsetDateTime parse = OffsetDateTime.parse(lstMsgTime);
+			return parse;
+		} catch (DateTimeParseException e) {
+			OffsetDateTime fiveAgo = OffsetDateTime.now().minus(5L, ChronoUnit.MINUTES);
+			lstMsgTime = fiveAgo.toString();
+			return fiveAgo;
+		}
 	}
 
 	public void updateLstMsgTime() {
-		this.lstMsgTime = OffsetDateTime.now();
+		this.lstMsgTime = OffsetDateTime.now().toString();
 	}
 
 	/**
@@ -119,14 +137,22 @@ public class UserProfile {
 	 * False, if the unmute time is null or is in the past
 	 */
 	public boolean isMuted() {
-		boolean actuallyMuted = (unmuteTime != null && unmuteTime.isAfter(OffsetDateTime.now()));
-		if (actuallyMuted) return true;
-		unmuteTime = null;
-		return false;
+		if (unmuteTime == null) return false;
+
+		try {
+			OffsetDateTime parse = OffsetDateTime.parse(unmuteTime);
+			boolean actuallyMuted = (parse != null && parse.isAfter(OffsetDateTime.now()));
+			if (actuallyMuted) return true;
+			unmuteTime = null;
+			return false;
+		} catch (DateTimeParseException e) {
+			unmuteTime = null;
+			return false;
+		}
 	}
 
 	public void setMuted(OffsetDateTime unmuteTime) {
-		this.unmuteTime = unmuteTime;
+		this.unmuteTime = unmuteTime.toString();
 	}
 
 	public void unmute() {
@@ -189,21 +215,25 @@ public class UserProfile {
 	}
 
 	public boolean awardExp(boolean override) {
-		boolean after = OffsetDateTime.now().plus(1L, ChronoUnit.SECONDS)
-			.isAfter(lstMsgTime.plus(5L, ChronoUnit.MINUTES));
-
-		if (after || override) {
-			adjustExp(new Random().nextInt(15)+1);
-			updateLstMsgTime();
-			if (hasLeveledUp((int) exp)) {
-				level++;
-				update(null);
-				return areLvlMsgsEnabled();
-			} else {
-				update(null);
-				return false;
-			}
-		} return false;
+		try {
+			OffsetDateTime parse = OffsetDateTime.parse(lstMsgTime);
+			boolean after = OffsetDateTime.now().plus(1L, ChronoUnit.SECONDS)
+				.isAfter(parse.plus(5L, ChronoUnit.MINUTES));
+			if (after || override) {
+				adjustExp(new Random().nextInt(15)+1);
+				updateLstMsgTime();
+				if (hasLeveledUp((int) exp)) {
+					level++;
+					update(null);
+					return areLvlMsgsEnabled();
+				} else {
+					update(null);
+					return false;
+				}
+			} return false;
+		} catch (DateTimeParseException e) {
+			return false;
+		}
 	}
 
 	public int getLevel() {

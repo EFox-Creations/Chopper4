@@ -1,6 +1,7 @@
 package me.vixen.chopperbot.listener;
 
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
+import me.vixen.chopperbot.Logger;
 import me.vixen.chopperbot.database.Database;
 import me.vixen.chopperbot.commands.GlobalCommandManager;
 import me.vixen.chopperbot.commands.ICommand;
@@ -62,7 +63,7 @@ public class DefaultEventHandler {
 					.append(event.getAuthor().getAsMention())
 					.queue();
 			}
-		} else System.out.println("DB failed to return member");
+		} else Logger.log("DEH: 66: DB failed to return member");
 
 	}
 

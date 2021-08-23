@@ -32,20 +32,28 @@ import java.util.stream.Collectors;
 public class Scheduling {
 
 	private static DateTimeFormatter BASICDATEFORMAT = DateTimeFormatter.RFC_1123_DATE_TIME;
-	private static DateTimeFormatter CUSTOMFORMAT = DateTimeFormatter.ofPattern("uuuu-MMM-dd @ HH:mm:ss OOOOO");
+	private static DateTimeFormatter CUSTOMFORMAT = DateTimeFormatter.ofPattern("uuuu-MMM-dd @ HH:mm:ss OOOO");
 	private static ZoneId ZONEID = ZoneId.of("America/Chicago");
 	private static ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
 	private static long SECONDSINDAY = TimeUnit.DAYS.toSeconds(1L);
 
 	public static void startScheduling(GuildManager gManager) {
-		ScheduledFuture<?> chestsFuture = fireChests(); // Immediately spawn and schedule next (returns next schedule)
-		ScheduledFuture<?> resetFuture = executorService.scheduleWithFixedDelay(
-			() -> startResets(gManager), //Reset daily claims in database
-			now().until(startOfNextDay(), ChronoUnit.SECONDS), // Delay reset until start of next day
-			SECONDSINDAY, //After first delay, delay for 1 whole day //TODO reschedule this for start of next day everytime? DST?
+		fireChests(); // Immediately spawn and schedule next (returns next schedule)
+		scheduleResetsAtMidnight(gManager); // Schedule resets for midnight
+	}
+
+	private static void doResets(GuildManager gManager) {
+		startResets(gManager);
+		scheduleResetsAtMidnight(gManager);
+	}
+
+	private static void scheduleResetsAtMidnight(GuildManager gManager) {
+		ScheduledFuture<?> resetFuture = executorService.schedule(
+			() -> doResets(gManager),
+			now().until(startOfNextDay(), ChronoUnit.SECONDS),
 			TimeUnit.SECONDS
 		);
-		Logger.log("Reset Future is : " + getTimeOfScheduledFuture(chestsFuture));
+		Logger.log("Reset Future is : " + getTimeOfScheduledFuture(resetFuture));
 	}
 
 	private static LocalDateTime now() {
@@ -63,19 +71,18 @@ public class Scheduling {
 			.format(CUSTOMFORMAT);
 	}
 
-	private static ScheduledFuture<?> fireChests() {
+	private static void fireChests() {
 		loadChests();
-		return rescheduleChest();
+		rescheduleChest();
 	}
 
-	private static ScheduledFuture<?> rescheduleChest() {
+	private static void rescheduleChest() {
 		ScheduledFuture<?> chestFuture = executorService.schedule(
 			() -> fireChests(),
 			(long) new Random().nextInt(3) + 4,
 			TimeUnit.HOURS
 		);
 		Logger.log("Chests will spawn: " + getTimeOfScheduledFuture(chestFuture));
-		return chestFuture;
 	}
 
 	private static void startResets(GuildManager gManager) {
@@ -131,15 +138,6 @@ public class Scheduling {
 	}
 	TEMPORARILY REMOVED */
 
-	public static boolean shouldInclude(GuildChannel gc, Config c) {
-		Config.TreasureMode mode = c.getMode();
-		if (mode.equals(Config.TreasureMode.BLACKLIST))
-			return !c.getChannels().contains(gc.getId());
-		else if (mode.equals(Config.TreasureMode.WHITELIST))
-			return c.getChannels().contains(gc.getId());
-		else return false;
-	}
-
 	static void loadChests() {
 		for (Guild g : Entry.jda.getGuilds()) {
 			Config config = Database.getConfig(g.getId());
@@ -148,13 +146,21 @@ public class Scheduling {
 				continue; //Skip to next guild
 			}
 
-			List<GuildChannel> treasureChannels = g.getChannels()
-				.stream()
-				.filter(it -> Scheduling.shouldInclude(it, config)) //Remove all but appointed channels
-				.filter(it -> it.getType().equals(ChannelType.TEXT)) //Remove non-text channels
+			//Remove all but appointed channels and non-text channels
+			List<GuildChannel> treasureChannels = g.getChannels().stream()
+				.filter(it -> Scheduling.shouldInclude(it, config) && it.getType().equals(ChannelType.TEXT))
 				.collect(Collectors.toList());
 			makeTreasureChest(treasureChannels);
 		}
+	}
+
+	public static boolean shouldInclude(GuildChannel gc, Config c) {
+		Config.TreasureMode mode = c.getMode();
+		if (mode.equals(Config.TreasureMode.BLACKLIST))
+			return !c.getChannels().contains(gc.getId());
+		else if (mode.equals(Config.TreasureMode.WHITELIST))
+			return c.getChannels().contains(gc.getId());
+		else return false;
 	}
 
 	public static void makeTreasureChest(List<GuildChannel> availableChannels) {

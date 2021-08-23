@@ -28,12 +28,18 @@ public class RobCommand implements ICommand {
 		switch (random) {
 			case FINED -> {
 				dbMember.adjustCoins(-50);
+				dbMember.update(event.getMember());
 				event.reply("You were caught by the State Police and fined 50 coins").queue();
 			}
 			case NOTHING -> event.reply("You tried your best but came up empty handed").queue();
 			case SUCCESS -> {
 				final UserProfile unfortunateSoul =
 					Database.getRandomProfile(event.getGuild(), event.getUser().getId());
+
+				if (unfortunateSoul == null) {
+					event.reply("You tried your best but came up empty handed").queue();
+					return;
+				}
 
 				final int tenPercent = (int) Math.floor(unfortunateSoul.getCoins() * .10);
 
