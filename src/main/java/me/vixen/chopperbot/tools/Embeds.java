@@ -213,7 +213,19 @@ public class Embeds {
 			.addField("Kick Reason:", reason, false)
 			.addField("Kicked User Id:", target.getId(), false)
 			.setColor(Colors.RED.get())
-			.addField("Timestamp", TimeFormat.RELATIVE.now().toString(), true)
+			.setTimestamp(Instant.now())
+			.build();
+	}
+
+	public static MessageEmbed getBLKickedEmbed(User target, User moderator, String reason, String flaggedText) {
+		return new EmbedBuilder()
+			.setTitle(target.getAsTag() + " was kicked!")
+			.setDescription("By:\n" + moderator.getAsTag())
+			.addField("Kick Reason:", reason, false)
+			.addField("Kicked User Id:", target.getId(), false)
+			.setColor(Colors.RED.get())
+			.addField("Flagged Text", flaggedText, false)
+			.setTimestamp(Instant.now())
 			.build();
 	}
 
@@ -224,7 +236,19 @@ public class Embeds {
 			.addField("Ban Reason:", reason, false)
 			.addField("Banned User Id:", target.getId(), false)
 			.setColor(Colors.BLACK.get())
-			.addField("Timestamp", TimeFormat.RELATIVE.now().toString(), true)
+			.setTimestamp(Instant.now())
+			.build();
+	}
+
+	public static MessageEmbed getBLBannedEmbed(User target, User moderator, String reason, String flaggedText) {
+		return new EmbedBuilder()
+			.setTitle(target.getAsTag() + " was banned!☠")
+			.setDescription("By:\n" + moderator.getAsTag())
+			.addField("Ban Reason:", reason, false)
+			.addField("Banned User Id:", target.getId(), false)
+			.setColor(Colors.BLACK.get())
+			.addField("Flagged Text", flaggedText, false)
+			.setTimestamp(Instant.now())
 			.build();
 	}
 
