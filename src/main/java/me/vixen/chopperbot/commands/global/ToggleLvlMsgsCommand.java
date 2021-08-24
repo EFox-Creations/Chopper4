@@ -9,17 +9,10 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 
 public class ToggleLvlMsgsCommand implements ICommand {
 	@Override
-	public void handle(SlashCommandEvent event) {
-		String id = event.getUser().getId();
-		//noinspection ConstantConditions cant be null
-		UserProfile member = Database.getMember(event.getGuild(), id);
-		if (member == null) {
-			event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
-			return;
-		}
-		boolean newSetting = member.toggleLvlMsgs();
+	public void handle(SlashCommandEvent event, UserProfile profile) {
+		boolean newSetting = profile.toggleLvlMsgs();
 		event.reply(String.format("Your level up messages are `%s`", newSetting ? "ON" : "OFF")).queue();
-		member.update(event.getMember());
+		profile.update(event.getMember());
 	}
 
 	@Override

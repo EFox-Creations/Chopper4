@@ -30,12 +30,10 @@ import java.util.regex.Pattern;
 @SuppressWarnings("ConstantConditions")
 public class ModGroup implements ICommand {
 	@Override
-	public void handle(SlashCommandEvent event) {
+	public void handle(SlashCommandEvent event, UserProfile moderatorProfile) {
 		Guild guild = event.getGuild();
 		User moderator = event.getUser();
-		String moderatorId = moderator.getId();
-		UserProfile moderatorDB = Database.getMember(guild, moderatorId);
-		if (!moderatorDB.isAuthorized()) {
+		if (!moderatorProfile.isAuthorized()) {
 			event.replyEmbeds(Embeds.getPermissionMissing()).queue();
 			return;
 		}

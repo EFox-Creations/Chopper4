@@ -5,6 +5,7 @@ import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import me.vixen.chopperbot.Entry;
 import me.vixen.chopperbot.Logger;
 import me.vixen.chopperbot.commands.ICommand;
+import me.vixen.chopperbot.database.UserProfile;
 import me.vixen.chopperbot.tools.Embeds;
 import me.vixen.chopperbot.tools.GHConfig;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -35,7 +36,7 @@ public class IssueCommand implements ICommand {
     }
 
     @Override
-    public void handle(SlashCommandEvent event) {
+    public void handle(SlashCommandEvent event, UserProfile profile) {
 
         //noinspection ConstantConditions can't be null - we don't except non-guild commands
         if (!EFoxHomeBase.isTicketTeam(event.getMember())) {

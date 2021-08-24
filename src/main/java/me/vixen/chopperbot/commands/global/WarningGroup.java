@@ -31,13 +31,7 @@ public class WarningGroup implements ICommand {
 	}
 
 	@Override
-	public void handle(SlashCommandEvent event) {
-		//noinspection ConstantConditions cant be null
-		UserProfile moderator = Database.getMember(event.getGuild(), event.getUser().getId());
-		if (moderator == null) {
-			event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
-			return;
-		}
+	public void handle(SlashCommandEvent event, UserProfile moderator) {
 		if (!moderator.isAuthorized()) {
 			event.replyEmbeds(Embeds.getPermissionMissing()).queue();
 			return;

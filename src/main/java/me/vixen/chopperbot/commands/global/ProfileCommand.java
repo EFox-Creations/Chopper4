@@ -23,7 +23,7 @@ import java.time.temporal.ChronoUnit;
 
 public class ProfileCommand implements ICommand {
 	@Override
-	public void handle(SlashCommandEvent event) {
+	public void handle(SlashCommandEvent event, UserProfile profile) {
 		event.deferReply(false).queue();
 		OptionMapping userOpt = event.getOption("user");
 		if (userOpt == null) { //retrieve self

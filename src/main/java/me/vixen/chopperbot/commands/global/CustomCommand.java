@@ -22,7 +22,7 @@ import java.awt.*;
 public class CustomCommand implements ICommand {
 
 	@Override
-	public void handle(SlashCommandEvent event) {
+	public void handle(SlashCommandEvent event, UserProfile profile) {
 		Guild guild = event.getGuild();
 		//noinspection ConstantConditions must be provided, cannot be null
 		String cmdname = event.getOption("cmdname").getAsString();
@@ -42,12 +42,7 @@ public class CustomCommand implements ICommand {
 			).queue();
 			return;
 		}
-		UserProfile member = Database.getMember(guild, event.getUser().getId());
-		if (member == null) {
-			event.reply("An error occurred, aborting with code " + Errors.DBNULLRETURN).setEphemeral(true).queue();
-			return;
-		}
-		if (cmd.isStaffOnly() && !member.isAuthorized()) {
+		if (cmd.isStaffOnly() && !profile.isAuthorized()) {
 			event.replyEmbeds(Embeds.getPermissionMissing()).queue();
 			return;
 		}

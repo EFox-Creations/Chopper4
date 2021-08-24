@@ -34,14 +34,8 @@ public class CustomGroup implements ICommand {
 	}
 
 	@Override
-	public void handle(SlashCommandEvent event) {
-		@SuppressWarnings("ConstantConditions") //This cant be null as we don't accept DM SCE
-		UserProfile dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
-		if (dbMember == null) {
-			event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
-			return;
-		}
-		if (!dbMember.isAuthorized()) {
+	public void handle(SlashCommandEvent event, UserProfile profile) {
+		if (!profile.isAuthorized()) {
 			event.replyEmbeds(Embeds.getPermissionMissing()).setEphemeral(true).queue();
 			return;
 		}

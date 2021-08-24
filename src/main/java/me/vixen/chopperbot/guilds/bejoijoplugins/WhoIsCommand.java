@@ -26,7 +26,7 @@ public class WhoIsCommand implements ICommand {
 	}
 
 	@Override
-	public void handle(SlashCommandEvent event) {
+	public void handle(SlashCommandEvent event, UserProfile profile) {
 		//noinspection ConstantConditions cant be null
 		UserProfile dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
 		if (dbMember == null) {

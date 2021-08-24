@@ -24,14 +24,8 @@ public class ShopCommand implements ICommand {
 	}
 
 	@Override
-	public void handle(SlashCommandEvent event) {
-		//noinspection ConstantConditions cant be null
-		UserProfile dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
-		if (dbMember == null) {
-			event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
-			return;
-		}
-		int price = getPrice(dbMember);
+	public void handle(SlashCommandEvent event, UserProfile profile) {
+		int price = getPrice(profile);
 
 		SelectionMenu menu = SelectionMenu.create("menu:shop")
 			.setPlaceholder("Choose your item!")

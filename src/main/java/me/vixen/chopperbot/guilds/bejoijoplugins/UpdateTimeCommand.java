@@ -1,6 +1,7 @@
 package me.vixen.chopperbot.guilds.bejoijoplugins;
 
 import me.vixen.chopperbot.commands.ICommand;
+import me.vixen.chopperbot.database.UserProfile;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
@@ -13,7 +14,7 @@ import java.util.stream.Collectors;
 
 public class UpdateTimeCommand implements ICommand {
 	@Override
-	public void handle(SlashCommandEvent event) {
+	public void handle(SlashCommandEvent event, UserProfile profile) {
 		//noinspection ConstantConditions cant be null
 		final OffsetDateTime timeJoined = event.getMember().getTimeJoined();
 		final OffsetDateTime now = OffsetDateTime.now();

@@ -20,21 +20,27 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
 import net.dv8tion.jda.api.interactions.components.Button;
 import net.dv8tion.jda.api.interactions.components.ButtonStyle;
+import org.kohsuke.github.GHCompare;
+
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class DefaultEventHandler {
-	public static void handleSlashCommand(SlashCommandEvent event, GlobalCommandManager cManager) {
+	public static void handleSlashCommand(SlashCommandEvent event, GlobalCommandManager cManager, UserProfile profile) {
 		final ICommand command = cManager.getGlobalCommand(event.getName());
 		if (command == null) event.replyEmbeds(Embeds.getCommandMissing()).queue();
-		else command.handle(event);
+		else command.handle(event, profile);
 		updateStickies((TextChannel) event.getChannel());
-		UserProfile member = Database.getMember(event.getGuild(), event.getUser().getId());
-		if (member != null) {
-			member.awardExp(false);
-			member.update(event.getMember());
-		}
+		if (profile != null) {
+			Config config = Database.getConfig(event.getGuild().getId());
+			if (profile.awardExp(false) && config != null && !config.arelvlMsgOverridden()) {
+				event.getChannel()
+					.sendMessageEmbeds(Embeds.getLevelUpEmbed(profile.getLevel()))
+					.append(event.getMember().getAsMention())
+					.queue();
+			}
+		} else Logger.log("DEH: 43: DB failed to return member");
 	}
 
 	public static void updateStickies(TextChannel channel) {
@@ -52,14 +58,13 @@ public class DefaultEventHandler {
 		}
 	}
 
-	public static void handleGMsgReceived(GuildMessageReceivedEvent event) {
+	public static void handleGMsgReceived(GuildMessageReceivedEvent event, UserProfile profile) {
 		updateStickies(event.getChannel());
-		UserProfile member = Database.getMember(event.getGuild(), event.getAuthor().getId());
-		if (member != null) {
+		if (profile != null) {
 			Config config = Database.getConfig(event.getGuild().getId());
-			if (member.awardExp(false) && config != null && !config.arelvlMsgOverridden()) {
+			if (profile.awardExp(false) && config != null && !config.arelvlMsgOverridden()) {
 				event.getChannel()
-					.sendMessageEmbeds(Embeds.getLevelUpEmbed(member.getLevel()))
+					.sendMessageEmbeds(Embeds.getLevelUpEmbed(profile.getLevel()))
 					.append(event.getAuthor().getAsMention())
 					.queue();
 			}

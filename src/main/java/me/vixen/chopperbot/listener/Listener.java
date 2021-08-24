@@ -2,6 +2,7 @@ package me.vixen.chopperbot.listener;
 
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import me.vixen.chopperbot.Entry;
+import me.vixen.chopperbot.Logger;
 import me.vixen.chopperbot.database.Database;
 import me.vixen.chopperbot.commands.GlobalCommandManager;
 import me.vixen.chopperbot.database.UserProfile;
@@ -71,22 +72,24 @@ public class Listener extends ListenerAdapter {
 		if (dbMember == null) {
 			//noinspection ConstantConditions cant be null
 			Database.upsertMember(event.getGuild(), UserProfile.createNewProfile(event.getUser().getId(), event.getGuild().getId(), event.getMember().getEffectiveName()));
+			return;
 		} else if (dbMember.isMuted()) { //DB isn't null && mute checks dont apply to new users
 			event.reply("You are muted in this guild").setEphemeral(true).queue();
 			event.getHook().deleteOriginal().queue();
 			return;
 		}
 		if (guildManager.contains(event.getGuild())) //If guild has custom actions
-			guildManager.getGuild(event.getGuild()).handleSlashCommand(event, waiter, commandManager);
-		else DefaultEventHandler.handleSlashCommand(event, commandManager); //else send to default handler
+			guildManager.getGuild(event.getGuild()).handleSlashCommand(event, waiter, commandManager, dbMember);
+		else DefaultEventHandler.handleSlashCommand(event, commandManager, dbMember); //else send to default handler
 	}
 
 	@SuppressWarnings("RegExpRedundantEscape")
 	@Override
 	public void onGuildMessageReceived(@NotNull GuildMessageReceivedEvent event) {
 		if (event.getAuthor().isBot()) return;
-		UserProfile dbMember = Database.getMember(event.getGuild(), event.getAuthor().getId());
-		if (dbMember == null) {
+		UserProfile profile = Database.getMember(event.getGuild(), event.getAuthor().getId());
+		if (profile == null) {
+			System.out.println("EVENT adding new member: " + event.getMember().getEffectiveName());
 			//noinspection ConstantConditions cant be null
 			Database.upsertMember(event.getGuild(),
 				UserProfile.createNewProfile(
@@ -96,13 +99,13 @@ public class Listener extends ListenerAdapter {
 				)
 			);
 			return;
-		} else if (dbMember.isMuted()) {
+		} else if (profile.isMuted()) {
 			event.getMessage().delete().queue();
 			return;
 		}
 		if (guildManager.contains(event.getGuild())) //If guild has custom actions
-			guildManager.getGuild(event.getGuild()).handleGMsgReceived(event, waiter);
-		else DefaultEventHandler.handleGMsgReceived(event); //else send to default handler
+			guildManager.getGuild(event.getGuild()).handleGMsgReceived(event, waiter, profile);
+		else DefaultEventHandler.handleGMsgReceived(event, profile); //else send to default handler
 
 		//Check blacklisted domain links
 		Config config = Database.getConfig(event.getGuild().getId());

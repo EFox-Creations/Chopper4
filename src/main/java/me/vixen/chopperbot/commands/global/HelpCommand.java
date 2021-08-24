@@ -1,6 +1,7 @@
 package me.vixen.chopperbot.commands.global;
 
 import me.vixen.chopperbot.commands.ICommand;
+import me.vixen.chopperbot.database.UserProfile;
 import me.vixen.chopperbot.tools.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
@@ -8,7 +9,7 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 
 public class HelpCommand implements ICommand {
 	@Override
-	public void handle(SlashCommandEvent event) {
+	public void handle(SlashCommandEvent event, UserProfile profile) {
 		event.replyEmbeds(new EmbedBuilder()
 			.setColor(Embeds.Colors.FOXORANGE.get())
 			.setTitle("🆘 Chopper Help Page 🆘")

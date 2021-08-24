@@ -4,6 +4,7 @@ import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import me.vixen.chopperbot.Entry;
 import me.vixen.chopperbot.commands.GlobalCommandManager;
 import me.vixen.chopperbot.commands.ICommand;
+import me.vixen.chopperbot.database.UserProfile;
 import me.vixen.chopperbot.listener.DefaultEventHandler;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
@@ -57,12 +58,12 @@ public interface IGuild {
 		DefaultEventHandler.nightlyReset(Entry.jda.getGuildById(getId()));
 	}
 
-	default void handleSlashCommand(SlashCommandEvent event, EventWaiter waiter, GlobalCommandManager cManager) {
-		DefaultEventHandler.handleSlashCommand(event, cManager);
+	default void handleSlashCommand(SlashCommandEvent event, EventWaiter waiter, GlobalCommandManager cManager, UserProfile profile) {
+		DefaultEventHandler.handleSlashCommand(event, cManager, profile);
 	}
 
-	default void handleGMsgReceived(GuildMessageReceivedEvent event, EventWaiter waiter) {
-		DefaultEventHandler.handleGMsgReceived(event);
+	default void handleGMsgReceived(GuildMessageReceivedEvent event, EventWaiter waiter, UserProfile profile) {
+		DefaultEventHandler.handleGMsgReceived(event, profile);
 	}
 
 	default void handleGMsgReactAdd(GuildMessageReactionAddEvent event, EventWaiter waiter) {

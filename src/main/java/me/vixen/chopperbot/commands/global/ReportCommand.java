@@ -3,6 +3,7 @@ package me.vixen.chopperbot.commands.global;
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import me.vixen.chopperbot.database.Database;
 import me.vixen.chopperbot.commands.ICommand;
+import me.vixen.chopperbot.database.UserProfile;
 import me.vixen.chopperbot.guilds.Config;
 import me.vixen.chopperbot.tools.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -27,7 +28,7 @@ public class ReportCommand implements ICommand {
 	}
 
 	@Override
-	public void handle(SlashCommandEvent event) {
+	public void handle(SlashCommandEvent event, UserProfile profile) {
 		User user = event.getUser();
 		Guild guild = event.getGuild();
 		@SuppressWarnings("ConstantConditions") //SlashCommandEvent is not accepted from DMs which is only case for NPE

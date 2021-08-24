@@ -1,6 +1,7 @@
 package me.vixen.chopperbot.commands.global;
 
 import me.vixen.chopperbot.commands.ICommand;
+import me.vixen.chopperbot.database.UserProfile;
 import me.vixen.chopperbot.tools.Embeds;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
@@ -10,7 +11,7 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 
 public class AvatarCommand implements ICommand {
 	@Override
-	public void handle(SlashCommandEvent event) {
+	public void handle(SlashCommandEvent event, UserProfile profile) {
 		User target;
 		OptionMapping username = event.getOption("username");
 		if (username == null) target = event.getUser();

@@ -14,15 +14,9 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
 public class DonateCommand implements ICommand {
 	@Override
-	public void handle(SlashCommandEvent event) {
+	public void handle(SlashCommandEvent event, UserProfile donator) {
 		Guild guild = event.getGuild();
 
-		//noinspection ConstantConditions cant be null; no SCE from DMs accepted
-		UserProfile donator = Database.getMember(guild, event.getUser().getId());
-		if (donator == null) {
-			event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
-			return;
-		}
 		//noinspection ConstantConditions is required
 		int amount = (int) event.getOption("amount").getAsLong();
 		if (donator.getCoins() < amount) {

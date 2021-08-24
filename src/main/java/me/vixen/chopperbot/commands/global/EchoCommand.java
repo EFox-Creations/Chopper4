@@ -15,16 +15,8 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
 public class EchoCommand implements ICommand {
 	@Override
-	public void handle(SlashCommandEvent event) {
-		Guild guild = event.getGuild();
-		User user = event.getUser();
-		//noinspection ConstantConditions cant be null
-		UserProfile member = Database.getMember(guild, user.getId());
-		if (member == null) {
-			event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
-			return;
-		}
-		if (!member.isAuthorized()) {
+	public void handle(SlashCommandEvent event, UserProfile profile) {
+		if (!profile.isAuthorized()) {
 			event.replyEmbeds(Embeds.getPermissionMissing()).queue();
 			return;
 		}

@@ -28,33 +28,33 @@ public class UserProfile {
 	private boolean authorized;
 	@Expose
 	@SerializedName("Has Level Msgs On")
-	private boolean lvlMsgsEnabled = true;
+	private boolean lvlMsgsEnabled;
 	@Expose
 	@SerializedName("Last Msg Time")
-	private String lstMsgTime = OffsetDateTime.now().minus(5L, ChronoUnit.MINUTES).toString();
+	private String lstMsgTime;
 	@Expose
 	@SerializedName("Unmute Time")
-	private String unmuteTime = null;
+	private String unmuteTime;
 	@Expose
 	@SerializedName("Skill")
-	private int skill = 1;
+	private int skill;
 	@Expose
 	@SerializedName("Lock Count")
-	private int lockCount = 0;
+	private int lockCount;
 	@Expose
 	@SerializedName("Exp")
-	private long exp = 0;
+	private long exp;
 	@Expose
 	@SerializedName("Level")
-	private int level = 0;
+	private int level;
 	@Expose
 	@SerializedName("Coins")
-	private int coins = 0;
+	private int coins;
 
-	private int galleryImgsLeft = 10;
-	private int lottoPlaysLeft = 3;
-	private boolean successOnRobToday = false;
-	private int chestCount = 1;
+	private int galleryImgsLeft;
+	private int lottoPlaysLeft;
+	private boolean successOnRobToday;
+	private int chestCount;
 
 	private List<Warning> warnings = new ArrayList<>();
 
@@ -63,6 +63,18 @@ public class UserProfile {
 		this.guildId = guildId;
 		this.nickname = nickname;
 		this.authorized = authorized;
+		lockCount= 0;
+		skill = 1;
+		coins = 0;
+		level = 0;
+		exp = 0;
+		galleryImgsLeft = 10;
+		lottoPlaysLeft = 3;
+		successOnRobToday = false;
+		chestCount = 1;
+		unmuteTime = null;
+		lvlMsgsEnabled = true;
+		lstMsgTime = OffsetDateTime.now().minus(5L, ChronoUnit.MINUTES).toString();
 	}
 
 	public static UserProfile createNewProfile(String userId, String guildId, String nickname) {
@@ -331,10 +343,32 @@ public class UserProfile {
 
 	}
 
-	@Override
-	public String toString() {
+	public String toJsonString() {
 		Gson gson = new GsonBuilder().serializeNulls().setPrettyPrinting().create();
 		return gson.toJson(this);
+	}
+
+	@Override
+	public String toString() {
+		return "UserProfile{" +
+			"userId='" + userId + '\'' +
+			", guildId='" + guildId + '\'' +
+			", nickname='" + nickname + '\'' +
+			", authorized=" + authorized +
+			", lvlMsgsEnabled=" + lvlMsgsEnabled +
+			", lstMsgTime='" + lstMsgTime + '\'' +
+			", unmuteTime='" + unmuteTime + '\'' +
+			", skill=" + skill +
+			", lockCount=" + lockCount +
+			", exp=" + exp +
+			", level=" + level +
+			", coins=" + coins +
+			", galleryImgsLeft=" + galleryImgsLeft +
+			", lottoPlaysLeft=" + lottoPlaysLeft +
+			", successOnRobToday=" + successOnRobToday +
+			", chestCount=" + chestCount +
+			", warnings=" + warnings +
+			'}';
 	}
 }
 

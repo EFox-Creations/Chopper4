@@ -20,19 +20,13 @@ import java.util.concurrent.TimeUnit;
 public class PollCommand implements ICommand {
 
 	@Override
-	public void handle(SlashCommandEvent event) {
-		//noinspection ConstantConditions
-		UserProfile dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
-		if (dbMember == null) {
-			event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
-			return;
-		}
+	public void handle(SlashCommandEvent event, UserProfile profile) {
 		Config config = Database.getConfig(event.getGuild().getId());
 		if (config == null) {
 			event.replyEmbeds(Embeds.getPleaseDoConfig()).queue();
 			return;
 		}
-		if (!dbMember.isAuthorized() && config.isOnlyStaffPolls()) {
+		if (!profile.isAuthorized() && config.isOnlyStaffPolls()) {
 			event.replyEmbeds(Embeds.getPermissionMissing()).setEphemeral(true).queue();
 			return;
 		}

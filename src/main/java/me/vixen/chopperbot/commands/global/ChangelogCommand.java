@@ -3,6 +3,7 @@ package me.vixen.chopperbot.commands.global;
 import me.vixen.chopperbot.database.Database;
 import me.vixen.chopperbot.Entry;
 import me.vixen.chopperbot.commands.ICommand;
+import me.vixen.chopperbot.database.UserProfile;
 import me.vixen.chopperbot.guilds.Config;
 import me.vixen.chopperbot.tools.Embeds;
 import net.dv8tion.jda.api.entities.Guild;
@@ -16,7 +17,7 @@ import java.util.List;
 
 public class ChangelogCommand implements ICommand {
 	@Override
-	public void handle(SlashCommandEvent event) {
+	public void handle(SlashCommandEvent event, UserProfile profile) {
 		if (!event.getUser().getId().equalsIgnoreCase(Entry.CREATOR_ID)) {
 			event.replyEmbeds(Embeds.getPermissionMissing()).queue();
 			return;

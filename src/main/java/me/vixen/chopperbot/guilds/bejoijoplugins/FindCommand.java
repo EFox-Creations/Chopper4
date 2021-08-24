@@ -25,14 +25,8 @@ public class FindCommand implements ICommand {
 	}
 
 	@Override
-	public void handle(SlashCommandEvent event) {
-		//noinspection ConstantConditions cant be null
-		UserProfile dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
-		if (dbMember == null) {
-			event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
-			return;
-		}
-		if (!dbMember.isAuthorized()) {
+	public void handle(SlashCommandEvent event, UserProfile profile) {
+		if (!profile.isAuthorized()) {
 			event.reply("You do not have the correct permissions").setEphemeral(true).queue();
 			return;
 		}

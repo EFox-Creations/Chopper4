@@ -32,14 +32,8 @@ public class BuyGroup implements ICommand {
 	}
 
 	@Override
-	public void handle(SlashCommandEvent event) {
+	public void handle(SlashCommandEvent event, UserProfile profile) {
 		final String name = event.getSubcommandName();
-		//noinspection ConstantConditions cant be null
-		UserProfile dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
-		if (dbMember == null) {
-			event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
-			return;
-		}
 		//noinspection ConstantConditions cant be null
 		switch (name) {
 			case "color" -> {
@@ -51,7 +45,7 @@ public class BuyGroup implements ICommand {
 					int index = (((int) number.getAsLong()) - 1);
 					try {
 						final String colorRole = colorRoles.get(index);
-						if (dbMember.getCoins() <= BejoIjoPlugins.COLOR_COST ) {
+						if (profile.getCoins() <= BejoIjoPlugins.COLOR_COST ) {
 							event.getHook().editOriginalEmbeds(Embeds.getInsufficientCoins()).queue();
 							return;
 						}
@@ -59,9 +53,9 @@ public class BuyGroup implements ICommand {
 						final Role role = event.getGuild().getRolesByName(colorRole, true).get(0);
 						//noinspection ConstantConditions cant be null
 						event.getGuild().addRoleToMember(event.getMember(), role).queue((unused -> {
-							dbMember.adjustCoins(BejoIjoPlugins.COLOR_COST  * -1);
+							profile.adjustCoins(BejoIjoPlugins.COLOR_COST  * -1);
 							event.getHook().editOriginal("Role " + colorRole + " added successfully").queue();
-							dbMember.update(null);
+							profile.update(null);
 						}));
 
 					} catch (IndexOutOfBoundsException e) {
@@ -72,15 +66,15 @@ public class BuyGroup implements ICommand {
 			case "role" -> {
 				final OptionMapping option = event.getOption("desiredrole");
 				if (option == null) showRoleMenu(event);
-				if (dbMember.getCoins() <= BejoIjoPlugins.ROLE_COST ) {
+				if (profile.getCoins() <= BejoIjoPlugins.ROLE_COST ) {
 					event.getHook().editOriginalEmbeds(Embeds.getInsufficientCoins()).queue();
 				}
 				else if (option != null) {
 					if (getAllUnownedRoles(event).contains(option.getAsRole())) {
 						//noinspection ConstantConditions cant be null
 						event.getGuild().addRoleToMember(event.getMember(), option.getAsRole()).queue();
-						dbMember.adjustCoins(BejoIjoPlugins.ROLE_COST * -1);
-						dbMember.update(null);
+						profile.adjustCoins(BejoIjoPlugins.ROLE_COST * -1);
+						profile.update(null);
 						event.reply("Bought `" + option.getAsRole().getName() + "` for " + BejoIjoPlugins.ROLE_COST + " coins").queue();
 					} else event.reply("Invalid Role Selection. This is either not a vanity role or you already own it").setEphemeral(true).queue();
 				} else  event.reply("Unknown Error, Please report to bot admin").queue();

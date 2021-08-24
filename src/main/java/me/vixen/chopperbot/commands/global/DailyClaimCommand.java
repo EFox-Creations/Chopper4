@@ -22,19 +22,16 @@ public class DailyClaimCommand implements ICommand {
 	}
 
 	@Override
-	public void handle(SlashCommandEvent event) {
+	public void handle(SlashCommandEvent event, UserProfile profile) {
 		Guild guild = event.getGuild();
 		if (gManager.contains(guild) && gManager.getGuild(guild).hasCustomClaims()) {
 			gManager.getGuild(guild).getCustomClaim(event);
 		} else { //Default claiming
-			String userId = event.getUser().getId();
-			//noinspection ConstantConditions We dont accept DM SCE; can't be null
-			UserProfile dbMember = Database.getMember(guild, userId);
-			if (dbMember == null) {
+			if (profile == null) {
 				event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
 				return;
 			}
-			int dailyChests = dbMember.getChestCount();
+			int dailyChests = profile.getChestCount();
 			if (dailyChests == 0) {
 				event.replyEmbeds(Embeds.getAlreadyClaimed()).queue();
 				return;
@@ -44,13 +41,13 @@ public class DailyClaimCommand implements ICommand {
 				.setColor(Embeds.Colors.FOXORANGE.get())
 				.setTitle("Daily Chests: " + dailyChests);
 			for (int i=1; i <= dailyChests; i++) {
-				MessageEmbed.Field reward = getReward(dbMember);
+				MessageEmbed.Field reward = getReward(profile);
 				builder.addField(reward);
 				//noinspection ConstantConditions
 				if (reward.getName().equals("Another Chest!")) i--;
 			}
-			dbMember.setChestCount(0);
-			dbMember.update(null);
+			profile.setChestCount(0);
+			profile.update(null);
 			event.replyEmbeds(builder.build()).queue();
 		}
 	}

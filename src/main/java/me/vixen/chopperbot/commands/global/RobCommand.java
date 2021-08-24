@@ -6,19 +6,12 @@ import me.vixen.chopperbot.database.UserProfile;
 import me.vixen.chopperbot.tools.Errors;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
-import java.util.List;
 import java.util.Random;
 
 public class RobCommand implements ICommand {
 	@Override
-	public void handle(SlashCommandEvent event) {
-		//noinspection ConstantConditions cant be null
-		UserProfile dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
-		if (dbMember == null) {
-			event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
-			return;
-		}
-		if (dbMember.hasRobbed()) {
+	public void handle(SlashCommandEvent event, UserProfile profile) {
+		if (profile.hasRobbed()) {
 			event.reply("You have already robbed today").setEphemeral(true).queue();
 			return;
 		}
@@ -27,8 +20,8 @@ public class RobCommand implements ICommand {
 
 		switch (random) {
 			case FINED -> {
-				dbMember.adjustCoins(-50);
-				dbMember.update(event.getMember());
+				profile.adjustCoins(-50);
+				profile.update(event.getMember());
 				event.reply("You were caught by the State Police and fined 50 coins").queue();
 			}
 			case NOTHING -> event.reply("You tried your best but came up empty handed").queue();
@@ -45,9 +38,9 @@ public class RobCommand implements ICommand {
 
 				unfortunateSoul.adjustCoins(-tenPercent);
 				unfortunateSoul.update(null);
-				dbMember.adjustCoins(tenPercent);
-				dbMember.rob();
-				dbMember.update(event.getMember());
+				profile.adjustCoins(tenPercent);
+				profile.rob();
+				profile.update(event.getMember());
 				event.reply("You stole " + tenPercent + " coins from " + unfortunateSoul.getNickname()).queue();
 			}
 		}

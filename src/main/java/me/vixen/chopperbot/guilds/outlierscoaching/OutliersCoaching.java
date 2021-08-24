@@ -3,6 +3,7 @@ package me.vixen.chopperbot.guilds.outlierscoaching;
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import me.vixen.chopperbot.commands.GlobalCommandManager;
 import me.vixen.chopperbot.commands.ICommand;
+import me.vixen.chopperbot.database.UserProfile;
 import me.vixen.chopperbot.guilds.IGuild;
 import me.vixen.chopperbot.listener.DefaultEventHandler;
 import net.dv8tion.jda.api.entities.Category;
@@ -43,16 +44,16 @@ public class OutliersCoaching implements IGuild {
     }
 
     @Override
-    public void handleSlashCommand(SlashCommandEvent event, EventWaiter waiter, GlobalCommandManager cManager) {
+    public void handleSlashCommand(SlashCommandEvent event, EventWaiter waiter, GlobalCommandManager cManager, UserProfile profile) {
         boolean found = false;
         for (ICommand c : getLocalCommands()) {
             if (c.getName().equals(event.getName())) {
-                c.handle(event);
+                c.handle(event, profile);
                 found = true;
                 break;
             }
         }
-        if (!found) DefaultEventHandler.handleSlashCommand(event, cManager);
+        if (!found) DefaultEventHandler.handleSlashCommand(event, cManager, profile);
     }
 
     @Override

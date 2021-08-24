@@ -17,37 +17,30 @@ import java.util.Random;
 
 public class PracticeCommand implements ICommand {
 	@Override
-	public void handle(SlashCommandEvent event) {
-		String userid = event.getUser().getId();
-		Guild guild = event.getGuild();
+	public void handle(SlashCommandEvent event, UserProfile profile) {
 		//noinspection ConstantConditions is required
 		int numoflocks = (int) event.getOption("numoflocks").getAsLong();
 		//noinspection ConstantConditions cant be null
-		UserProfile member = Database.getMember(guild, userid);
-		if (member == null) {
-			event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
-			return;
-		}
-		if (member.getLockCount() < numoflocks) {
+		if (profile.getLockCount() < numoflocks) {
 			event.replyEmbeds(Embeds.getInsufficientLocks()).queue();
 			return;
 		}
 
-		int skill = member.getSkill();
+		int skill = profile.getSkill();
 		int skillIncrease = 0;
 		int usedLocks = 0;
-		for (int i = 1; i <= numoflocks; i++ , usedLocks++, member.adjustLockCount(-1)) {
+		for (int i = 1; i <= numoflocks; i++ , usedLocks++, profile.adjustLockCount(-1)) {
 			int rand =
 				skill+skillIncrease < 10 ?
 					new Random().nextInt(10)+1 :
 					new Random().nextInt(100)+1;
 			if (skill > rand) {
-				member.adjustSkill(1);
+				profile.adjustSkill(1);
 				skillIncrease++;
 			}
 
 		}
-		member.update(null);
+		profile.update(null);
 
 		int newSkill = skill+skillIncrease;
 

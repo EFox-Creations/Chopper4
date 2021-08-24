@@ -1,6 +1,7 @@
 package me.vixen.chopperbot.commands.global;
 
 import me.vixen.chopperbot.commands.ICommand;
+import me.vixen.chopperbot.database.UserProfile;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
@@ -10,7 +11,7 @@ import java.awt.*;
 
 public class OddsCommand implements ICommand {
 	@Override
-	public void handle(SlashCommandEvent event) {
+	public void handle(SlashCommandEvent event, UserProfile profile) {
 		MessageEmbed embed = new EmbedBuilder()
 			.setTitle("🎲 Feeling Lucky? 🎲")
 			.setDescription("""

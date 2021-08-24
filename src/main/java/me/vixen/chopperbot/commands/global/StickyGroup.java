@@ -16,14 +16,8 @@ import java.awt.*;
 
 public class StickyGroup implements ICommand {
 	@Override
-	public void handle(SlashCommandEvent event) {
-		//noinspection ConstantConditions cant be null
-		UserProfile member = Database.getMember(event.getGuild(), event.getUser().getId());
-		if (member == null) {
-			event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
-			return;
-		}
-		if (!member.isAuthorized()) {
+	public void handle(SlashCommandEvent event, UserProfile profile) {
+		if (!profile.isAuthorized()) {
 			event.replyEmbeds(Embeds.getPermissionMissing()).queue();
 			return;
 		}

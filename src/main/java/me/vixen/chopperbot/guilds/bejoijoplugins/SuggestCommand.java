@@ -1,6 +1,7 @@
 package me.vixen.chopperbot.guilds.bejoijoplugins;
 
 import me.vixen.chopperbot.commands.ICommand;
+import me.vixen.chopperbot.database.UserProfile;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
@@ -13,7 +14,7 @@ import java.awt.*;
 
 public class SuggestCommand implements ICommand {
     @Override
-    public void handle(SlashCommandEvent event) {
+    public void handle(SlashCommandEvent event, UserProfile profile) {
         event.deferReply().queue();
         String asTag = event.getUser().getAsTag();
         //noinspection ConstantConditions cant be null; is required

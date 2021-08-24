@@ -17,16 +17,8 @@ import java.util.Random;
 
 public class ScratchOffCommand implements ICommand {
 	@Override
-	public void handle(SlashCommandEvent event) {
-		Guild guild = event.getGuild();
-		String userId = event.getUser().getId();
-		//noinspection ConstantConditions cant be null
-		UserProfile member = Database.getMember(guild, userId);
-		if (member == null) {
-			event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
-			return;
-		}
-		if (member.getLottoPlaysLeft() <= 0) {
+	public void handle(SlashCommandEvent event, UserProfile profile) {
+		if (profile.getLottoPlaysLeft() <= 0) {
 			event.reply("You have already played 3 games today").queue();
 			return;
 		}
@@ -34,7 +26,7 @@ public class ScratchOffCommand implements ICommand {
 		//noinspection ConstantConditions cant be null
 		final int bet = (int) event.getOption("bet").getAsLong();
 
-		if (bet > member.getCoins()) {
+		if (bet > profile.getCoins()) {
 			event.replyEmbeds(Embeds.getInsufficientCoins()).setEphemeral(true).queue();
 			return;
 		}
@@ -65,10 +57,10 @@ public class ScratchOffCommand implements ICommand {
 			.setFooter("Payout: " + payout + " Net: " + (payout-bet))
 			.build();
 
-		member.adjustCoins(payout-bet);
-		member.playLotto();
+		profile.adjustCoins(payout-bet);
+		profile.playLotto();
 		event.replyEmbeds(embed).queue();
-		member.update(null);
+		profile.update(null);
 	}
 
 	@Override

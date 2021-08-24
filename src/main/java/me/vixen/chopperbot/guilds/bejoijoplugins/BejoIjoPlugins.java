@@ -69,16 +69,16 @@ public class BejoIjoPlugins implements IGuild {
 	}
 
 	@Override
-	public void handleSlashCommand(SlashCommandEvent event, EventWaiter waiter, GlobalCommandManager cManager) {
+	public void handleSlashCommand(SlashCommandEvent event, EventWaiter waiter, GlobalCommandManager cManager, UserProfile profile) {
 		boolean found = false;
 		for (ICommand c : getLocalCommands()) {
 			if (c.getName().equals(event.getName())) {
-				c.handle(event);
+				c.handle(event, profile);
 				found = true;
 				break;
 			}
 		}
-		if (!found) DefaultEventHandler.handleSlashCommand(event, cManager);
+		if (!found) DefaultEventHandler.handleSlashCommand(event, cManager, profile);
 		//This guild wants slash command logs
 		//noinspection ConstantConditions cant be null
 		TextChannel logs = event.getGuild().getTextChannelById("672112948776534049");
@@ -87,27 +87,26 @@ public class BejoIjoPlugins implements IGuild {
 	}
 
 	@Override
-	public void handleGMsgReceived(GuildMessageReceivedEvent event, EventWaiter waiter) {
+	public void handleGMsgReceived(GuildMessageReceivedEvent event, EventWaiter waiter, UserProfile profile) {
 		final Message message = event.getMessage();
 		if (event.getChannel().getId().equals("671729684693778483")) { //If in gallery
-			final UserProfile member = Database.getMember(event.getGuild(), event.getAuthor().getId());
 			Role ss = event.getGuild().getRoleById("781608704633471036");
-			if (member != null && !event.getMember().getRoles().contains(ss)
+			if (profile != null && !event.getMember().getRoles().contains(ss)
 				&& !event.getAuthor().getId().equals(Entry.CREATOR_ID)) {
 				//Delete message if it is not a link, attachment, or the user has exceeded the limit
-				if (member.getGalleryImgsLeft() <= 0 ||
+				if (profile.getGalleryImgsLeft() <= 0 ||
 					(message.getAttachments().isEmpty() && !message.getContentRaw().contains("https://"))) {
 					message.delete().queue(unused ->
 						event.getChannel().sendMessageEmbeds(Embeds.getGalleryRestrict()).append(event.getAuthor().getAsMention()).queue(msg ->
 							msg.delete().queueAfter(5L, TimeUnit.SECONDS))
 					);
 				} else {
-					member.adjustGalleryImgsLeft(message.getAttachments().isEmpty() ? -1 : -1*message.getAttachments().size());
-					member.update(event.getMember());
+					profile.adjustGalleryImgsLeft(message.getAttachments().isEmpty() ? -1 : -1*message.getAttachments().size());
+					profile.update(event.getMember());
 				}
 			}
 		}
-		DefaultEventHandler.handleGMsgReceived(event); //update stickies and award exp
+		DefaultEventHandler.handleGMsgReceived(event, profile); //update stickies and award exp
 	}
 
 	@SuppressWarnings("SwitchStatementWithTooFewBranches") //may add more in future

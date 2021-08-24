@@ -134,7 +134,7 @@ public class Database {
 	// ************************************************************
 
 	public static UserProfile getMember(Guild g, String userId) {
-		Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
+		Gson gson = new GsonBuilder().create();
 
 		String guildMemberTable = getGuildMemberTable(g.getId());
 		String SQL = "SELECT * FROM " + guildMemberTable + " WHERE user_id = ?";

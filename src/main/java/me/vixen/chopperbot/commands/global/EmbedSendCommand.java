@@ -28,12 +28,8 @@ public class EmbedSendCommand implements ICommand {
     }
 
     @Override
-    public void handle(SlashCommandEvent event) {
-        Guild guild = event.getGuild();
-        User moderator = event.getUser();
-        String moderatorId = moderator.getId();
-        UserProfile moderatorDB = Database.getMember(guild, moderatorId);
-        if (!moderatorDB.isAuthorized()) {
+    public void handle(SlashCommandEvent event, UserProfile moderatorProfile) {
+        if (!moderatorProfile.isAuthorized()) {
             event.replyEmbeds(Embeds.getPermissionMissing()).queue();
             return;
         }

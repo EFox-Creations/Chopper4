@@ -2,6 +2,7 @@ package me.vixen.chopperbot.guilds.bejoijoplugins;
 
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import me.vixen.chopperbot.commands.ICommand;
+import me.vixen.chopperbot.database.UserProfile;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
@@ -19,7 +20,7 @@ public class ConvertCommand implements ICommand {
 	}
 
 	@Override
-	public void handle(SlashCommandEvent event) {
+	public void handle(SlashCommandEvent event, UserProfile profile) {
 		final Member slashMember = event.getMember();
 		final TextChannel textChannel = event.getTextChannel();
 		event.reply("Please paste your EUP config now").queue();

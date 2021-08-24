@@ -36,7 +36,7 @@ public class CardGroup implements ICommand {
 	}
 
 	@Override
-	public void handle(SlashCommandEvent event) {
+	public void handle(SlashCommandEvent event, UserProfile profile) {
 		final String subcommandName = event.getSubcommandName();
 		//noinspection ConstantConditions cant be null
 		switch (subcommandName) {

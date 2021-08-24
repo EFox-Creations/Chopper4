@@ -5,6 +5,7 @@ import me.vixen.chopperbot.Entry;
 import me.vixen.chopperbot.Scheduling;
 import me.vixen.chopperbot.commands.ICommand;
 import me.vixen.chopperbot.database.Database;
+import me.vixen.chopperbot.database.UserProfile;
 import me.vixen.chopperbot.guilds.Config;
 import me.vixen.chopperbot.guilds.GuildManager;
 import me.vixen.chopperbot.listener.DefaultEventHandler;
@@ -28,7 +29,7 @@ public class SummonCommand implements ICommand {
 	}
 
 	@Override
-	public void handle(SlashCommandEvent event) {
+	public void handle(SlashCommandEvent event, UserProfile profile) {
 		if (!event.getUser().getId().equalsIgnoreCase(Entry.CREATOR_ID)) {
 			event.replyEmbeds(Embeds.getPermissionMissing()).queue();
 			return;

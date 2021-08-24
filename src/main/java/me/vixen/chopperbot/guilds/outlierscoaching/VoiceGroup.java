@@ -1,6 +1,7 @@
 package me.vixen.chopperbot.guilds.outlierscoaching;
 
 import me.vixen.chopperbot.commands.ICommand;
+import me.vixen.chopperbot.database.UserProfile;
 import net.dv8tion.jda.api.entities.GuildVoiceState;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
@@ -9,7 +10,7 @@ import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 
 public class VoiceGroup implements ICommand {
     @Override
-    public void handle(SlashCommandEvent event) {
+    public void handle(SlashCommandEvent event, UserProfile profile) {
         //noinspection ConstantConditions member is not null
         GuildVoiceState voiceState = event.getMember().getVoiceState();
         if (voiceState == null || !voiceState.inVoiceChannel()) {

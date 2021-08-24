@@ -21,7 +21,7 @@ public class SlotCommand implements ICommand {
 	final int MAX_BET = 134217727;
 
 	@Override
-	public void handle(SlashCommandEvent event) {
+	public void handle(SlashCommandEvent event, UserProfile profile) {
 		String id = event.getUser().getId();
 		Guild guild = event.getGuild();
 		Guild efox = Entry.jda.getGuildById("761703507546996786");

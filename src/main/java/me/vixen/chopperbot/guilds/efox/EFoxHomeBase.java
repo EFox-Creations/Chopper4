@@ -4,6 +4,7 @@ import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import me.vixen.chopperbot.commands.GlobalCommandManager;
 import me.vixen.chopperbot.commands.ICommand;
 import me.vixen.chopperbot.database.Database;
+import me.vixen.chopperbot.database.UserProfile;
 import me.vixen.chopperbot.guilds.Config;
 import me.vixen.chopperbot.guilds.IGuild;
 import me.vixen.chopperbot.listener.DefaultEventHandler;
@@ -50,15 +51,15 @@ public class EFoxHomeBase implements IGuild {
 	}
 
 	@Override
-	public void handleSlashCommand(SlashCommandEvent event, EventWaiter waiter, GlobalCommandManager cManager) {
+	public void handleSlashCommand(SlashCommandEvent event, EventWaiter waiter, GlobalCommandManager cManager, UserProfile profile) {
 		boolean found = false;
 		for (ICommand c : getLocalCommands()) {
 			if (c.getName().equals(event.getName())) {
-				c.handle(event);
+				c.handle(event, profile);
 				found = true;
 			}
 		}
-		if (!found) DefaultEventHandler.handleSlashCommand(event, cManager);
+		if (!found) DefaultEventHandler.handleSlashCommand(event, cManager, profile);
 	}
 
 	@Override

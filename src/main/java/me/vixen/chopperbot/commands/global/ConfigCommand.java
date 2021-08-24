@@ -26,15 +26,9 @@ import java.util.stream.Collectors;
 
 public class ConfigCommand implements ICommand {
 	@Override
-	public void handle(SlashCommandEvent event) {
+	public void handle(SlashCommandEvent event, UserProfile profile) {
 		event.deferReply().queue();
-		@SuppressWarnings("ConstantConditions") //This cant be null as we don't accept DM SCE
-		UserProfile dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
-		if (dbMember == null) {
-			event.getHook().editOriginal("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
-			return;
-		}
-		if (!dbMember.isAuthorized()) {
+		if (!profile.isAuthorized()) {
 			event.getHook().editOriginalEmbeds(Embeds.getPermissionMissing()).queue();
 			return;
 		}
