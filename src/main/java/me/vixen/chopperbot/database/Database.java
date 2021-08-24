@@ -53,7 +53,8 @@ public class Database {
 				"profile_json TEXT NOT NULL DEFAULT \"{}\",\s" +
 				"chest_count INTEGER NOT NULL DEFAULT 1,\s" +
 				"lottery_plays INTEGER NOT NULL DEFAULT 3,\s" +
-				"robbed_today BOOL DEFAULT 0" +
+				"robbed_today BOOL DEFAULT 0,\s" +
+				"gallery_left INTEGER DEFAULT 10" +
 				");";
 			try (Connection con = getConnection(); Statement statement = con.createStatement()) {
 				statement.execute(SQL);
@@ -145,6 +146,7 @@ public class Database {
 				final int chestCount = rs.getInt("chest_count");
 				final boolean robbedToday = rs.getBoolean("robbed_today");
 				final int lottoPlays = rs.getInt("lottery_plays");
+				final int galleryLeft = rs.getInt("gallery_left");
 				ps.close();
 				con.close();
 
@@ -152,6 +154,7 @@ public class Database {
 				profile.addProperty("chestCount", chestCount);
 				profile.addProperty("successOnRobToday", robbedToday);
 				profile.addProperty("lottoPlaysLeft", lottoPlays);
+				profile.addProperty("galleryImgsLeft", galleryLeft);
 				return gson.fromJson(profile, UserProfile.class);
 			}
 			ps.close();
@@ -177,21 +180,23 @@ public class Database {
 
 		String guildMemberTable = getGuildMemberTable(guild.getId());
 
-		String SQL = "INSERT INTO " + guildMemberTable + "(user_id,profile_json,lottery_plays,robbed_today,chest_count) VALUES(?,?,?,?,?) " +
+		String SQL = "INSERT INTO " + guildMemberTable + "(user_id,profile_json,lottery_plays,robbed_today,chest_count,gallery_left) VALUES(?,?,?,?,?,?) " +
 			"ON CONFLICT (user_id) DO " +
-			"UPDATE SET profile_json = ?, lottery_plays = ?, robbed_today = ?, chest_count = ? WHERE user_id = ?";
+			"UPDATE SET profile_json = ?, lottery_plays = ?, robbed_today = ?, chest_count = ?, gallery_left = ? WHERE user_id = ?";
 		try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(SQL)) {
 			ps.setString(1, profile.getUserId());
 			ps.setString(2, profileJson);
 			ps.setInt(3, profile.getLottoPlaysLeft());
 			ps.setBoolean(4, profile.hasRobbed());
 			ps.setInt(5, profile.getChestCount());
+			ps.setInt(6, profile.getGalleryImgsLeft());
 
-			ps.setString(6, profileJson);
-			ps.setInt(7, profile.getLottoPlaysLeft());
-			ps.setBoolean(8, profile.hasRobbed());
-			ps.setInt(9, profile.getChestCount());
-			ps.setString(10, profile.getUserId());
+			ps.setString(7, profileJson);
+			ps.setInt(8, profile.getLottoPlaysLeft());
+			ps.setBoolean(9, profile.hasRobbed());
+			ps.setInt(10, profile.getChestCount());
+			ps.setInt(11, profile.getGalleryImgsLeft());
+			ps.setString(12, profile.getUserId());
 			ps.executeUpdate();
 			System.out.println("PFC: " + profile.getChestCount());
 		} catch (SQLException e) {
@@ -202,7 +207,7 @@ public class Database {
 
 	public static UserProfile getRandomProfile(Guild g, String robberSelfId) {
 		Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
-		String SQL = "SELECT * FROM " + getGuildMemberTable(g.getId()) + " ORDER BY RAND() LIMIT 1";
+		String SQL = "SELECT * FROM " + getGuildMemberTable(g.getId()) + "WHERE user_id != " + robberSelfId + " ORDER BY RANDOM() LIMIT 1";
 		try (Connection con = getConnection(); Statement stmt = con.createStatement()) {
 			ResultSet rs = stmt.executeQuery(SQL);
 			if (rs.next()) {
@@ -488,7 +493,7 @@ public class Database {
 										   List<String> chopAndBasic, List<String> chopAndPremium) {
 
 		String SQL = "UPDATE " + getGuildMemberTable(g.getId()) +
-			" SET gallery_remaining = 10, chest_count = 1, robbed_today = 0, lottery_plays = 3";
+			" SET gallery_left = 10, chest_count = 1, robbed_today = 0, lottery_plays = 3";
 		try (Connection con = getConnection(); Statement stmt = con.createStatement()) {
 			stmt.executeUpdate(SQL);
 		} catch (SQLException e) {
