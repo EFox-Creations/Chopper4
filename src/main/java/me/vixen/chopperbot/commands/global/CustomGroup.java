@@ -5,10 +5,10 @@ import com.google.gson.JsonSyntaxException;
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import com.jagrosh.jdautilities.menu.Paginator;
 import me.vixen.chopperbot.database.Command;
-import me.vixen.chopperbot.database.DBMember;
 import me.vixen.chopperbot.database.Database;
 import me.vixen.chopperbot.commands.GlobalCommandManager;
 import me.vixen.chopperbot.commands.ICommand;
+import me.vixen.chopperbot.database.UserProfile;
 import me.vixen.chopperbot.tools.CustomEmbed;
 import me.vixen.chopperbot.tools.Embeds;
 import me.vixen.chopperbot.tools.Errors;
@@ -36,7 +36,7 @@ public class CustomGroup implements ICommand {
 	@Override
 	public void handle(SlashCommandEvent event) {
 		@SuppressWarnings("ConstantConditions") //This cant be null as we don't accept DM SCE
-		DBMember dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
+		UserProfile dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
 		if (dbMember == null) {
 			event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
 			return;

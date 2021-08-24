@@ -2,9 +2,9 @@ package me.vixen.chopperbot.guilds.bejoijoplugins;
 
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import com.jagrosh.jdautilities.menu.Paginator;
-import me.vixen.chopperbot.database.DBMember;
 import me.vixen.chopperbot.database.Database;
 import me.vixen.chopperbot.commands.ICommand;
+import me.vixen.chopperbot.database.UserProfile;
 import me.vixen.chopperbot.tools.Embeds;
 import me.vixen.chopperbot.tools.Errors;
 import net.dv8tion.jda.api.entities.Guild;
@@ -35,7 +35,7 @@ public class BuyGroup implements ICommand {
 	public void handle(SlashCommandEvent event) {
 		final String name = event.getSubcommandName();
 		//noinspection ConstantConditions cant be null
-		DBMember dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
+		UserProfile dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
 		if (dbMember == null) {
 			event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
 			return;
@@ -61,7 +61,7 @@ public class BuyGroup implements ICommand {
 						event.getGuild().addRoleToMember(event.getMember(), role).queue((unused -> {
 							dbMember.adjustCoins(BejoIjoPlugins.COLOR_COST  * -1);
 							event.getHook().editOriginal("Role " + colorRole + " added successfully").queue();
-							dbMember.update();
+							dbMember.update(null);
 						}));
 
 					} catch (IndexOutOfBoundsException e) {
@@ -80,7 +80,7 @@ public class BuyGroup implements ICommand {
 						//noinspection ConstantConditions cant be null
 						event.getGuild().addRoleToMember(event.getMember(), option.getAsRole()).queue();
 						dbMember.adjustCoins(BejoIjoPlugins.ROLE_COST * -1);
-						dbMember.update();
+						dbMember.update(null);
 						event.reply("Bought `" + option.getAsRole().getName() + "` for " + BejoIjoPlugins.ROLE_COST + " coins").queue();
 					} else event.reply("Invalid Role Selection. This is either not a vanity role or you already own it").setEphemeral(true).queue();
 				} else  event.reply("Unknown Error, Please report to bot admin").queue();

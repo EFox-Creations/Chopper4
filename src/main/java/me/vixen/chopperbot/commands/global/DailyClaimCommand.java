@@ -1,8 +1,8 @@
 package me.vixen.chopperbot.commands.global;
 
-import me.vixen.chopperbot.database.DBMember;
 import me.vixen.chopperbot.database.Database;
 import me.vixen.chopperbot.commands.ICommand;
+import me.vixen.chopperbot.database.UserProfile;
 import me.vixen.chopperbot.guilds.GuildManager;
 import me.vixen.chopperbot.tools.Embeds;
 import me.vixen.chopperbot.tools.Errors;
@@ -29,12 +29,12 @@ public class DailyClaimCommand implements ICommand {
 		} else { //Default claiming
 			String userId = event.getUser().getId();
 			//noinspection ConstantConditions We dont accept DM SCE; can't be null
-			DBMember dbMember = Database.getMember(guild, userId);
+			UserProfile dbMember = Database.getMember(guild, userId);
 			if (dbMember == null) {
 				event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
 				return;
 			}
-			int dailyChests = dbMember.getDailyChests();
+			int dailyChests = dbMember.getChestCount();
 			if (dailyChests == 0) {
 				event.replyEmbeds(Embeds.getAlreadyClaimed()).queue();
 				return;
@@ -49,8 +49,8 @@ public class DailyClaimCommand implements ICommand {
 				//noinspection ConstantConditions
 				if (reward.getName().equals("Another Chest!")) i--;
 			}
-			dbMember.setDailyChests(0);
-			dbMember.update();
+			dbMember.setChestCount(0);
+			dbMember.update(null);
 			event.replyEmbeds(builder.build()).queue();
 		}
 	}
@@ -60,7 +60,7 @@ public class DailyClaimCommand implements ICommand {
 		return new CommandData("claimdaily", "Claim all daily claimables");
 	}
 
-	private MessageEmbed.Field getReward(DBMember dbMember) {
+	private MessageEmbed.Field getReward(UserProfile dbMember) {
 		final REWARDS random = REWARDS.getRandom();
 
 		String title = "";
@@ -86,7 +86,7 @@ public class DailyClaimCommand implements ICommand {
 			case CHEST -> {
 				title = "Another Chest!";
 				description = "You won a reroll! A chest has been added to your inventory";
-				dbMember.adjustNumOfDailies(1);
+				dbMember.incrementChestCount();
 			}
 		}
 

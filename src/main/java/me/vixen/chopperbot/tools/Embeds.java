@@ -1,26 +1,17 @@
 package me.vixen.chopperbot.tools;
 
-import me.vixen.chopperbot.BackgroundThread;
-import me.vixen.chopperbot.database.DBMember;
 import me.vixen.chopperbot.database.Database;
+import me.vixen.chopperbot.database.UserProfile;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.*;
-import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
-import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.utils.TimeFormat;
-import net.dv8tion.jda.internal.entities.MemberImpl;
-import net.dv8tion.jda.internal.entities.RoleImpl;
-import net.dv8tion.jda.internal.entities.UserImpl;
-
-import javax.annotation.Nonnull;
 import java.awt.*;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
 
 public class Embeds {
 
@@ -297,14 +288,14 @@ public class Embeds {
 	public static MessageEmbed getTreasureEmbed(Member member) {
 		ChestRewardsEnum reward = ChestRewardsEnum.getRandom();
 		int value = ChestRewardsEnum.getValue(reward);
-		final DBMember dbMember = Database.getMember(member.getGuild(), member.getUser().getId());
+		final UserProfile dbMember = Database.getMember(member.getGuild(), member.getUser().getId());
 		if (dbMember == null) return null; //something fucky happened
 		final int skill = dbMember.getSkill();
 		final int rand = skill < 10 ? new Random().nextInt(10)+1 : new Random().nextInt(100)+1;
 		boolean opened = skill > rand;
 		dbMember.adjustSkill(opened ? 1 : 2);
 		dbMember.adjustCoins(opened ? value : 0);
-		dbMember.update();
+		dbMember.update(member);
 
 		if (opened)
 			return new EmbedBuilder()

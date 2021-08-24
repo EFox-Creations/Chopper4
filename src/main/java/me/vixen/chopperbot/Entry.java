@@ -1,10 +1,14 @@
 package me.vixen.chopperbot;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import me.vixen.chopperbot.database.Database;
 import me.vixen.chopperbot.database.DatabaseHandler;
 import me.vixen.chopperbot.commands.GlobalCommandManager;
 import me.vixen.chopperbot.commands.ICommand;
+import me.vixen.chopperbot.database.UserProfile;
 import me.vixen.chopperbot.guilds.GuildManager;
 import me.vixen.chopperbot.guilds.IGuild;
 import me.vixen.chopperbot.listener.Listener;
@@ -92,9 +96,8 @@ public class Entry {
 		jda.updateCommands().addCommands(commandManager.getAllGlobalCommandData()).queue();
 
 		Logger.log("JDA for Chopper4 fully loaded; globals awaiting update on discord (up to 1hr response time)");
-		//Start treasure thread
-		Thread thread1 = new Thread(() -> BackgroundThread.go(true, guildManager, waiter));
-		thread1.setName("Background Thread");
-		thread1.start();
+
+		//Start scheduling
+		Scheduling.startScheduling(guildManager);
 	}
 }

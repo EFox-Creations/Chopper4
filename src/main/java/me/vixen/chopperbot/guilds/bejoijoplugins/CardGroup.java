@@ -2,13 +2,14 @@ package me.vixen.chopperbot.guilds.bejoijoplugins;
 
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import com.jagrosh.jdautilities.menu.Paginator;
-import me.vixen.chopperbot.database.DBMember;
 import me.vixen.chopperbot.database.Database;
 import me.vixen.chopperbot.commands.ICommand;
+import me.vixen.chopperbot.database.UserProfile;
 import me.vixen.chopperbot.tools.Embeds;
 import me.vixen.chopperbot.tools.Errors;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
 import net.dv8tion.jda.api.interactions.commands.Command;
@@ -16,6 +17,8 @@ import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
+import net.dv8tion.jda.api.interactions.components.ActionRow;
+import net.dv8tion.jda.api.interactions.components.Button;
 
 import java.awt.*;
 import java.io.File;
@@ -124,7 +127,7 @@ public class CardGroup implements ICommand {
 
 	private void buyCard(SlashCommandEvent event) {
 		//noinspection ConstantConditions cant be null
-		DBMember dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
+		UserProfile dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
 		if (dbMember == null) {
 			event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
 			return;
@@ -135,45 +138,50 @@ public class CardGroup implements ICommand {
 		}
 
 		event.reply("Follow instructions below").setEphemeral(true).queue();
-		event.getTextChannel().sendMessage("Confirm buy card for " + cardCost + " coins?").queue(message -> {
-			message.addReaction("✅").queue();
-			message.addReaction("⛔").queue();
+		event.getTextChannel().sendMessage("Confirm buy card for " + cardCost + " coins?")
+			.setActionRows(getConfirmButtons())
+			.queue(message -> {
 			waiter.waitForEvent(
-				GuildMessageReactionAddEvent.class,
-				e -> isSameMessageAndUser(event, e, message),
+				ButtonClickEvent.class,
+				e -> event.getMember().equals(e.getMember()),
 				e -> confirmBuy(event, e, message)
 			);
 		});
 	}
 
-	private void confirmBuy(SlashCommandEvent event, GuildMessageReactionAddEvent e, Message msg) {
+	private void confirmBuy(SlashCommandEvent event, ButtonClickEvent e, Message msg) {
+		e.deferEdit().queue();
 		//noinspection ConstantConditions cant be null
-		DBMember dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
+		UserProfile dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
 		if (dbMember == null) {
 			event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
 			return;
 		}
-		if (e.getReactionEmote().getName().equalsIgnoreCase("⛔")) {
-			msg.delete().queue();
-			event.getHook().editOriginal("Buy card canceled").queue();
-		} else if (e.getReactionEmote().getName().equalsIgnoreCase("✅")) {
-			dbMember.adjustCoins(cardCost);
-			dbMember.update();
-			//noinspection ConstantConditions cant be null
-			final String userId = event.getMember().getId();
 
-			Card drawnCard = new Card();
-			final boolean success = Database.addCard(userId, drawnCard);
+		switch (e.getComponentId()) {
+			case "yesconfirm" -> {
+				msg.delete().queue();
+				event.getHook().editOriginal("Buy card canceled").queue();
+			}
+			case "denyconfirm" -> {
+				dbMember.adjustCoins(cardCost);
+				dbMember.update(event.getMember());
+				//noinspection ConstantConditions cant be null
+				final String userId = event.getMember().getId();
 
-			if (success) {
-				MessageEmbed embed = new EmbedBuilder()
-					.setColor(getRarityColor(drawnCard))
-					.setTitle(drawnCard.getRarity() + " " + drawnCard.getFaceAsString())
-					.build();
-				msg.clearReactions().queue();
-				msg.editMessageEmbeds(embed).queue();
-			} else {
-				msg.editMessage("An Error Occurred").queue();
+				Card drawnCard = new Card();
+				final boolean success = Database.addCard(userId, drawnCard);
+
+				if (success) {
+					MessageEmbed embed = new EmbedBuilder()
+						.setColor(getRarityColor(drawnCard))
+						.setTitle(drawnCard.getRarity() + " " + drawnCard.getFaceAsString())
+						.build();
+					msg.clearReactions().queue();
+					msg.editMessageEmbeds(embed).queue();
+				} else {
+					msg.editMessage("An Error Occurred").queue();
+				}
 			}
 		}
 	}
@@ -205,28 +213,35 @@ public class CardGroup implements ICommand {
 		switch (rarity) {
 			case MYTHIC ->
 				channel.sendMessage("Sell card for " + mythicPrice + " coins?")
+					.setActionRows(getConfirmButtons())
 					.queue(msg -> waitForConfirm(event, msg, mythicPrice, cardid));
 			case LEGENDARY ->
 				channel.sendMessage("Sell card for " + legendaryPrice + " coins?")
+					.setActionRows(getConfirmButtons())
 					.queue(msg -> waitForConfirm(event, msg, legendaryPrice, cardid));
 			case RARE ->
 				channel.sendMessage("Sell card for " + rarePrice + " coins?")
+					.setActionRows(getConfirmButtons())
 					.queue(msg -> waitForConfirm(event, msg, rarePrice, cardid));
 			case UNCOMMON ->
 				channel.sendMessage("Sell card for " + uncommonPrice + " coins?")
+					.setActionRows(getConfirmButtons())
 					.queue(msg -> waitForConfirm(event, msg, uncommonPrice, cardid));
 			case COMMON ->
 				channel.sendMessage("Sell card for " + commonPrice + " coins?")
+					.setActionRows(getConfirmButtons())
 					.queue(msg -> waitForConfirm(event, msg, commonPrice, cardid));
 		}
 	}
 
+	private ActionRow getConfirmButtons() {
+		return ActionRow.of(Button.danger("denyconfirm", "No"), Button.success("yesconfirm", "Yes"));
+	}
+
 	private void waitForConfirm(SlashCommandEvent event, Message msg, int price, int cardId) {
-		msg.addReaction("✅").queue();
-		msg.addReaction("❌").queue();
 		waiter.waitForEvent(
-			GuildMessageReactionAddEvent.class,
-			e -> isSameMessageAndUser(event, e, msg),
+			ButtonClickEvent.class,
+			e -> event.getMember().equals(e.getMember()),
 			e -> confirmSale(msg, e, price, cardId)
 		);
 	}
@@ -237,18 +252,18 @@ public class CardGroup implements ICommand {
 			&& event.getMember().getId().equals(e.getMember().getId());
 	}
 
-	private void confirmSale(Message msg, GuildMessageReactionAddEvent e, int price, int cardId) {
-		DBMember dbMember = Database.getMember(e.getGuild(), e.getUser().getId());
+	private void confirmSale(Message msg, ButtonClickEvent e, int price, int cardId) {
+		e.deferEdit().queue();
+		UserProfile dbMember = Database.getMember(e.getGuild(), e.getUser().getId());
 		if (dbMember == null) {
 			e.getChannel().sendMessage("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
 			return;
 		}
-		switch (e.getReactionEmote().getName()) {
-			case "✅" -> {
+		switch (e.getComponentId()) {
+			case "yesconfirm" -> {
 				dbMember.adjustCoins(price);
-				dbMember.update();
+				dbMember.update(e.getMember());
 				final boolean success = Database.deleteCard(cardId);
-				msg.clearReactions().queue();
 				if (success) {
 					msg.editMessage("Card sold for " + price + " coins").queue();
 				}
@@ -256,7 +271,7 @@ public class CardGroup implements ICommand {
 					msg.editMessage("An error occurred").queue();
 				}
 			}
-			case "🚫" -> msg.delete().queue();
+			case "denyconfirm" -> msg.delete().queue();
 		}
 	}
 
@@ -338,13 +353,13 @@ public class CardGroup implements ICommand {
 			event.getHook().editOriginal("Cashed out! Received 2000 coins!").queue();
 			event.getTextChannel().sendFile(new File("CardBlanks/CashOut.png")).queue();
 			//noinspection ConstantConditions cant be null
-			DBMember dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
+			UserProfile dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
 			if (dbMember == null) {
 				event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
 				return;
 			}
 			dbMember.adjustCoins(2000);
-			dbMember.update();
+			dbMember.update(event.getMember());
 			List<Integer> cardIds = List.of(mythicId, legendaryId, rareId, uncommonId, commonId);
 			Database.deleteCards(cardIds);
 		} else {

@@ -1,8 +1,8 @@
 package me.vixen.chopperbot.commands.global;
 
-import me.vixen.chopperbot.database.DBMember;
 import me.vixen.chopperbot.database.Database;
 import me.vixen.chopperbot.commands.ICommand;
+import me.vixen.chopperbot.database.UserProfile;
 import me.vixen.chopperbot.tools.Embeds;
 import me.vixen.chopperbot.tools.Errors;
 import net.dv8tion.jda.api.entities.Guild;
@@ -18,7 +18,7 @@ public class DonateCommand implements ICommand {
 		Guild guild = event.getGuild();
 
 		//noinspection ConstantConditions cant be null; no SCE from DMs accepted
-		DBMember donator = Database.getMember(guild, event.getUser().getId());
+		UserProfile donator = Database.getMember(guild, event.getUser().getId());
 		if (donator == null) {
 			event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
 			return;
@@ -37,7 +37,7 @@ public class DonateCommand implements ICommand {
 			return;
 		}
 
-		DBMember reciever = Database.getMember(guild, member.getUser().getId());
+		UserProfile reciever = Database.getMember(guild, member.getUser().getId());
 
 		if (reciever == null) {
 			event.reply("An error occurred; aborting with code " + Errors.DBNULLRETURN).queue();
@@ -46,8 +46,8 @@ public class DonateCommand implements ICommand {
 
 		donator.adjustCoins(-amount);
 		reciever.adjustCoins(amount);
-		donator.update();
-		reciever.update();
+		donator.update(null);
+		reciever.update(null);
 
 		event.reply(
 			String.format("Donated %d coins to %s", amount, member.getUser().getAsTag())

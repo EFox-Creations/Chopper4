@@ -2,9 +2,9 @@ package me.vixen.chopperbot.commands.global;
 
 import com.google.gson.GsonBuilder;
 import me.vixen.chopperbot.database.Command;
-import me.vixen.chopperbot.database.DBMember;
 import me.vixen.chopperbot.database.Database;
 import me.vixen.chopperbot.commands.ICommand;
+import me.vixen.chopperbot.database.UserProfile;
 import me.vixen.chopperbot.tools.CustomEmbed;
 import me.vixen.chopperbot.tools.Embeds;
 import me.vixen.chopperbot.tools.Errors;
@@ -42,7 +42,7 @@ public class CustomCommand implements ICommand {
 			).queue();
 			return;
 		}
-		DBMember member = Database.getMember(guild, event.getUser().getId());
+		UserProfile member = Database.getMember(guild, event.getUser().getId());
 		if (member == null) {
 			event.reply("An error occurred, aborting with code " + Errors.DBNULLRETURN).setEphemeral(true).queue();
 			return;

@@ -1,9 +1,9 @@
 package me.vixen.chopperbot.commands.global;
 
-import me.vixen.chopperbot.database.DBMember;
 import me.vixen.chopperbot.database.Database;
 import me.vixen.chopperbot.Entry;
 import me.vixen.chopperbot.commands.ICommand;
+import me.vixen.chopperbot.database.UserProfile;
 import me.vixen.chopperbot.tools.Embeds;
 import me.vixen.chopperbot.tools.Errors;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -30,7 +30,7 @@ public class SlotCommand implements ICommand {
 			return;
 		}
 		//noinspection ConstantConditions cant be null
-		DBMember member = Database.getMember(guild, id);
+		UserProfile member = Database.getMember(guild, id);
 		if (member == null) {
 			event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
 			return;
@@ -88,7 +88,7 @@ public class SlotCommand implements ICommand {
 							.build()
 					).setContent("").queueAfter(1L, TimeUnit.SECONDS);
 					member.adjustCoins(finalPayout);
-					member.update();
+					member.update(null);
 				});
 
 			}));

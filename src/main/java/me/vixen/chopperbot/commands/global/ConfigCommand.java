@@ -1,8 +1,8 @@
 package me.vixen.chopperbot.commands.global;
 
-import me.vixen.chopperbot.database.DBMember;
 import me.vixen.chopperbot.database.Database;
 import me.vixen.chopperbot.commands.ICommand;
+import me.vixen.chopperbot.database.UserProfile;
 import me.vixen.chopperbot.guilds.Config;
 import me.vixen.chopperbot.guilds.ConfigBuilder;
 import me.vixen.chopperbot.tools.Embeds;
@@ -10,7 +10,6 @@ import me.vixen.chopperbot.tools.Errors;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.entities.GuildChannel;
-import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
@@ -18,7 +17,6 @@ import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
-
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +29,7 @@ public class ConfigCommand implements ICommand {
 	public void handle(SlashCommandEvent event) {
 		event.deferReply().queue();
 		@SuppressWarnings("ConstantConditions") //This cant be null as we don't accept DM SCE
-		DBMember dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
+		UserProfile dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
 		if (dbMember == null) {
 			event.getHook().editOriginal("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
 			return;

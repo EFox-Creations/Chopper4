@@ -1,8 +1,8 @@
 package me.vixen.chopperbot.commands.global;
 
-import me.vixen.chopperbot.database.DBMember;
 import me.vixen.chopperbot.database.Database;
 import me.vixen.chopperbot.commands.ICommand;
+import me.vixen.chopperbot.database.UserProfile;
 import me.vixen.chopperbot.tools.Embeds;
 import me.vixen.chopperbot.tools.Errors;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -23,7 +23,7 @@ public class PracticeCommand implements ICommand {
 		//noinspection ConstantConditions is required
 		int numoflocks = (int) event.getOption("numoflocks").getAsLong();
 		//noinspection ConstantConditions cant be null
-		DBMember member = Database.getMember(guild, userid);
+		UserProfile member = Database.getMember(guild, userid);
 		if (member == null) {
 			event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
 			return;
@@ -47,7 +47,7 @@ public class PracticeCommand implements ICommand {
 			}
 
 		}
-		member.update();
+		member.update(null);
 
 		int newSkill = skill+skillIncrease;
 

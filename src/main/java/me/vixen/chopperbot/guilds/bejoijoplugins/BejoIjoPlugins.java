@@ -1,11 +1,11 @@
 package me.vixen.chopperbot.guilds.bejoijoplugins;
 
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
-import me.vixen.chopperbot.database.DBMember;
 import me.vixen.chopperbot.database.Database;
 import me.vixen.chopperbot.Entry;
 import me.vixen.chopperbot.commands.GlobalCommandManager;
 import me.vixen.chopperbot.commands.ICommand;
+import me.vixen.chopperbot.database.UserProfile;
 import me.vixen.chopperbot.guilds.IGuild;
 import me.vixen.chopperbot.listener.DefaultEventHandler;
 import me.vixen.chopperbot.tools.Embeds;
@@ -90,7 +90,7 @@ public class BejoIjoPlugins implements IGuild {
 	public void handleGMsgReceived(GuildMessageReceivedEvent event, EventWaiter waiter) {
 		final Message message = event.getMessage();
 		if (event.getChannel().getId().equals("671729684693778483")) { //If in gallery
-			final DBMember member = Database.getMember(event.getGuild(), event.getAuthor().getId());
+			final UserProfile member = Database.getMember(event.getGuild(), event.getAuthor().getId());
 			Role ss = event.getGuild().getRoleById("781608704633471036");
 			if (member != null && !event.getMember().getRoles().contains(ss)
 				&& !event.getAuthor().getId().equals(Entry.CREATOR_ID)) {
@@ -103,7 +103,7 @@ public class BejoIjoPlugins implements IGuild {
 					);
 				} else {
 					member.adjustGalleryImgsLeft(message.getAttachments().isEmpty() ? -1 : -1*message.getAttachments().size());
-					member.update();
+					member.update(event.getMember());
 				}
 			}
 		}
@@ -178,14 +178,14 @@ public class BejoIjoPlugins implements IGuild {
 	@Override
 	public void getCustomClaim(SlashCommandEvent event) {
 		//noinspection ConstantConditions cant be null
-		DBMember dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
+		UserProfile dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
 		if (dbMember == null) {
 			event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
 			return;
 		}
 		event.deferReply().queue();
 		final String userId = event.getUser().getId();
-		final int dailyChestCount = dbMember.getDailyChests();
+		final int dailyChestCount = dbMember.getChestCount();
 		if (dailyChestCount <= 0) {
 			event.getHook().editOriginalEmbeds(Embeds.getAlreadyClaimed()).queue();
 			return;
@@ -200,7 +200,7 @@ public class BejoIjoPlugins implements IGuild {
 		}
 
 		final MessageEmbed dailyChests = eb.build();
-		dbMember.setDailyChests(0);
+		dbMember.setChestCount(0);
 
 		Card drawnCard = new Card();
 		final boolean success = Database.addCard(userId, drawnCard);
@@ -224,7 +224,7 @@ public class BejoIjoPlugins implements IGuild {
 						.append(event.getMember().getAsMention())
 						.queue(onSuccess -> file.delete());
 				}
-				dbMember.update();
+				dbMember.update(event.getMember());
 			});
 		} else event.getHook().editOriginal("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
 	}
@@ -277,7 +277,7 @@ public class BejoIjoPlugins implements IGuild {
 		channel.retrieveMessageById(messageId).queue(this::promote);
 	}
 
-	private MessageEmbed.Field getReward(DBMember dbMember) {
+	private MessageEmbed.Field getReward(UserProfile dbMember) {
 		final REWARDS random = REWARDS.getRandom();
 
 		String title = "";
@@ -303,7 +303,7 @@ public class BejoIjoPlugins implements IGuild {
 			case CHEST -> {
 				title = "Another Chest!";
 				description = "You won a reroll! A chest has been added to your inventory";
-				dbMember.adjustNumOfDailies(1);
+				dbMember.incrementChestCount();
 			}
 			case ROLE_VOUCHER -> {
 				title = "Role Voucher!";

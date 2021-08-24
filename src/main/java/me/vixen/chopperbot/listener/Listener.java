@@ -2,14 +2,13 @@ package me.vixen.chopperbot.listener;
 
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import me.vixen.chopperbot.Entry;
-import me.vixen.chopperbot.database.DBMember;
 import me.vixen.chopperbot.database.Database;
 import me.vixen.chopperbot.commands.GlobalCommandManager;
+import me.vixen.chopperbot.database.UserProfile;
 import me.vixen.chopperbot.guilds.Config;
 import me.vixen.chopperbot.guilds.GuildManager;
 import me.vixen.chopperbot.tools.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.ReadyEvent;
@@ -24,12 +23,8 @@ import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import net.dv8tion.jda.api.interactions.InteractionHook;
-import net.dv8tion.jda.api.interactions.components.ActionRow;
 import org.jetbrains.annotations.NotNull;
-
 import java.awt.*;
-import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -56,7 +51,7 @@ public class Listener extends ListenerAdapter {
 		Database.createMemberTables(List.of(event.getGuild()));
 		event.getGuild().retrieveOwner().queue(owner -> {
 			if (owner != null)
-				new DBMember(owner, event.getGuild(), true).update(); //Authorize owner
+				UserProfile.createNewAuthorizedProfile(owner.getId(), event.getGuild().getId(), owner.getEffectiveName()).update(owner); //Authorize owner
 			TextChannel systemChannel = event.getGuild().getSystemChannel();
 			if (systemChannel != null)
 				systemChannel.sendMessageEmbeds(Embeds.getOnJoin()).queue();
@@ -71,10 +66,11 @@ public class Listener extends ListenerAdapter {
 	@Override
 	public void onSlashCommand(@NotNull SlashCommandEvent event) {
 		if (event.getUser().isBot()) return;
-		DBMember dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
+		//noinspection ConstantConditions cant be null
+		UserProfile dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
 		if (dbMember == null) {
 			//noinspection ConstantConditions cant be null
-			Database.upsertMember(event.getGuild(), new DBMember(event.getMember(), event.getGuild(), false));
+			Database.upsertMember(event.getGuild(), UserProfile.createNewProfile(event.getUser().getId(), event.getGuild().getId(), event.getMember().getEffectiveName()));
 		} else if (dbMember.isMuted()) { //DB isn't null && mute checks dont apply to new users
 			event.reply("You are muted in this guild").setEphemeral(true).queue();
 			event.getHook().deleteOriginal().queue();
@@ -85,13 +81,21 @@ public class Listener extends ListenerAdapter {
 		else DefaultEventHandler.handleSlashCommand(event, commandManager); //else send to default handler
 	}
 
+	@SuppressWarnings("RegExpRedundantEscape")
 	@Override
 	public void onGuildMessageReceived(@NotNull GuildMessageReceivedEvent event) {
 		if (event.getAuthor().isBot()) return;
-		DBMember dbMember = Database.getMember(event.getGuild(), event.getAuthor().getId());
+		UserProfile dbMember = Database.getMember(event.getGuild(), event.getAuthor().getId());
 		if (dbMember == null) {
 			//noinspection ConstantConditions cant be null
-			Database.upsertMember(event.getGuild(), new DBMember(event.getMember(), event.getGuild(), false));
+			Database.upsertMember(event.getGuild(),
+				UserProfile.createNewProfile(
+					event.getAuthor().getId(),
+					event.getGuild().getId(),
+					event.getMember().getEffectiveName()
+				)
+			);
+			return;
 		} else if (dbMember.isMuted()) {
 			event.getMessage().delete().queue();
 			return;
@@ -124,36 +128,39 @@ public class Listener extends ListenerAdapter {
 
 	private void doPunishment(GuildMessageReceivedEvent event, Config config) {
 		event.getMessage().delete().queue();
+		if (config == null) return;
 		switch (config.getPunishment()) {
-			case NONE -> {
-				return;
-			}
+			case NONE -> {}
 			case WARN -> {
-				DBMember member = Database.getMember(event.getGuild(), event.getAuthor().getId());
-				member.addWarning(event.getAuthor().getAsTag(), Entry.jda.getSelfUser(), "Posting blacklisted links");
-				member.update();
-				MessageEmbed embed = new EmbedBuilder()
-					.setTitle("New Warning Given!")
-					.addField(Entry.jda.getSelfUser().getAsTag() + " warned " + event.getAuthor().getAsTag(),
-						"Posting blacklisted links", false)
-					.setColor(Color.YELLOW)
-					.build();
-				event.getGuild().getTextChannelById(config.getModlogId()).sendMessageEmbeds(embed).queue();
-				event.getChannel().sendMessageEmbeds(embed).queue();
+				UserProfile member = Database.getMember(event.getGuild(), event.getAuthor().getId());
+				if (member != null) {
+					member.addWarning(event.getAuthor().getAsTag(), Entry.jda.getSelfUser(), "Posting blacklisted links");
+					member.update(null);
+					MessageEmbed embed = new EmbedBuilder()
+						.setTitle("New Warning Given!")
+						.addField(Entry.jda.getSelfUser().getAsTag() + " warned " + event.getAuthor().getAsTag(),
+							"Posting blacklisted links", false)
+						.setColor(Color.YELLOW)
+						.build();
+					//noinspection ConstantConditions
+					TextChannel modlog = event.getGuild().getTextChannelById(config.getModlogId());
+					if (modlog != null) {
+						modlog.sendMessageEmbeds(embed).queue();
+					}
+					event.getChannel().sendMessageEmbeds(embed).queue();
+				}
 			}
 			case KICK -> {
-				event.getMember().kick("Posting blacklisted links").queue(v -> {
-					event.getGuild().getTextChannelById(config.getModlogId()).sendMessageEmbeds(
-						Embeds.getKickedEmbed(event.getAuthor(), Entry.jda.getSelfUser(), "Posting blacklisted links")
-					).queue();
-				});
+				//noinspection ConstantConditions
+				event.getMember().kick("Posting blacklisted links").queue(v -> event.getGuild().getTextChannelById(config.getModlogId()).sendMessageEmbeds(
+					Embeds.getKickedEmbed(event.getAuthor(), Entry.jda.getSelfUser(), "Posting blacklisted links")
+				).queue());
 			}
 			case BAN -> {
-				event.getMember().ban(7, "Posting blacklisted links").queue(v -> {
-					event.getGuild().getTextChannelById(config.getModlogId()).sendMessageEmbeds(
-						Embeds.getBannedEmbed(event.getAuthor(), Entry.jda.getSelfUser(), "Posting blacklisted links")
-					).queue();
-				});
+				//noinspection ConstantConditions
+				event.getMember().ban(7, "Posting blacklisted links").queue(v -> event.getGuild().getTextChannelById(config.getModlogId()).sendMessageEmbeds(
+					Embeds.getBannedEmbed(event.getAuthor(), Entry.jda.getSelfUser(), "Posting blacklisted links")
+				).queue());
 			}
 		}
 	}
@@ -192,14 +199,14 @@ public class Listener extends ListenerAdapter {
 				).mention(event.getMember()).queue(msg -> msg.delete().queueAfter(10L, TimeUnit.SECONDS));
 			}
 			case "treasureclaim" -> {
-				//noinspection ConstantConditions this can't be null as it will always be from a guild
-				event.deferEdit()
-					.flatMap(InteractionHook::retrieveOriginal)
+				event.deferEdit().queue();
+				//noinspection ConstantConditions
+				event.getHook().retrieveOriginal()
 					.flatMap((msg) -> msg.editMessageEmbeds(
 						Embeds.getTreasureEmbed(event.getMember()))
 						.override(true)
 					)
-					.queue((msg) -> msg.delete().queueAfter(10L, TimeUnit.SECONDS));
+				.queue((msg) -> msg.delete().queueAfter(10L, TimeUnit.SECONDS));
 			}
 		}
 	}

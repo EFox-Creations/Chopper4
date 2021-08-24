@@ -5,8 +5,8 @@ import com.google.gson.JsonSyntaxException;
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import me.vixen.chopperbot.Logger;
 import me.vixen.chopperbot.commands.ICommand;
-import me.vixen.chopperbot.database.DBMember;
 import me.vixen.chopperbot.database.Database;
+import me.vixen.chopperbot.database.UserProfile;
 import me.vixen.chopperbot.tools.CustomEmbed;
 import me.vixen.chopperbot.tools.Embeds;
 import net.dv8tion.jda.api.entities.Guild;
@@ -32,7 +32,7 @@ public class EmbedSendCommand implements ICommand {
         Guild guild = event.getGuild();
         User moderator = event.getUser();
         String moderatorId = moderator.getId();
-        DBMember moderatorDB = Database.getMember(guild, moderatorId);
+        UserProfile moderatorDB = Database.getMember(guild, moderatorId);
         if (!moderatorDB.isAuthorized()) {
             event.replyEmbeds(Embeds.getPermissionMissing()).queue();
             return;
@@ -47,20 +47,17 @@ public class EmbedSendCommand implements ICommand {
             return;
         }
 
-        event.reply("Please paste the text now").queue(hook-> {
-            hook.retrieveOriginal().queue(msg -> {
-                waiter.waitForEvent(GuildMessageReceivedEvent.class,
-                    (gmre) -> gmre.getChannel().equals(event.getChannel())
-                                && gmre.getMember().equals(event.getMember()),
-                    (gmre) -> {
-                        event.getHook().editOriginal("Please Wait...").queue();
-                        sendEmbed(gmre, event);
-                    },
-                    20L, TimeUnit.SECONDS,
-                    () -> event.getHook().deleteOriginal().queue()
-                );
-            });
-        });
+        event.reply("Please paste the text now").queue(hook-> hook.retrieveOriginal().queue(msg ->
+            waiter.waitForEvent(GuildMessageReceivedEvent.class,
+            (gmre) -> gmre.getChannel().equals(event.getChannel())
+                        && gmre.getMember().equals(event.getMember()),
+            (gmre) -> {
+                event.getHook().editOriginal("Please Wait...").queue();
+                sendEmbed(gmre, event);
+            },
+            20L, TimeUnit.SECONDS,
+            () -> event.getHook().deleteOriginal().queue()
+        )));
     }
 
     private void sendEmbed(GuildMessageReceivedEvent gmre, SlashCommandEvent sce) {
@@ -75,9 +72,7 @@ public class EmbedSendCommand implements ICommand {
             MessageEmbed embed = customEmbed.toMessageEmbed();
             if (embed.isSendable() && !embed.isEmpty()) {
                 gmre.getGuild().getTextChannelById(customEmbed.getChannelId()).sendMessageEmbeds(embed).queue();
-                sce.getHook().editOriginal("Embed Sent").queue(v -> {
-                    sce.getHook().deleteOriginal().queueAfter(2L, TimeUnit.SECONDS);
-                });
+                sce.getHook().editOriginal("Embed Sent").queue(v -> sce.getHook().deleteOriginal().queueAfter(2L, TimeUnit.SECONDS));
             } else {
                 sce.getHook().editOriginal("Invalid Embed state").queue();
             }
@@ -85,7 +80,6 @@ public class EmbedSendCommand implements ICommand {
         } catch (JsonSyntaxException e) {
             sce.getHook().editOriginal("Invalid JSON. Please verify and retry").queue();
             Logger.log("Invalid JSON", e);
-            return;
         }
 
     }

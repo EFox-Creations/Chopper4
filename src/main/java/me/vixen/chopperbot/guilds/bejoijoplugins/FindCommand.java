@@ -2,9 +2,9 @@ package me.vixen.chopperbot.guilds.bejoijoplugins;
 
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import com.jagrosh.jdautilities.menu.Paginator;
-import me.vixen.chopperbot.database.DBMember;
 import me.vixen.chopperbot.database.Database;
 import me.vixen.chopperbot.commands.ICommand;
+import me.vixen.chopperbot.database.UserProfile;
 import me.vixen.chopperbot.tools.Errors;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
@@ -27,7 +27,7 @@ public class FindCommand implements ICommand {
 	@Override
 	public void handle(SlashCommandEvent event) {
 		//noinspection ConstantConditions cant be null
-		DBMember dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
+		UserProfile dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
 		if (dbMember == null) {
 			event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
 			return;

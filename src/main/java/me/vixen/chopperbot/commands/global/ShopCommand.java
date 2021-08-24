@@ -1,9 +1,9 @@
 package me.vixen.chopperbot.commands.global;
 
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
-import me.vixen.chopperbot.database.DBMember;
 import me.vixen.chopperbot.database.Database;
 import me.vixen.chopperbot.commands.ICommand;
+import me.vixen.chopperbot.database.UserProfile;
 import me.vixen.chopperbot.tools.Embeds;
 import me.vixen.chopperbot.tools.Errors;
 import net.dv8tion.jda.api.entities.Emoji;
@@ -26,7 +26,7 @@ public class ShopCommand implements ICommand {
 	@Override
 	public void handle(SlashCommandEvent event) {
 		//noinspection ConstantConditions cant be null
-		DBMember dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
+		UserProfile dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
 		if (dbMember == null) {
 			event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
 			return;
@@ -97,7 +97,7 @@ public class ShopCommand implements ICommand {
 			);
 			case "lock" -> {
 				//noinspection ConstantConditions cant be null
-				DBMember dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
+				UserProfile dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
 				if (dbMember == null) {
 					event.reply("An unknown error occurred; aborting with Error Code ShC2").queue();
 					return;
@@ -108,11 +108,11 @@ public class ShopCommand implements ICommand {
 				}
 				dbMember.adjustLockCount(1);
 				dbMember.adjustCoins(-1 * getPrice(dbMember));
-				dbMember.update();
+				dbMember.update(null);
 			}
 			case "book" -> {
 				//noinspection ConstantConditions cant be null
-				DBMember dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
+				UserProfile dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
 				if (dbMember == null) {
 					event.reply("An unknown error occurred; aborting with Error Code ShC3").queue();
 					return;
@@ -123,7 +123,7 @@ public class ShopCommand implements ICommand {
 				}
 				dbMember.adjustSkill(2);
 				dbMember.adjustCoins(-1 * getPrice(dbMember));
-				dbMember.update();
+				dbMember.update(null);
 				event.reply("Skill increased by 2!").queue();
 			}
 		}
@@ -131,7 +131,7 @@ public class ShopCommand implements ICommand {
 
 	private void resolveClick(ButtonClickEvent event) {
 		//noinspection ConstantConditions cant be null
-		DBMember dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
+		UserProfile dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
 		if (dbMember == null) {
 			event.reply("An unknown error occurred; aborting with Error Code ShC4").queue();
 			return;
@@ -142,7 +142,7 @@ public class ShopCommand implements ICommand {
 				int maxExp = availableCoins*10;
 				dbMember.adjustCoins(-1 * availableCoins);
 				dbMember.adjustExp(maxExp);
-				dbMember.update();
+				dbMember.update(null);
 				event.reply(String.format("Exchanged %d coins for %d exp", availableCoins, maxExp)).queue();
 			}
 			case "customcoins" -> //buying custom amount of exp
@@ -158,7 +158,7 @@ public class ShopCommand implements ICommand {
 							}
 							dbMember.adjustExp(coinsForExchange*10);
 							dbMember.adjustCoins(-1 * coinsForExchange);
-							dbMember.update();
+							dbMember.update(null);
 							event.reply(String.format("Exchanged %d coins for %d exp", coinsForExchange, coinsForExchange*10)).queue();
 						} catch (NumberFormatException t) {
 							event.reply("Invalid number entered; aborting").queue();
@@ -175,7 +175,7 @@ public class ShopCommand implements ICommand {
 				int maxCoins = (availableExp-(availableExp%10))/10;
 				dbMember.adjustCoins(maxCoins);
 				dbMember.adjustExp(-1 * (maxCoins*10));
-				dbMember.update();
+				dbMember.update(null);
 				event.reply(String.format("Exchanged %d exp for %d coins", availableExp-(availableExp%10), maxCoins)).queue();
 			}
 			case "customexp" -> //buying custom amount of coins
@@ -191,7 +191,7 @@ public class ShopCommand implements ICommand {
 							}
 							dbMember.adjustExp(-1 * expForExchange);
 							dbMember.adjustCoins(expForExchange/10);
-							dbMember.update();
+							dbMember.update(null);
 							event.reply(String.format("Exchanged %d exp for %d coins", expForExchange, expForExchange/10)).queue();
 						} catch (NumberFormatException t) {
 							event.reply("Invalid number entered; aborting").queue();
@@ -207,7 +207,7 @@ public class ShopCommand implements ICommand {
 	}
 
 
-	private static int getPrice(DBMember dbMember) {
+	private static int getPrice(UserProfile dbMember) {
 		int skill = dbMember.getSkill();
 		if (isBetween(skill, 1, 10)) return 40;
 		else if (isBetween(skill, 11, 20)) return 75;

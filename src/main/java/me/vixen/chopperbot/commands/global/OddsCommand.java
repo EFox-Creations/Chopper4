@@ -46,8 +46,8 @@ public class OddsCommand implements ICommand {
                     Uncommon 29%
                     Common 37%
                     """.replace(
-				"$",
-				String.valueOf(factorial(LottoGroup.UPPER) / (factorial(5) * factorial(LottoGroup.UPPER-5)))
+				"$", "" //TODO this comment needs to replace this empty string when fixing lotto
+				//String.valueOf(factorial(LottoGroup.UPPER) / (factorial(5) * factorial(LottoGroup.UPPER-5)))
 				)
 			)
 			.setColor(Color.BLUE)
