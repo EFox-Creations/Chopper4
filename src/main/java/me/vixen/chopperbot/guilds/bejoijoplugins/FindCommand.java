@@ -41,8 +41,7 @@ public class FindCommand implements ICommand {
 			.onSuccess(m-> {
 				List<Member> members = new ArrayList<>(m);
 				final List<Member> filtered = members.stream()
-					.filter(mem -> ChronoUnit.DAYS.between(mem.getTimeJoined(), OffsetDateTime.now()) > 5)
-					.filter(mem -> mem.getRoles().isEmpty())
+					.filter(mem -> ChronoUnit.DAYS.between(mem.getTimeJoined(), OffsetDateTime.now()) > 5 && mem.getRoles().isEmpty())
 					.collect(Collectors.toList());
 
 				if (filtered.isEmpty()) {

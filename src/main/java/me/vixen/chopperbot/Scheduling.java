@@ -61,7 +61,7 @@ public class Scheduling {
 	}
 
 	private static LocalDateTime startOfNextDay() {
-		return LocalDate.now(ZONEID).plusDays(1L).atStartOfDay();
+		return LocalDate.now(ZONEID).plusDays(1L).atStartOfDay().plusSeconds(1L);
 	}
 
 	private static String getTimeOfScheduledFuture(ScheduledFuture<?> sf) {

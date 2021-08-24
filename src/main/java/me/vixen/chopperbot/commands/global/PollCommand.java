@@ -45,10 +45,11 @@ public class PollCommand implements ICommand {
 			final String text = options.get(i).getAsString();
 			builder.append(voteEmotes[i]).append(" ").append(text).append("\n");
 		}
+		String messageText = event.getOption("message").getAsString();
 
 		MessageEmbed embed = new EmbedBuilder()
 			.setColor(Color.cyan)
-			.setTitle("Poll!")
+			.setTitle("Poll: " + messageText)
 			.setDescription(builder.toString().trim())
 			.build();
 
@@ -60,6 +61,7 @@ public class PollCommand implements ICommand {
 	@Override
 	public CommandData getCommandData() {
 		return new CommandData("makepoll", "Create a poll with up to ten options (Minimum two options)").addOptions(
+			new OptionData(OptionType.STRING, "message", "The poll message", true),
 			new OptionData(OptionType.STRING, "one", "The first Poll option",true),
 			new OptionData(OptionType.STRING, "two", "The second Poll option",true),
 			new OptionData(OptionType.STRING, "three", "The third Poll option"),
@@ -74,7 +76,6 @@ public class PollCommand implements ICommand {
 	}
 
 	private final String[] voteEmotes = {
-		"\u0030\u20E3", //0
 		"\u0031\u20E3", //1
 		"\u0032\u20E3", //2
 		"\u0033\u20E3", //3
@@ -83,7 +84,8 @@ public class PollCommand implements ICommand {
 		"\u0036\u20E3", //6
 		"\u0037\u20E3", //7
 		"\u0038\u20E3", //8
-		"\u0039\u20E3"  //9
+		"\u0039\u20E3", //9
+		"\u0030\u20E3"  //0
 	};
 
 }

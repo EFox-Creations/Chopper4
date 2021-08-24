@@ -198,7 +198,6 @@ public class Database {
 			ps.setInt(11, profile.getGalleryImgsLeft());
 			ps.setString(12, profile.getUserId());
 			ps.executeUpdate();
-			System.out.println("PFC: " + profile.getChestCount());
 		} catch (SQLException e) {
 			e.printStackTrace();
 			Logger.log("Couldn't Upsert Member", e);
@@ -512,8 +511,9 @@ public class Database {
 				}
 				ps.executeBatch();
 			}
-		} catch (Exception e) {}
-
+		} catch (Exception e) {
+			Logger.log(e.getMessage());
+		}
 
 		SQL = "UPDATE " + getGuildMemberTable(g.getId()) +
 			" SET chest_count = 3 WHERE user_id = ?";
@@ -525,8 +525,9 @@ public class Database {
 				}
 				ps.executeBatch();
 			}
-		} catch (Exception e) {}
-
+		} catch (Exception e) {
+			Logger.log(e.getMessage());
+		}
 
 		SQL = "UPDATE " + getGuildMemberTable(g.getId()) +
 			" SET chest_count = 3 WHERE user_id = ?";
@@ -538,7 +539,9 @@ public class Database {
 				}
 				ps.executeBatch();
 			}
-		} catch (Exception e) {}
+		} catch (Exception e) {
+			Logger.log(e.getMessage());
+		}
 
 		SQL = "UPDATE " + getGuildMemberTable(g.getId()) +
 			" SET chest_count = 4 WHERE user_id = ?";
