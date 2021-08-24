@@ -114,7 +114,7 @@ public class Listener extends ListenerAdapter {
 			.matcher(rawMsg.replaceFirst("www\\.", ""));
 		while (matcher.find()) {
 			if (config.getDomains().contains(matcher.group(0).replace("https://", "")))
-				doPunishment(event, config);
+				doPunishment(event, config, matcher.group(0));
 		}
 
 		//Check regular links
@@ -122,11 +122,11 @@ public class Listener extends ListenerAdapter {
 			.matcher(rawMsg.replaceFirst("www\\.", ""));
 		while (matcher1.find()){
 			if (config.getDomains().contains(matcher1.group(0).replace("http://", "")))
-				doPunishment(event, config);
+				doPunishment(event, config, matcher1.group(0));
 		}
 	}
 
-	private void doPunishment(GuildMessageReceivedEvent event, Config config) {
+	private void doPunishment(GuildMessageReceivedEvent event, Config config, String flaggedText) {
 		event.getMessage().delete().queue();
 		if (config == null) return;
 		switch (config.getPunishment()) {
@@ -140,6 +140,7 @@ public class Listener extends ListenerAdapter {
 						.setTitle("New Warning Given!")
 						.addField(Entry.jda.getSelfUser().getAsTag() + " warned " + event.getAuthor().getAsTag(),
 							"Posting blacklisted links", false)
+						.addField("Flagged Text", flaggedText, false)
 						.setColor(Color.YELLOW)
 						.build();
 					//noinspection ConstantConditions
@@ -153,13 +154,13 @@ public class Listener extends ListenerAdapter {
 			case KICK -> {
 				//noinspection ConstantConditions
 				event.getMember().kick("Posting blacklisted links").queue(v -> event.getGuild().getTextChannelById(config.getModlogId()).sendMessageEmbeds(
-					Embeds.getKickedEmbed(event.getAuthor(), Entry.jda.getSelfUser(), "Posting blacklisted links")
+					Embeds.getBLKickedEmbed(event.getAuthor(), Entry.jda.getSelfUser(), "Posting blacklisted links", flaggedText)
 				).queue());
 			}
 			case BAN -> {
 				//noinspection ConstantConditions
 				event.getMember().ban(7, "Posting blacklisted links").queue(v -> event.getGuild().getTextChannelById(config.getModlogId()).sendMessageEmbeds(
-					Embeds.getBannedEmbed(event.getAuthor(), Entry.jda.getSelfUser(), "Posting blacklisted links")
+					Embeds.getBLBannedEmbed(event.getAuthor(), Entry.jda.getSelfUser(), "Posting blacklisted links", flaggedText)
 				).queue());
 			}
 		}

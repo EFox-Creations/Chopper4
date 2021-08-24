@@ -36,9 +36,6 @@ public class UserProfile {
 	@SerializedName("Unmute Time")
 	private String unmuteTime = null;
 	@Expose
-	@SerializedName("Gallery Posts Left")
-	private int galleryImgsLeft = 10;
-	@Expose
 	@SerializedName("Skill")
 	private int skill = 1;
 	@Expose
@@ -54,9 +51,10 @@ public class UserProfile {
 	@SerializedName("Coins")
 	private int coins = 0;
 
-	private int lottoPlaysLeft;
+	private int galleryImgsLeft = 10;
+	private int lottoPlaysLeft = 3;
 	private boolean successOnRobToday = false;
-	private int chestCount;
+	private int chestCount = 1;
 
 	private List<Warning> warnings = new ArrayList<>();
 
@@ -65,8 +63,6 @@ public class UserProfile {
 		this.guildId = guildId;
 		this.nickname = nickname;
 		this.authorized = authorized;
-		this.lottoPlaysLeft = 3;
-		this.chestCount = 1;
 	}
 
 	public static UserProfile createNewProfile(String userId, String guildId, String nickname) {
