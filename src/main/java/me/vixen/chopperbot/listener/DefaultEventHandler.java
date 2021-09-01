@@ -46,10 +46,8 @@ public class DefaultEventHandler {
 	public static void updateStickies(TextChannel channel) {
 		final String stickyId = Database.getStickyId(channel);
 		if (stickyId != null) {
-			channel.retrieveMessageById(stickyId).queueAfter(500L, TimeUnit.MILLISECONDS, message -> {
-				//wait .5 second for DB to close
+			channel.retrieveMessageById(stickyId).queue(message -> {
 				final MessageEmbed messageEmbed = message.getEmbeds().get(0);
-				//wait for old message to be deleted before sending the new one
 				message.delete().queue(unused -> channel.sendMessageEmbeds(messageEmbed).queue(newMsg -> {
 					boolean success = Database.upsertSticky(channel, newMsg);
 					if (!success) channel.sendMessage("Couldn't update sticky").queue();

@@ -1,33 +1,27 @@
 package me.vixen.chopperbot.guilds.vincentgsmmods;
 
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
-import me.vixen.chopperbot.commands.ICommand;
-import me.vixen.chopperbot.guilds.IGuild;
+import me.vixen.chopperbot.guilds.CustomGuild;
+import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 
-import java.util.ArrayList;
-import java.util.List;
+public class VincentsGMMods extends CustomGuild {
 
-public class VincentsGMMods implements IGuild {
-
-    private final String guildId;
-    private static List<ICommand> localCommands = new ArrayList<>();
     public VincentsGMMods(String guildId, EventWaiter waiter) {
-        this.guildId = guildId;
-        setLocalCommands(waiter);
+        super(guildId, waiter);
     }
 
     @Override
-    public void setLocalCommands(EventWaiter waiter) {
+    protected void setLocalCommands(EventWaiter waiter) {
+        localCommands = EMPTY_COMMANDS;
+    }
+
+    @Override
+    public boolean hasCustomClaims() {
+        return false;
+    }
+
+    @Override
+    public void getCustomClaim(SlashCommandEvent event) {
         return;
-    }
-
-    @Override
-    public List<ICommand> getLocalCommands() {
-        return localCommands;
-    }
-
-    @Override
-    public String getId() {
-        return guildId;
     }
 }

@@ -12,17 +12,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GuildManager {
-	List<IGuild> guilds = new ArrayList<>();
+	List<CustomGuild> guilds = new ArrayList<>();
 
 	public GuildManager(EventWaiter waiter) {
 		addGuild(new BejoIjoPlugins("663796409635569664", waiter));
-		addGuild(new LSPDFRTS("788491012553179217"));
+		addGuild(new LSPDFRTS("788491012553179217", waiter));
 		addGuild(new EFoxHomeBase("761703507546996786", waiter));
 		addGuild(new VincentsGMMods("692321202508922931", waiter));
 		addGuild(new OutliersCoaching("613412156460761109", waiter));
 	}
 
-	private void addGuild(IGuild guild) {
+	private void addGuild(CustomGuild guild) {
 		if (this.contains(guild)) throw new IllegalArgumentException("This guild already added: " + guild.getId());
 		guilds.add(guild);
 	}
@@ -31,21 +31,21 @@ public class GuildManager {
 		return guilds.stream().anyMatch(it -> it.getId().equalsIgnoreCase(g.getId()));
 	}
 
-	public boolean contains(IGuild g) {
+	public boolean contains(CustomGuild g) {
 		return guilds.stream().anyMatch(it -> it.getId().equalsIgnoreCase(g.getId()));
 	}
 
-	public List<IGuild> getGuilds() { return List.copyOf(guilds); }
+	public List<CustomGuild> getGuilds() { return List.copyOf(guilds); }
 
-	public IGuild getGuild(String guildId) {
-		for (IGuild g : guilds) {
+	public CustomGuild getGuild(String guildId) {
+		for (CustomGuild g : guilds) {
 			if (g.getId().equalsIgnoreCase(guildId)) return g;
 		}
 		return null;
 	}
 
-	public IGuild getGuild(Guild g) {
-		for (IGuild ig : guilds) {
+	public CustomGuild getGuild(Guild g) {
+		for (CustomGuild ig : guilds) {
 			if (ig.getId().equalsIgnoreCase(g.getId())) return ig;
 		}
 		return null;

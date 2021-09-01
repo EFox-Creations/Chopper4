@@ -6,19 +6,16 @@ import me.vixen.chopperbot.Entry;
 import me.vixen.chopperbot.commands.GlobalCommandManager;
 import me.vixen.chopperbot.commands.ICommand;
 import me.vixen.chopperbot.database.UserProfile;
-import me.vixen.chopperbot.guilds.IGuild;
+import me.vixen.chopperbot.guilds.CustomGuild;
 import me.vixen.chopperbot.listener.DefaultEventHandler;
 import me.vixen.chopperbot.tools.Embeds;
 import me.vixen.chopperbot.tools.Errors;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.*;
-import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
-import net.dv8tion.jda.api.interactions.components.Button;
-import net.dv8tion.jda.api.interactions.components.ButtonStyle;
 
 import java.awt.*;
 import java.io.File;
@@ -28,15 +25,14 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-public class BejoIjoPlugins implements IGuild {
+public class BejoIjoPlugins extends CustomGuild {
 
-	private final String guildId;
 	protected static final int COLOR_COST = 200;
 	protected static final int ROLE_COST = 150;
 	private static List<ICommand> localCommands;
+
 	public BejoIjoPlugins(String guildId, EventWaiter waiter) {
-		this.guildId = guildId;
-		setLocalCommands(waiter);
+		super(guildId, waiter);
 	}
 
 	@Override
@@ -51,21 +47,6 @@ public class BejoIjoPlugins implements IGuild {
 			new BuyGroup(waiter),
 			new SuggestCommand()
 		);
-	}
-
-	@Override
-	public TextChannel getLottoChannel() {
-		return getGuild().getTextChannelById("784226194664456202");
-	}
-
-	@Override
-	public List<ICommand> getLocalCommands() {
-		return localCommands;
-	}
-
-	@Override
-	public String getId() {
-		return guildId;
 	}
 
 	@Override

@@ -4,7 +4,7 @@ import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import me.vixen.chopperbot.commands.GlobalCommandManager;
 import me.vixen.chopperbot.commands.ICommand;
 import me.vixen.chopperbot.database.UserProfile;
-import me.vixen.chopperbot.guilds.IGuild;
+import me.vixen.chopperbot.guilds.CustomGuild;
 import me.vixen.chopperbot.listener.DefaultEventHandler;
 import net.dv8tion.jda.api.entities.Category;
 import net.dv8tion.jda.api.entities.Member;
@@ -17,15 +17,13 @@ import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import java.util.Comparator;
 import java.util.List;
 
-public class OutliersCoaching implements IGuild {
+public class OutliersCoaching extends CustomGuild {
 
-    private String guildId;
-    private List<ICommand> localCommands;
 
     public OutliersCoaching(String guildId, EventWaiter waiter) {
-        this.guildId = guildId;
-        setLocalCommands(waiter);
+        super(guildId, waiter);
     }
+
     @Override
     public void setLocalCommands(EventWaiter waiter) {
         localCommands = List.of(
@@ -34,13 +32,13 @@ public class OutliersCoaching implements IGuild {
     }
 
     @Override
-    public List<ICommand> getLocalCommands() {
-        return localCommands;
+    public boolean hasCustomClaims() {
+        return false;
     }
 
     @Override
-    public String getId() {
-        return guildId;
+    public void getCustomClaim(SlashCommandEvent event) {
+        return;
     }
 
     @Override

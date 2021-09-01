@@ -9,8 +9,8 @@ import me.vixen.chopperbot.database.DatabaseHandler;
 import me.vixen.chopperbot.commands.GlobalCommandManager;
 import me.vixen.chopperbot.commands.ICommand;
 import me.vixen.chopperbot.database.UserProfile;
+import me.vixen.chopperbot.guilds.CustomGuild;
 import me.vixen.chopperbot.guilds.GuildManager;
-import me.vixen.chopperbot.guilds.IGuild;
 import me.vixen.chopperbot.listener.Listener;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -80,7 +80,7 @@ public class Entry {
 		//jda.updateCommands().queue();
 
 		//Load local Commands
-		for (IGuild g : guildManager.getGuilds()) { //Local first
+		for (CustomGuild g : guildManager.getGuilds()) { //Local first
 			final Guild guild = jda.getGuildById(g.getId());
 			if (guild == null) continue;
 			List<CommandData> data = new ArrayList<>();

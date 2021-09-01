@@ -6,7 +6,7 @@ import me.vixen.chopperbot.commands.ICommand;
 import me.vixen.chopperbot.database.Database;
 import me.vixen.chopperbot.database.UserProfile;
 import me.vixen.chopperbot.guilds.Config;
-import me.vixen.chopperbot.guilds.IGuild;
+import me.vixen.chopperbot.guilds.CustomGuild;
 import me.vixen.chopperbot.listener.DefaultEventHandler;
 import me.vixen.chopperbot.tools.Embeds;
 import net.dv8tion.jda.api.entities.*;
@@ -16,13 +16,10 @@ import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import java.util.List;
 
 
-public class EFoxHomeBase implements IGuild {
+public class EFoxHomeBase extends CustomGuild {
 
-	String guildId;
-	private static List<ICommand> localCommands;
 	public EFoxHomeBase(String guildId, EventWaiter waiter) {
-		this.guildId = guildId;
-		setLocalCommands(waiter);
+		super(guildId, waiter);
 	}
 
 	@Override
@@ -33,13 +30,13 @@ public class EFoxHomeBase implements IGuild {
 	}
 
 	@Override
-	public List<ICommand> getLocalCommands() {
-		return localCommands;
+	public boolean hasCustomClaims() {
+		return false;
 	}
 
 	@Override
-	public String getId() {
-		return guildId;
+	public void getCustomClaim(SlashCommandEvent event) {
+		return;
 	}
 
 	protected static boolean isTicketTeam(Member member) {

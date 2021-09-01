@@ -17,7 +17,6 @@ import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Random;
 import me.vixen.chopperbot.guilds.GuildManager;
-import me.vixen.chopperbot.guilds.IGuild;
 import me.vixen.chopperbot.listener.DefaultEventHandler;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.interactions.components.Button;

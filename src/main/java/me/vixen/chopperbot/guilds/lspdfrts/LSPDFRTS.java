@@ -2,35 +2,31 @@ package me.vixen.chopperbot.guilds.lspdfrts;
 
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import me.vixen.chopperbot.commands.ICommand;
-import me.vixen.chopperbot.guilds.IGuild;
-import me.vixen.chopperbot.tools.Embeds;
-import net.dv8tion.jda.api.entities.TextChannel;
-import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
-import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
+import me.vixen.chopperbot.guilds.CustomGuild;
+import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class LSPDFRTS implements IGuild {
+public class LSPDFRTS extends CustomGuild {
 
-	String guildId;
-	public LSPDFRTS(String guildId) {
-		this.guildId = guildId;
+	public LSPDFRTS(String guildId, EventWaiter waiter) {
+		super(guildId, waiter);
 	}
 
 	@Override
-	public void setLocalCommands(EventWaiter waiter) {
-		//return;
+	protected void setLocalCommands(EventWaiter waiter) {
+		localCommands = EMPTY_COMMANDS;
 	}
 
 	@Override
-	public List<ICommand> getLocalCommands() {
-		return new ArrayList<>();
+	public boolean hasCustomClaims() {
+		return false;
 	}
 
 	@Override
-	public String getId() {
-		return guildId;
+	public void getCustomClaim(SlashCommandEvent event) {
+		return;
 	}
 }
