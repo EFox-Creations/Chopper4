@@ -24,7 +24,7 @@ public class SlotCommand implements ICommand {
 	public void handle(SlashCommandEvent event, UserProfile profile) {
 		String id = event.getUser().getId();
 		Guild guild = event.getGuild();
-		Guild efox = Entry.jda.getGuildById("761703507546996786");
+		Guild efox = Entry.jda.getGuildById("882694324112994315");
 		if (efox == null) {
 			event.reply("An error occurred; aborting with Code " + Errors.JDANULLRETURN).queue();
 			return;

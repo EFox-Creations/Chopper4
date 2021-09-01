@@ -17,7 +17,7 @@ public class GuildManager {
 	public GuildManager(EventWaiter waiter) {
 		addGuild(new BejoIjoPlugins("663796409635569664", waiter));
 		addGuild(new LSPDFRTS("788491012553179217", waiter));
-		addGuild(new EFoxHomeBase("761703507546996786", waiter));
+		addGuild(new EFoxHomeBase("882694324112994315", waiter));
 		addGuild(new VincentsGMMods("692321202508922931", waiter));
 		addGuild(new OutliersCoaching("613412156460761109", waiter));
 	}
