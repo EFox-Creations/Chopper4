@@ -29,7 +29,6 @@ public class BejoIjoPlugins extends CustomGuild {
 
 	protected static final int COLOR_COST = 200;
 	protected static final int ROLE_COST = 150;
-	private static List<ICommand> localCommands;
 
 	public BejoIjoPlugins(String guildId, EventWaiter waiter) {
 		super(guildId, waiter);
