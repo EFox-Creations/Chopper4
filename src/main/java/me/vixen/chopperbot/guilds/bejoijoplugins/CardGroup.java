@@ -12,6 +12,7 @@ import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
+import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
@@ -159,11 +160,11 @@ public class CardGroup implements ICommand {
 		}
 
 		switch (e.getComponentId()) {
-			case "yesconfirm" -> {
-				msg.delete().queue();
-				event.getHook().editOriginal("Buy card canceled").queue();
-			}
 			case "denyconfirm" -> {
+				msg.delete().queue();
+				event.getHook().editOriginal("Buy card canceled").setActionRows().queue();
+			}
+			case "yesconfirm" -> {
 				dbMember.adjustCoins(cardCost);
 				dbMember.update(event.getMember());
 				//noinspection ConstantConditions cant be null
@@ -178,7 +179,7 @@ public class CardGroup implements ICommand {
 						.setTitle(drawnCard.getRarity() + " " + drawnCard.getFaceAsString())
 						.build();
 					msg.clearReactions().queue();
-					msg.editMessageEmbeds(embed).queue();
+					msg.editMessageEmbeds(embed).setActionRows().queue();
 				} else {
 					msg.editMessage("An Error Occurred").queue();
 				}
@@ -208,27 +209,28 @@ public class CardGroup implements ICommand {
 			return;
 		}
 
-		event.reply("Follow instructions below").setEphemeral(true).queue();
+		event.deferReply(true).queue();
+		InteractionHook hook = event.getHook();
 		final TextChannel channel = event.getTextChannel();
 		switch (rarity) {
 			case MYTHIC ->
-				channel.sendMessage("Sell card for " + mythicPrice + " coins?")
+				hook.editOriginal("Sell card for " + mythicPrice + " coins?")
 					.setActionRows(getConfirmButtons())
 					.queue(msg -> waitForConfirm(event, msg, mythicPrice, cardid));
 			case LEGENDARY ->
-				channel.sendMessage("Sell card for " + legendaryPrice + " coins?")
+				hook.editOriginal("Sell card for " + legendaryPrice + " coins?")
 					.setActionRows(getConfirmButtons())
 					.queue(msg -> waitForConfirm(event, msg, legendaryPrice, cardid));
 			case RARE ->
-				channel.sendMessage("Sell card for " + rarePrice + " coins?")
+				hook.editOriginal("Sell card for " + rarePrice + " coins?")
 					.setActionRows(getConfirmButtons())
 					.queue(msg -> waitForConfirm(event, msg, rarePrice, cardid));
 			case UNCOMMON ->
-				channel.sendMessage("Sell card for " + uncommonPrice + " coins?")
+				hook.editOriginal("Sell card for " + uncommonPrice + " coins?")
 					.setActionRows(getConfirmButtons())
 					.queue(msg -> waitForConfirm(event, msg, uncommonPrice, cardid));
 			case COMMON ->
-				channel.sendMessage("Sell card for " + commonPrice + " coins?")
+				hook.editOriginal("Sell card for " + commonPrice + " coins?")
 					.setActionRows(getConfirmButtons())
 					.queue(msg -> waitForConfirm(event, msg, commonPrice, cardid));
 		}
@@ -265,7 +267,7 @@ public class CardGroup implements ICommand {
 				dbMember.update(e.getMember());
 				final boolean success = Database.deleteCard(cardId);
 				if (success) {
-					msg.editMessage("Card sold for " + price + " coins").queue();
+					msg.editMessage("Card sold for " + price + " coins").setActionRows().queue();
 				}
 				else {
 					msg.editMessage("An error occurred").queue();
