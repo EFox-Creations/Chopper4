@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Random;
 
 public class ScratchOff {
-    private static String EMPTY_LABEL = "  ";
+    private static String EMPTY_LABEL = "   ";
 
     private EventWaiter waiter;
     public ScratchOff(EventWaiter waiter) {

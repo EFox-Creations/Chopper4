@@ -1,6 +1,7 @@
 package me.vixen.chopperbot.commands.global;
 
 import me.vixen.chopperbot.commands.ICommand;
+import me.vixen.chopperbot.commands.global.gamble.Lotto;
 import me.vixen.chopperbot.database.UserProfile;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -23,14 +24,20 @@ public class OddsCommand implements ICommand {
                     -Role Voucher 1%
                     -Color Voucher 1%
                         
-                    __Scratch Off:__
+                    __Bet:__
                     -Lose 50%
                     -Payout = Bet 25%
                     -2x Bet 13%
                     -4x Bet 7%
                     -8x Bet 3%
                     -16x Bet 2%
-                        
+                    
+                    __Dice:__
+                    - 5 in 12
+                    
+                    __Scratch Off:__
+                    - 40 in 91
+                    
                     __Lotto:__
                     1 in $
                         
@@ -46,10 +53,7 @@ public class OddsCommand implements ICommand {
                     Rare 20%
                     Uncommon 29%
                     Common 37%
-                    """.replace(
-				"$", "" //TODO this comment needs to replace this empty string when fixing lotto
-				//String.valueOf(factorial(LottoGroup.UPPER) / (factorial(5) * factorial(LottoGroup.UPPER-5)))
-				)
+                    """.replace("$", String.valueOf(factorial(Lotto.UPPER) / (factorial(5) * factorial(Lotto.UPPER-5))))
 			)
 			.setColor(Color.BLUE)
 			.build();
