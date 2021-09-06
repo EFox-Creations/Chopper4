@@ -11,14 +11,13 @@ import java.awt.*;
 import java.util.concurrent.TimeUnit;
 
 public class Lotto {
-	public void handle(SlashCommandEvent event) {
+	public void handle(SlashCommandEvent event, UserProfile profile) {
 		//noinspection ConstantConditions cant be null
 		switch (event.getSubcommandName()) {
 			case "lotto_pool" -> getStatus(event);
 			case "buy_lotto" -> placeBet(event);
 		}
 	}
-
 
 	private static void getStatus(SlashCommandEvent event) {
 		final int pot = Database.getPot();

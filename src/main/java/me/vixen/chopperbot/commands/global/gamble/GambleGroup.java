@@ -23,6 +23,7 @@ public class GambleGroup implements ICommand {
             case "bet" -> new Bet().handle(event, profile);
             case "slot" -> new Slot().handle(event,profile);
             case "highlow" -> new HighLow(waiter).handle(event, profile);
+            case "lotto_pool", "buy_lotto" -> new Lotto().handle(event, profile);
         }
     }
 
