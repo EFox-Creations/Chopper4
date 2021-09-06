@@ -2,6 +2,7 @@ package me.vixen.chopperbot.commands;
 
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import me.vixen.chopperbot.commands.global.*;
+import me.vixen.chopperbot.commands.global.gamble.GambleGroup;
 import me.vixen.chopperbot.guilds.GuildManager;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 
@@ -32,7 +33,6 @@ public class GlobalCommandManager {
 		addGlobalCommand(new DonateCommand());
 		addGlobalCommand(new EchoCommand());
 		addGlobalCommand(new HelpCommand());
-		//addGlobalCommand(new LottoGroup());
 		addGlobalCommand(new ModGroup()); //houses moderation commands
 		addGlobalCommand(new OddsCommand()); //displays GOC odds
 		addGlobalCommand(new PollCommand());
@@ -40,9 +40,10 @@ public class GlobalCommandManager {
 		addGlobalCommand(new ProfileCommand());
 		addGlobalCommand(new ReportCommand(waiter));
 		addGlobalCommand(new RobCommand());
-		addGlobalCommand(new ScratchOffCommand());
+
+		addGlobalCommand(new GambleGroup(waiter));
+
 		addGlobalCommand(new ShopCommand(waiter));
-		addGlobalCommand(new SlotCommand());
 		addGlobalCommand(new StickyGroup());
 		addGlobalCommand(new ToggleLvlMsgsCommand());
 		addGlobalCommand(new UserInfoCommand()); //whois

@@ -1,37 +1,25 @@
-package me.vixen.chopperbot.commands.global;
+package me.vixen.chopperbot.commands.global.gamble;
 
 import me.vixen.chopperbot.database.Database;
-import me.vixen.chopperbot.commands.ICommand;
 import me.vixen.chopperbot.database.UserProfile;
 import me.vixen.chopperbot.tools.Embeds;
-import me.vixen.chopperbot.tools.Errors;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
-import net.dv8tion.jda.api.interactions.commands.OptionType;
-import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 
 import java.awt.*;
 import java.util.Random;
 
-public class ScratchOffCommand implements ICommand {
-	@Override
-	public void handle(SlashCommandEvent event, UserProfile profile) {
-		if (profile.getLottoPlaysLeft() <= 0) {
-			event.reply("You have already played 3 games today").queue();
-			return;
-		}
+public class Bet {
 
+	public void handle(SlashCommandEvent event, UserProfile profile) {
 		//noinspection ConstantConditions cant be null
 		final int bet = (int) event.getOption("bet").getAsLong();
 
 		if (bet > profile.getCoins()) {
 			event.replyEmbeds(Embeds.getInsufficientCoins()).setEphemeral(true).queue();
 			return;
-		}
-
-		if (bet <= 0) {
+		} else if (bet <= 0) {
 			event.reply("Your bet must be greater than 0").setEphemeral(true).queue();
 			return;
 		}
@@ -51,7 +39,7 @@ public class ScratchOffCommand implements ICommand {
 		}
 
 		MessageEmbed embed = new EmbedBuilder()
-			.setTitle("💵 Lotto Ticket Results 💵")
+			.setTitle("💵 Gamble Results 💵")
 			.setColor(win ? Color.GREEN : Color.RED)
 			.setDescription("You bet " + bet + " and " + (win ? "WON 🎉" : "LOST 😭"))
 			.setFooter("Payout: " + payout + " Net: " + (payout-bet))
@@ -61,21 +49,16 @@ public class ScratchOffCommand implements ICommand {
 		profile.playLotto();
 		event.replyEmbeds(embed).queue();
 		profile.update(null);
-	}
-
-	@Override
-	public CommandData getCommandData() {
-		return new CommandData("scratchoff", "Play the game of chance!")
-			.addOption(OptionType.INTEGER, "bet", "How much would you like to wager?", true);
+		if (payout <= 0) Database.addToPot(bet);
 	}
 
 	private enum OUTCOME {
-		X0, //Lose 50%
-		X1, //Even 25%
-		X2, //Double 13%
-		X4, //Quad 7%
-		X8, //Eight 3%
-		X16;//Jack 2%
+		X0,  //Lose 50%
+		X1,  //Even 25%
+		X2,  //Double 13%
+		X4,  //Quad 7%
+		X8,  //Eight 3%
+		X16; //Jack 2%
 
 		public static OUTCOME getRandom() {
 			int x = new Random().nextInt(100)+1; //1-100

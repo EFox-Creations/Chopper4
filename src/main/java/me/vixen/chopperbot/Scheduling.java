@@ -1,7 +1,9 @@
 package me.vixen.chopperbot;
 
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
+import me.vixen.chopperbot.commands.global.gamble.Lotto;
 import me.vixen.chopperbot.database.Database;
+import me.vixen.chopperbot.database.UserProfile;
 import me.vixen.chopperbot.guilds.Config;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -43,6 +45,7 @@ public class Scheduling {
 
 	private static void doResets(GuildManager gManager) {
 		startResets(gManager);
+		tryLotto();
 		scheduleResetsAtMidnight(gManager);
 	}
 
@@ -92,50 +95,27 @@ public class Scheduling {
 		}
 	}
 
-
-	/* TEMPORARILY REMOVED
-	private static void startLotto() {
+	private static void tryLotto() {
 		//Start lotto
 		StringBuilder builder = new StringBuilder();
-		for (int i=1; i<=5; i++) builder.append(new Random().nextInt(LottoGroup.UPPER)+1).append(", ");
+		for (int i=1; i<=5; i++) builder.append(new Random().nextInt(Lotto.UPPER)+1).append(", ");
 		String winningBet = Database.getWinningBet(builder.toString().trim());
-		if (winningBet == null) {
-			MessageEmbed lottoEmbed = new EmbedBuilder()
-				.setColor(Color.YELLOW)
-				.setTitle("😢 No one won the lotto today")
-				.addField("🎲 Today's Draw 🎲", builder.toString().trim(), false)
-				.build();
-			sendLottoEmbed(gManager, lottoEmbed);
-		} else {
-			Entry.jda.retrieveUserById(winningBet).queue(user -> {
-				MessageEmbed lottoEmbed1 = new EmbedBuilder()
-					.setColor(Color.GREEN)
-					.setTitle("Today's Lotto Winner!")
-					.addField("🎲 Today's Draw 🎲", builder.toString().trim(), false)
-					.addField("Winner", user.getAsTag(), false)
-					.build();
-				sendLottoEmbed(gManager, lottoEmbed1);
-
+		if (winningBet != null)  {
+			String userId = winningBet.split(",")[0];
+			String guildId = winningBet.split(",")[1];
+			UserProfile member = Database.getMember(Entry.jda.getGuildById(guildId), userId);
+			member.adjustCoins(Database.getPot());
+			member.update(null);
+			Entry.jda.retrieveUserById(userId).queue(user -> {
+				user.openPrivateChannel()
+					.flatMap(pc -> pc.sendMessage("You won the lotto! " +
+						"The coins have been added to the guild you placed the winning bet in!"))
+					.queue();
 			});
+			Database.deleteAllBets();
+			Database.setPot(0);
 		}
 	}
-
-	private static void sendLottoEmbed(GuildManager gManager, MessageEmbed lotto) {
-		Database.deleteAllBets();
-		for (Guild g : Entry.jda.getGuilds()) {
-			if (gManager.contains(g))
-				gManager.getGuild(g).getLottoChannel().sendMessageEmbeds(lotto).queue();
-			else {
-				TextChannel systemChannel = g.getSystemChannel();
-				if (systemChannel == null) {
-					TextChannel defaultChannel = g.getDefaultChannel();
-					if (defaultChannel != null)
-						defaultChannel.sendMessageEmbeds(lotto).queue();
-				} else systemChannel.sendMessageEmbeds(lotto).queue();
-			}
-		}
-	}
-	TEMPORARILY REMOVED */
 
 	static void loadChests() {
 		for (Guild g : Entry.jda.getGuilds()) {

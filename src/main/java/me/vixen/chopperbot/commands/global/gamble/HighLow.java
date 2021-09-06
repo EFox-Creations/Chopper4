@@ -1,0 +1,89 @@
+package me.vixen.chopperbot.commands.global.gamble;
+
+import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
+import me.vixen.chopperbot.database.Database;
+import me.vixen.chopperbot.database.UserProfile;
+import me.vixen.chopperbot.tools.Embeds;
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.Emoji;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
+import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
+import net.dv8tion.jda.api.interactions.components.Button;
+
+import java.awt.*;
+import java.util.Random;
+
+public class HighLow {
+
+    EventWaiter waiter;
+    public HighLow(EventWaiter waiter) {
+        this.waiter = waiter;
+    }
+
+    public void handle(SlashCommandEvent event, UserProfile profile) {
+        int bet = (int) event.getOption("bet").getAsLong();
+        Member member = event.getMember();
+        if (bet <= 0) {
+            event.replyEmbeds(Embeds.getInvalidArgumentEmbed("bet", " Must be more than 0")).queue();
+            return;
+        }
+
+        int availableCoins = profile.getCoins();
+
+        if (bet > availableCoins) {
+            event.replyEmbeds(Embeds.getInsufficientCoins()).queue();
+            return;
+        }
+
+        int hint = new Random().nextInt(100)+1;
+        int number = new Random().nextInt(100)+1;
+
+        event.replyEmbeds(new EmbedBuilder()
+            .setAuthor(event.getUser().getAsTag(), null, event.getUser().getAvatarUrl())
+            .setColor(Color.YELLOW)
+            .setTitle("The first number is " + hint)
+            .setDescription("Is the second number **Higher** or **Lower**" +
+                "\nClick **JACKPOT** if you think the numbers are the same")
+            .build()
+        ).addActionRow(
+            Button.primary("higher", "Higher").withEmoji(Emoji.fromUnicode("🔼")),
+            Button.primary("jackpot", "Jackpot").withEmoji(Emoji.fromUnicode("🤑")),
+            Button.primary("lower", "Lower").withEmoji(Emoji.fromUnicode("🔽"))
+        ).queue(hook -> hook.retrieveOriginal().queue(msg -> {
+            waiter.waitForEvent(ButtonClickEvent.class,
+                (bce) -> bce.getMember().equals(member) && bce.getMessageId().equals(msg.getId()),
+                (bce) -> awardUser(bce, event, hint, number, bet, profile)
+            );
+        }));
+    }
+
+    private void awardUser(ButtonClickEvent bce, SlashCommandEvent event, int hint, int number, int bet, UserProfile profile) {
+        bce.deferEdit().queue();
+
+        boolean won = false;
+
+        switch (bce.getComponentId()) {
+            case "higher" -> won = number > hint;
+            case "jackpot" -> won = number == hint;
+            case "lower" -> won = number < hint;
+        }
+
+        int payout = (int) Math.round(bet * new Random().nextDouble() + 1.1);
+
+        bce.getMessage().editMessageEmbeds(new EmbedBuilder()
+            .setColor(won ? Color.GREEN: Color.RED)
+            .setAuthor(event.getUser().getAsTag(), null, event.getUser().getAvatarUrl())
+            .setTitle(won? "You Win!": "You lose")
+            .setDescription("The first number was " + hint + "\n" +
+                "The second number was " + number + "\n\n" +
+                (won ? "You won " + payout + " coins!" : "You lost " + bet + " coins!"))
+            .build()
+        ).setActionRows().queue();
+
+        if (!won) Database.addToPot(payout * -1);
+        profile.adjustCoins(won ? payout : payout * -1);
+        profile.update(bce.getMember());
+    }
+}

@@ -1,4 +1,4 @@
-package me.vixen.chopperbot.commands.global;
+package me.vixen.chopperbot.commands.global.gamble;
 
 import me.vixen.chopperbot.database.Database;
 import me.vixen.chopperbot.Entry;
@@ -17,10 +17,9 @@ import java.awt.*;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-public class SlotCommand implements ICommand {
+public class Slot {
 	final int MAX_BET = 134217727;
 
-	@Override
 	public void handle(SlashCommandEvent event, UserProfile profile) {
 		String id = event.getUser().getId();
 		Guild guild = event.getGuild();
@@ -53,9 +52,9 @@ public class SlotCommand implements ICommand {
 
 		member.adjustCoins(-bet);
 		event.replyFormat("%s%s%s", slot, slot, slot).queue(hook -> {
-			Slot s1 = Slot.getRandom();
-			Slot s2 = Slot.getRandom();
-			Slot s3 = Slot.getRandom();
+			SlotResult s1 = SlotResult.getRandom();
+			SlotResult s2 = SlotResult.getRandom();
+			SlotResult s3 = SlotResult.getRandom();
 
 			Emote slotone = getEmote(efox, s1);
 			Emote slottwo = getEmote(efox, s2);
@@ -89,6 +88,8 @@ public class SlotCommand implements ICommand {
 					).setContent("").queueAfter(1L, TimeUnit.SECONDS);
 					member.adjustCoins(finalPayout);
 					member.update(null);
+
+					if (finalPayout < 0) Database.addToPot(finalPayout*-1);
 				});
 
 			}));
@@ -96,7 +97,7 @@ public class SlotCommand implements ICommand {
 		});
 	}
 
-	private Emote getEmote(Guild efox, Slot slot) {
+	private Emote getEmote(Guild efox, SlotResult slot) {
 		final Emote diamond = efox.getEmotesByName("slotdiamond", true).get(0);
 		final Emote seven = efox.getEmotesByName("slotseven", true).get(0);
 		final Emote bar = efox.getEmotesByName("slotbar", true).get(0);
@@ -141,42 +142,36 @@ public class SlotCommand implements ICommand {
 		}
 	}
 
-	private boolean allMatch(Slot s1, Slot s2, Slot s3) {
+	private boolean allMatch(SlotResult s1, SlotResult s2, SlotResult s3) {
 		return s1.toString().equals(s2.toString()) && s2.toString().equals(s3.toString());
 	}
 
 	@SuppressWarnings("DuplicateExpressions")
-	private boolean matchesWithWildcards(Slot s1, Slot s2, Slot s3) {
-		if (s1.toString().equals(s2.toString()) && s3.toString().equals(Slot.slotdiamond.toString())) //1 and 2 with 3 diamond
+	private boolean matchesWithWildcards(SlotResult s1, SlotResult s2, SlotResult s3) {
+		if (s1.toString().equals(s2.toString()) && s3.toString().equals(SlotResult.slotdiamond.toString())) //1 and 2 with 3 diamond
 			return true;
-		else if (s1.toString().equals(s3.toString()) && s2.toString().equals(Slot.slotdiamond.toString())) //1 and 3 with 2 diamond
+		else if (s1.toString().equals(s3.toString()) && s2.toString().equals(SlotResult.slotdiamond.toString())) //1 and 3 with 2 diamond
 			return true;
-		else if (s2.toString().equals(s3.toString()) && s1.toString().equals(Slot.slotdiamond.toString())) //2 and 3 with 1 diamond
+		else if (s2.toString().equals(s3.toString()) && s1.toString().equals(SlotResult.slotdiamond.toString())) //2 and 3 with 1 diamond
 			return true;
-		else if (s1.toString().equals(s2.toString()) && s1.toString().equals(Slot.slotdiamond.toString())) //1 and 2 are both wild
+		else if (s1.toString().equals(s2.toString()) && s1.toString().equals(SlotResult.slotdiamond.toString())) //1 and 2 are both wild
 			return true;
 		else //2 and 3 are both wild
-			if (s1.toString().equals(s3.toString()) && s1.toString().equals(Slot.slotdiamond.toString())) //1 and 3 are both wild
+			if (s1.toString().equals(s3.toString()) && s1.toString().equals(SlotResult.slotdiamond.toString())) //1 and 3 are both wild
 			return true;
-		else return s2.toString().equals(s3.toString()) && s2.toString().equals(Slot.slotdiamond.toString());
+		else return s2.toString().equals(s3.toString()) && s2.toString().equals(SlotResult.slotdiamond.toString());
 	}
 
-	private Slot getRank(Slot s1, Slot s2, Slot s3) {
+	private SlotResult getRank(SlotResult s1, SlotResult s2, SlotResult s3) {
 		if (allMatch(s1, s2, s3)) return s1; //if they are all the same, return s1
-		if (s1.toString().equals(Slot.slotdiamond.toString())) { //if s1 is a wildcard, check s2
-			if (s2.toString().equals(Slot.slotdiamond.toString())) { //if s2 is a wildcard also, return s3
+		if (s1.toString().equals(SlotResult.slotdiamond.toString())) { //if s1 is a wildcard, check s2
+			if (s2.toString().equals(SlotResult.slotdiamond.toString())) { //if s2 is a wildcard also, return s3
 				return s3;
 			} else return s2; //if s2 is not a wildcard
 		} else return s1; //if s1 is not a wildcard
 	}
 
-	@Override
-	public CommandData getCommandData() {
-		return new CommandData("slot", "Play a slot machine!")
-			.addOption(OptionType.INTEGER, "bet", "How much to bet?", true);
-	}
-
-	enum Slot {
+	enum SlotResult {
 		slotseven,
 		slotmelon,
 		slotcherry,
@@ -187,7 +182,7 @@ public class SlotCommand implements ICommand {
 		slotheart,
 		slotbar;
 
-		public static Slot getRandom() {
+		public static SlotResult getRandom() {
 			return values()[new Random().nextInt(values().length)];
 		}
 	}

@@ -31,6 +31,8 @@ public class Database {
 		createStickyTable();
 		createCommandTable();
 		createConfigTable();
+		createKVTable();
+		createBetsTable();
 	}
 
 	public static String getGuildMemberTable(String guildId) {
@@ -118,6 +120,37 @@ public class Database {
 			CREATE TABLE IF NOT EXISTS configs (
 			guild_id TEXT UNIQUE NOT NULL,\s
 			config TEXT\s
+			);""";
+		//Build and execute
+		try (Connection con = getConnection(); Statement stmt = con.createStatement()) {
+			stmt.execute(SQL);
+		} catch (SQLException e) {
+			Logger.log("Error creating Database Table", e);
+			System.exit(1);
+		}
+	}
+
+	private static void createKVTable() {
+		String SQL = """
+			CREATE TABLE IF NOT EXISTS keyvalue (
+			key TEXT UNIQUE NOT NULL,\s
+			value TEXT\s
+			);""";
+		//Build and execute
+		try (Connection con = getConnection(); Statement stmt = con.createStatement()) {
+			stmt.execute(SQL);
+		} catch (SQLException e) {
+			Logger.log("Error creating Database Table", e);
+			System.exit(1);
+		}
+	}
+
+	private static void createBetsTable() {
+		String SQL = """
+			CREATE TABLE IF NOT EXISTS bets (
+			user_id TEXT UNIQUE NOT NULL,\s
+			guild_id TEXT NOT NULL,\s
+			bet_string TEXT NOT NULL\s
 			);""";
 		//Build and execute
 		try (Connection con = getConnection(); Statement stmt = con.createStatement()) {
@@ -813,20 +846,17 @@ public class Database {
 	// *                      Lotto Methods                       *
 	// ************************************************************
 
-    /* TEMPORARILY REMOVED
-
 	public static int getPot() {
-		String SQL = "SELECT value FROM lotto WHERE key = ?";
-		try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(SQL)) {
-			ps.setString(1, "pot");
-			ResultSet rs = ps.executeQuery();
+		String SQL = "SELECT value FROM keyvalue WHERE key = 'pot";
+		try (Connection con = getConnection(); Statement stmt = con.createStatement()) {
+			ResultSet rs = stmt.executeQuery(SQL);
 			if (rs.next()) {
 				final int pot = rs.getInt("value");
-				ps.close();
+				stmt.close();
 				con.close();
 				return pot;
 			} else {
-				ps.close();
+				stmt.close();
 				con.close();
 				return -1;
 			}
@@ -839,7 +869,7 @@ public class Database {
 
 
 	public static boolean setPot(int amount) {
-		String SQL = String.format("UPDATE lotto SET value = %s WHERE key = \"pot\"", amount);
+		String SQL = String.format("UPDATE keyvalue SET value = %s WHERE key = 'pot'", amount);
 		try (Connection con = getConnection(); Statement stmt = con.createStatement()) {
 			stmt.executeUpdate(SQL);
 			stmt.close();
@@ -854,9 +884,12 @@ public class Database {
 	public static boolean addToPot(int amount) {
 		final int pot = getPot();
 		amount = Math.min(pot + amount, Integer.MAX_VALUE);
-		String SQL = "UPDATE lotto SET value = ? WHERE key = 'pot'";
+		String SQL = "INSERT INTO keyvalue(key,value) VALUES('pot',?)" +
+			"ON CONFLICT (key) DO " +
+			"UPDATE SET value = ? WHERE key = 'pot'";
 		try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(SQL)) {
 			ps.setString(1, String.valueOf(amount));
+			ps.setString(2, String.valueOf(amount));
 			ps.executeUpdate();
 			ps.close();
 			con.close();
@@ -868,10 +901,11 @@ public class Database {
 		}
 	}
 
-	public static boolean doesBetExist(String userId) {
-		String SQL = "SELECT user_id FROM bets WHERE user_id = ?";
+	public static boolean doesBetExist(String userId, String guildId) {
+		String SQL = "SELECT user_id, guild_id FROM bets WHERE user_id = ? AND guild_id = ?";
 		try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(SQL)) {
 			ps.setString(1, userId);
+			ps.setString(2, guildId);
 			final ResultSet rs = ps.executeQuery();
 			if (rs.next()) {
 				ps.close();
@@ -889,11 +923,12 @@ public class Database {
 
 
 	// Bet String:  "84,32,63,87,90"
-	public static boolean addBet(String userId, String betString) {
-		String SQL = "INSERT INTO bets(user_id,bet) VALUES(?,?)";
+	public static boolean addBet(String userId, String guildId, String betString) {
+		String SQL = "INSERT INTO bets(user_id, guild_id, bet_string) VALUES(?,?,?)";
 		try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(SQL)) {
 			ps.setString(1, userId);
-			ps.setString(2, betString);
+			ps.setString(2, guildId);
+			ps.setString(3, betString);
 			ps.executeUpdate();
 			ps.close();
 			con.close();
@@ -902,23 +937,24 @@ public class Database {
 			return false;
 		}
 	}
-	TEMPORARILY REMOVED */
 
-//	/**
-//	 *
-//	 * @param winBetString The winning bet
-//	 * @return Possibly null Id String of user that made the first winning bet
-//	 */
-	/* TEMPORARILY REMOVED
+	/**
+	 * @param winBetString The winning bet
+	 * @return Possibly null UserId and GuildId of user that made the first winning bet, delimited by a single comma
+	 */
 	public static String getWinningBet(String winBetString) {
-		String SQL = "SELECT user_id FROM bets WHERE bet = " + winBetString;
+		String SQL = "SELECT user_id, guild_id FROM bets WHERE bet_string = " + winBetString;
 		try (Connection con = getConnection(); Statement stmt = con.createStatement()) {
 			final ResultSet rs = stmt.executeQuery(SQL);
 			String winnerId = null;
-			while (rs.next()) winnerId = rs.getString("user_id");
+			String guildId = null;
+			if (rs.next()) {
+				winnerId = rs.getString("user_id");
+				guildId = rs.getString("guild_id");
+			}
 			stmt.close();
 			con.close();
-			return winnerId;
+			return winnerId + "," + guildId;
 		} catch (SQLException e) {
 			return null;
 		}
@@ -933,7 +969,6 @@ public class Database {
 			Logger.log("Failed to delete lotto bets", e);
 		}
 	}
-	TEMPORARILY REMOVED */
 
 	// ************************************************************
 	// *                      Config Methods                      *
