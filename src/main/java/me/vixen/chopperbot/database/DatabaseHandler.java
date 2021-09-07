@@ -3,14 +3,18 @@ package me.vixen.chopperbot.database;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import me.vixen.chopperbot.Logger;
+import net.dv8tion.jda.api.JDA;
 
 import java.sql.Connection;
 
 public class DatabaseHandler {
 	private final HikariDataSource pool;
 
-	public DatabaseHandler() {
+	public DatabaseHandler(JDA jda) {
 		this.pool = initHikari();
+		Database.initDatabase(this, jda.getGuilds());
+
+		Logger.log("DatabaseLoaded");
 	}
 
 	private HikariDataSource initHikari() {

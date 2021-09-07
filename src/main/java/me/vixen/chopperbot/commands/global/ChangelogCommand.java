@@ -18,7 +18,7 @@ import java.util.List;
 public class ChangelogCommand implements ICommand {
 	@Override
 	public void handle(SlashCommandEvent event, UserProfile profile) {
-		if (!event.getUser().getId().equalsIgnoreCase(Entry.CREATOR_ID)) {
+		if (!event.getUser().getId().equalsIgnoreCase(Entry.getCreatorId())) {
 			event.replyEmbeds(Embeds.getPermissionMissing()).queue();
 			return;
 		}
@@ -28,7 +28,7 @@ public class ChangelogCommand implements ICommand {
 			.getAsString()
 			.replaceAll("<n>", "\n");
 
-		List<Guild> guilds = Entry.jda.getGuilds();
+		List<Guild> guilds = Entry.getJDA().getGuilds();
 		event.reply("Dispatching to " + guilds.size() + "guilds").queue();
 
 		for (Guild g : guilds) {

@@ -72,7 +72,7 @@ public class BejoIjoPlugins extends CustomGuild {
 		if (event.getChannel().getId().equals("671729684693778483")) { //If in gallery
 			Role ss = event.getGuild().getRoleById("781608704633471036");
 			if (profile != null && !event.getMember().getRoles().contains(ss)
-				&& !event.getAuthor().getId().equals(Entry.CREATOR_ID)) {
+				&& !event.getAuthor().getId().equals(Entry.getCreatorId())) {
 				//Delete message if it is not a link, attachment, or the user has exceeded the limit
 				if (profile.getGalleryImgsLeft() <= 0 ||
 					(message.getAttachments().isEmpty() && !message.getContentRaw().contains("https://"))) {
@@ -213,7 +213,7 @@ public class BejoIjoPlugins extends CustomGuild {
 		final Role helper = g.getRoleById("663801966194851860");
 
 		return m.getRoles().stream().anyMatch(it -> it.equals(staff) || it.equals(helper))
-			|| m.getId().equals(Entry.CREATOR_ID);
+			|| m.getId().equals(Entry.getCreatorId());
 	}
 
 	private void sendToBugChannel(GuildMessageReactionAddEvent event) {

@@ -8,11 +8,14 @@ import java.time.format.DateTimeFormatter;
 public class Logger {
 	public static void log(String text) {
 		try {
-			BufferedWriter writer = new BufferedWriter(new FileWriter("log.txt", true));
 			final String time = OffsetDateTime.now().format(DateTimeFormatter.ofPattern("yy-MMM-dd HH:mm:ss.SSS"));
-			writer.write(String.format("[%s]\s%s\n", time, text));
+			final String strToLog = String.format("[%s]\s%s", time, text);
+
+			BufferedWriter writer = new BufferedWriter(new FileWriter("log.txt", true));
+			writer.write(strToLog);
 			writer.close();
-			System.out.printf("[%s] %s\n%n", time, text);
+			System.out.println(strToLog);
+			Entry.getChopperConsole().addToLog(strToLog);
 		} catch (Exception e) {
 			System.out.println("External Logging Failed");
 		}
@@ -20,11 +23,14 @@ public class Logger {
 
 	public static void log(String text, Throwable e) {
 		try {
-			BufferedWriter writer = new BufferedWriter(new FileWriter("log.txt", true));
 			final String time = OffsetDateTime.now().format(DateTimeFormatter.ofPattern("yy-MMM-dd HH:mm:ss.SSS"));
-			writer.write(String.format("[%s]\s%s: %s\n", time, text, e.getMessage()));
+			final String strToLog = String.format("[%s]\s%s: %s", time, text, e.getMessage());
+
+			BufferedWriter writer = new BufferedWriter(new FileWriter("log.txt", true));
+			writer.write(strToLog);
 			writer.close();
-			System.out.printf("[%s] %s: %s\n%n", time, text, e.getMessage());
+			System.out.println(strToLog);
+			Entry.getChopperConsole().addToLog(strToLog);
 		} catch (Exception ex) {
 			System.out.println("External Logging Failed");
 		}

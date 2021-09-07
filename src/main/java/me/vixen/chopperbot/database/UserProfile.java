@@ -90,7 +90,7 @@ public class UserProfile {
 	// *********************************************************************
 
 	public boolean isAuthorized() {
-		return authorized || userId.equals(Entry.CREATOR_ID);
+		return authorized || userId.equals(Entry.getCreatorId());
 	}
 
 	public void setAuthorized(boolean authorized) {
@@ -333,7 +333,7 @@ public class UserProfile {
 
 	public void update(Member m) {
 		if (m == null) {
-			Guild guild = Entry.jda.getGuildById(guildId);
+			Guild guild = Entry.getJDA().getGuildById(guildId);
 			if (guild != null)
 				Database.upsertMember(guild, this);
 		} else {
