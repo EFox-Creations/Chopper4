@@ -13,6 +13,7 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.ReadyEvent;
+import net.dv8tion.jda.api.events.ShutdownEvent;
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
@@ -137,11 +138,11 @@ public class Listener extends ListenerAdapter {
 			case WARN -> {
 				UserProfile member = Database.getMember(event.getGuild(), event.getAuthor().getId());
 				if (member != null) {
-					member.addWarning(event.getAuthor().getAsTag(), Entry.jda.getSelfUser(), "Posting blacklisted links");
+					member.addWarning(event.getAuthor().getAsTag(), Entry.getJDA().getSelfUser(), "Posting blacklisted links");
 					member.update(null);
 					MessageEmbed embed = new EmbedBuilder()
 						.setTitle("New Warning Given!")
-						.addField(Entry.jda.getSelfUser().getAsTag() + " warned " + event.getAuthor().getAsTag(),
+						.addField(Entry.getJDA().getSelfUser().getAsTag() + " warned " + event.getAuthor().getAsTag(),
 							"Posting blacklisted links", false)
 						.addField("Flagged Text", flaggedText, false)
 						.setColor(Color.YELLOW)
@@ -157,13 +158,13 @@ public class Listener extends ListenerAdapter {
 			case KICK -> {
 				//noinspection ConstantConditions
 				event.getMember().kick("Posting blacklisted links").queue(v -> event.getGuild().getTextChannelById(config.getModlogId()).sendMessageEmbeds(
-					Embeds.getBLKickedEmbed(event.getAuthor(), Entry.jda.getSelfUser(), "Posting blacklisted links", flaggedText)
+					Embeds.getBLKickedEmbed(event.getAuthor(), Entry.getJDA().getSelfUser(), "Posting blacklisted links", flaggedText)
 				).queue());
 			}
 			case BAN -> {
 				//noinspection ConstantConditions
 				event.getMember().ban(7, "Posting blacklisted links").queue(v -> event.getGuild().getTextChannelById(config.getModlogId()).sendMessageEmbeds(
-					Embeds.getBLBannedEmbed(event.getAuthor(), Entry.jda.getSelfUser(), "Posting blacklisted links", flaggedText)
+					Embeds.getBLBannedEmbed(event.getAuthor(), Entry.getJDA().getSelfUser(), "Posting blacklisted links", flaggedText)
 				).queue());
 			}
 		}
@@ -179,7 +180,7 @@ public class Listener extends ListenerAdapter {
 			if (m.getEmbeds().size() > 0) {
 				String title = m.getEmbeds().get(0).getTitle();
 				if (title != null && title.equals("🏝 A safe has washed ashore!")
-					&& event.getUserId().equals(Entry.CREATOR_ID)
+					&& event.getUserId().equals(Entry.getCreatorId())
 					&& event.getReactionEmote().getName().equals("🚫"))
 					m.delete().queue();
 			}

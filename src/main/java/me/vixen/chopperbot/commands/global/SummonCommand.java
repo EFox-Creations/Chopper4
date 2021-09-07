@@ -30,15 +30,15 @@ public class SummonCommand implements ICommand {
 
 	@Override
 	public void handle(SlashCommandEvent event, UserProfile profile) {
-		if (!event.getUser().getId().equalsIgnoreCase(Entry.CREATOR_ID)) {
+		if (!event.getUser().getId().equalsIgnoreCase(Entry.getCreatorId())) {
 			event.replyEmbeds(Embeds.getPermissionMissing()).queue();
 			return;
 		}
-		List<Guild> guilds = Entry.jda.getGuilds();
+		List<Guild> guilds = Entry.getJDA().getGuilds();
 
 		event.reply("Summoning in " + guilds.size() + " guilds...").queue();
 
-		for (Guild g : Entry.jda.getGuilds()) {
+		for (Guild g : Entry.getJDA().getGuilds()) {
 			Config config = Database.getConfig(g.getId());
 			if (config == null || config.getChannels().isEmpty()) {
 				DefaultEventHandler.getDefaultTreasureChannels(g);

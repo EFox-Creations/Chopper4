@@ -16,7 +16,7 @@ import java.io.*;
 public class QueryCommand implements ICommand {
 	@Override
 	public void handle(SlashCommandEvent event, UserProfile profile) {
-		if (!event.getUser().getId().equalsIgnoreCase(Entry.CREATOR_ID)) {
+		if (!event.getUser().getId().equalsIgnoreCase(Entry.getCreatorId())) {
 			event.replyEmbeds(Embeds.getPermissionMissing()).queue();
 			return;
 		}
