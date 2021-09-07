@@ -13,10 +13,8 @@ import net.dv8tion.jda.api.events.guild.voice.GuildVoiceJoinEvent;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceLeaveEvent;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceMoveEvent;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
-
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 public class OutliersCoaching extends CustomGuild {
 
