@@ -88,7 +88,7 @@ public class IssueCommand implements ICommand {
                 String response = submitIssue(sce) ? "Submitted" : "An error occurred";
                 msg.getTextChannel().sendMessage(bce.getMember().getAsMention() + "\n" + response).queue();
                 if (response.equals("Submitted")) {
-                    bce.getGuild().retrieveMemberById(Entry.CREATOR_ID).queue(member -> {
+                    bce.getGuild().retrieveMemberById(Entry.getCreatorId()).queue(member -> {
                         bce.getGuild().getTextChannelById("872224056785641492")
                             .sendMessage(member.getAsMention() + " New Issue Opened!").queue();
                     });

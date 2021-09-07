@@ -38,20 +38,20 @@ public class Scheduling {
 	private static ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
 	private static long SECONDSINDAY = TimeUnit.DAYS.toSeconds(1L);
 
-	public static void startScheduling(GuildManager gManager) {
-		fireChests(); // Immediately spawn and schedule next (returns next schedule)
-		scheduleResetsAtMidnight(gManager); // Schedule resets for midnight
+	public static void startScheduling(List<Guild> botGuilds, GuildManager gManager) {
+		fireChests(botGuilds); // Immediately spawn and schedule next (returns next schedule)
+		scheduleResetsAtMidnight(botGuilds, gManager); // Schedule resets for midnight
 	}
 
-	private static void doResets(GuildManager gManager) {
-		startResets(gManager);
+	private static void doResets(List<Guild> botGuilds, GuildManager gManager) {
+		startResets(botGuilds, gManager);
 		tryLotto();
-		scheduleResetsAtMidnight(gManager);
+		scheduleResetsAtMidnight(botGuilds, gManager);
 	}
 
-	private static void scheduleResetsAtMidnight(GuildManager gManager) {
+	private static void scheduleResetsAtMidnight(List<Guild> botGuilds, GuildManager gManager) {
 		ScheduledFuture<?> resetFuture = executorService.schedule(
-			() -> doResets(gManager),
+			() -> doResets(botGuilds, gManager),
 			now().until(startOfNextDay(), ChronoUnit.SECONDS),
 			TimeUnit.SECONDS
 		);
@@ -73,22 +73,22 @@ public class Scheduling {
 			.format(CUSTOMFORMAT);
 	}
 
-	private static void fireChests() {
-		loadChests();
-		rescheduleChest();
+	private static void fireChests(List<Guild> botGuilds) {
+		loadChests(botGuilds);
+		rescheduleChest(botGuilds);
 	}
 
-	private static void rescheduleChest() {
+	private static void rescheduleChest(List<Guild> botGuilds) {
 		ScheduledFuture<?> chestFuture = executorService.schedule(
-			() -> fireChests(),
+			() -> fireChests(botGuilds),
 			(long) new Random().nextInt(3) + 4,
 			TimeUnit.HOURS
 		);
 		Logger.log("Chests will spawn: " + getTimeOfScheduledFuture(chestFuture));
 	}
 
-	private static void startResets(GuildManager gManager) {
-		for (Guild g : Entry.jda.getGuilds()) {
+	private static void startResets(List<Guild> botGuilds, GuildManager gManager) {
+		for (Guild g : botGuilds) {
 			if (gManager.contains(g)) {
 				gManager.getGuild(g).doNightlyReset();
 			} else DefaultEventHandler.nightlyReset(g);
@@ -103,10 +103,10 @@ public class Scheduling {
 		if (winningBet != null)  {
 			String userId = winningBet.split(",")[0];
 			String guildId = winningBet.split(",")[1];
-			UserProfile member = Database.getMember(Entry.jda.getGuildById(guildId), userId);
+			UserProfile member = Database.getMember(Entry.getJDA().getGuildById(guildId), userId);
 			member.adjustCoins(Database.getPot());
 			member.update(null);
-			Entry.jda.retrieveUserById(userId).queue(user -> {
+			Entry.getJDA().retrieveUserById(userId).queue(user -> {
 				user.openPrivateChannel()
 					.flatMap(pc -> pc.sendMessage("You won the lotto! " +
 						"The coins have been added to the guild you placed the winning bet in!"))
@@ -117,8 +117,8 @@ public class Scheduling {
 		}
 	}
 
-	static void loadChests() {
-		for (Guild g : Entry.jda.getGuilds()) {
+	static void loadChests(List<Guild> botGuilds) {
+		for (Guild g : botGuilds) {
 			Config config = Database.getConfig(g.getId());
 			if (config == null || config.getChannels().isEmpty()) {
 				DefaultEventHandler.getDefaultTreasureChannels(g);

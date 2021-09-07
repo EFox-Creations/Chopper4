@@ -13,7 +13,6 @@ import net.dv8tion.jda.api.events.guild.voice.GuildVoiceJoinEvent;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceLeaveEvent;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceMoveEvent;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
-
 import java.util.Comparator;
 import java.util.List;
 
@@ -90,15 +89,14 @@ public class OutliersCoaching extends CustomGuild {
         if (channelJoined.getName().equalsIgnoreCase("Create Lobby") &&
             parent.getName().equalsIgnoreCase("Dynamic Lobbies")) {
 
-            parent.createVoiceChannel(m.getEffectiveName() + "'s Lobby").queue(vc -> {
-                vc.getGuild().moveVoiceMember(m, vc).queue();
-
-                parent.modifyVoiceChannelPositions()
-                    .sortOrder(Comparator.comparing(guildChannel -> guildChannel.getTimeCreated())).reverseOrder()
-                    .selectPosition(channelJoined)
-                        .moveTo(0)
-                .queue();
-            });
+            parent.createVoiceChannel(m.getEffectiveName() + "'s Lobby")
+                .flatMap(vc -> vc.getGuild().moveVoiceMember(m, vc))
+                .flatMap(unused ->
+                    parent.modifyVoiceChannelPositions()
+                        .sortOrder(Comparator.comparing(guildChannel -> guildChannel.getTimeCreated())).reverseOrder()
+                        .selectPosition(channelJoined)
+                            .moveTo(0))
+            .queue();
         }
     }
 }

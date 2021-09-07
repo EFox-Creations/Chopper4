@@ -19,13 +19,13 @@ public class ResetCommand implements ICommand {
 
     @Override
     public void handle(SlashCommandEvent event, UserProfile profile) {
-        if (!event.getUser().getId().equals(Entry.CREATOR_ID)) {
+        if (!event.getUser().getId().equals(Entry.getCreatorId())) {
             event.replyEmbeds(Embeds.getPermissionMissing()).queue();
             return;
         }
 
         event.reply("Resetting...").setEphemeral(true).queue();
-        for (Guild g : Entry.jda.getGuilds()) {
+        for (Guild g : Entry.getJDA().getGuilds()) {
             if (gManager.contains(g)) {
                 gManager.getGuild(g).doNightlyReset();
             } else DefaultEventHandler.nightlyReset(g);

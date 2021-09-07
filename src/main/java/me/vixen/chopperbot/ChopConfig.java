@@ -11,8 +11,10 @@ import java.io.IOException;
 
 public class ChopConfig {
 
-    @SerializedName("Token")
-    private String token;
+    @SerializedName("ChopperToken")
+    private String chopToken;
+    @SerializedName("TestBotToken")
+    private String testToken;
     @SerializedName("Creator Id")
     private String creatorId;
 
@@ -33,8 +35,12 @@ public class ChopConfig {
         return null;
     }
 
-    public String getToken() {
-        return token;
+    public String getChopToken() {
+        return chopToken;
+    }
+
+    public String getTestToken() {
+        return testToken;
     }
 
     public String getCreatorId() {

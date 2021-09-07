@@ -1,0 +1,50 @@
+JFDML JFormDesigner: "7.0.4.0.360" Java: "11.0.11" encoding: "UTF-8"
+
+new FormModel {
+	contentType: "form/swing"
+	root: new FormRoot {
+		add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
+			"$horizontalGroup": "par l {seq l {space :::p, par l {comp scrollPane1::::494:x, seq {par l {seq t {space :0:387:x, comp btnClose:::p::p}, seq {par l {par l:::p {comp lblChooseToken::l:::x, comp rdbtnChopper::l:::x, comp rdbtnTestBot::l:::x, comp btnLaunch::l:::x}, comp lblLog::l:p::p}, space :0:0:x}}, space :::p}}}}"
+			"$verticalGroup": "par l {seq l {space :p:10:p, comp lblChooseToken:::p::p, space :::p, comp rdbtnChopper:::p::p, space :::p, comp rdbtnTestBot:::p::p, space u:::p, comp btnLaunch:::p::p, space :::p, comp lblLog:::p::p, space :::p, comp scrollPane1::::310:x, space :::p, comp btnClose:::p::p, space :::p}}"
+		} ) {
+			name: "Panel"
+			add( new FormComponent( "javax.swing.JRadioButton" ) {
+				name: "rdbtnChopper"
+				"text": "Chopper"
+				addEvent( new FormEvent( "javax.swing.event.ChangeListener", "stateChanged", "chopTokenSelected", true ) )
+			} )
+			add( new FormComponent( "javax.swing.JRadioButton" ) {
+				name: "rdbtnTestBot"
+				"text": "Test Bot"
+				addEvent( new FormEvent( "javax.swing.event.ChangeListener", "stateChanged", "testTokenSelected", true ) )
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "lblChooseToken"
+				"text": "Choose a launch token"
+			} )
+			add( new FormComponent( "javax.swing.JButton" ) {
+				name: "btnLaunch"
+				"text": "Launch"
+				addEvent( new FormEvent( "java.awt.event.MouseListener", "mouseClicked", "btnLaunchMouseClicked", true ) )
+			} )
+			add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+				name: "scrollPane1"
+				add( new FormComponent( "javax.swing.JTextPane" ) {
+					name: "txtLogList"
+				} )
+			} )
+			add( new FormComponent( "javax.swing.JButton" ) {
+				name: "btnClose"
+				"text": "SHUTDOWN"
+				addEvent( new FormEvent( "java.awt.event.MouseListener", "mouseClicked", "btnCloseMouseClicked", true ) )
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "lblLog"
+				"text": "Recent log actions:"
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 0 )
+			"size": new java.awt.Dimension( 500, 500 )
+		} )
+	}
+}

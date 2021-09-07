@@ -44,7 +44,7 @@ public abstract class CustomGuild {
     }
 
     public final Guild getGuild() {
-        return Entry.jda.getGuildById(guildId);
+        return Entry.getJDA().getGuildById(guildId);
     }
 
     public final String getName() {
@@ -59,7 +59,7 @@ public abstract class CustomGuild {
     public abstract void getCustomClaim(SlashCommandEvent event);
 
     public void doNightlyReset() {
-        DefaultEventHandler.nightlyReset(Entry.jda.getGuildById(getId()));
+        DefaultEventHandler.nightlyReset(Entry.getJDA().getGuildById(getId()));
     }
 
     public void handleSlashCommand(SlashCommandEvent event, EventWaiter waiter, GlobalCommandManager cManager, UserProfile profile) {

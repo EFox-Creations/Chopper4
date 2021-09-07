@@ -21,11 +21,10 @@ import java.util.*;
 
 public class Database {
 
-	private static Connection getConnection() {
-		return Entry.dbHandler.getConnection();
-	}
+	private static DatabaseHandler dbhandler;
 
-	public static void initDatabase(List<Guild> guilds) {
+	public static void initDatabase(DatabaseHandler handler, List<Guild> guilds) {
+		dbhandler = handler;
 		createMemberTables(guilds);
 		createWarningTables(guilds);
 		createStickyTable();
@@ -33,6 +32,10 @@ public class Database {
 		createConfigTable();
 		createKVTable();
 		createBetsTable();
+	}
+
+	private static Connection getConnection() {
+		return dbhandler.getConnection();
 	}
 
 	public static String getGuildMemberTable(String guildId) {
