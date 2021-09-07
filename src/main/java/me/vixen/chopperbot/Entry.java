@@ -25,6 +25,9 @@ public class Entry {
     public static JDA getJDA() {
         return bot.getJda();
     }
+    public static void setJDA(JDA jda) {
+
+    }
 
     public static String getCreatorId() {
         return bot.getCreatorId();

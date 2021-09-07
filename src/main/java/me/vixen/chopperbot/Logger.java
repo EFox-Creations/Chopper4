@@ -12,7 +12,7 @@ public class Logger {
 			final String strToLog = String.format("[%s]\s%s", time, text);
 
 			BufferedWriter writer = new BufferedWriter(new FileWriter("log.txt", true));
-			writer.write(strToLog);
+			writer.write(strToLog + "\n");
 			writer.close();
 			System.out.println(strToLog);
 			Entry.getChopperConsole().addToLog(strToLog);
@@ -27,7 +27,7 @@ public class Logger {
 			final String strToLog = String.format("[%s]\s%s: %s", time, text, e.getMessage());
 
 			BufferedWriter writer = new BufferedWriter(new FileWriter("log.txt", true));
-			writer.write(strToLog);
+			writer.write(strToLog + "\n");
 			writer.close();
 			System.out.println(strToLog);
 			Entry.getChopperConsole().addToLog(strToLog);

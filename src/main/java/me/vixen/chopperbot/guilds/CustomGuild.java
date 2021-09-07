@@ -1,6 +1,7 @@
 package me.vixen.chopperbot.guilds;
 
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
+import me.vixen.chopperbot.ChopBot;
 import me.vixen.chopperbot.Entry;
 import me.vixen.chopperbot.commands.GlobalCommandManager;
 import me.vixen.chopperbot.commands.ICommand;
@@ -44,7 +45,7 @@ public abstract class CustomGuild {
     }
 
     public final Guild getGuild() {
-        return Entry.getJDA().getGuildById(guildId);
+        return ChopBot.getJDA().getGuildById(guildId);
     }
 
     public final String getName() {

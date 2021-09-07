@@ -850,16 +850,17 @@ public class Database {
 	// ************************************************************
 
 	public static int getPot() {
-		String SQL = "SELECT value FROM keyvalue WHERE key = 'pot";
-		try (Connection con = getConnection(); Statement stmt = con.createStatement()) {
-			ResultSet rs = stmt.executeQuery(SQL);
+		String SQL = "SELECT value FROM keyvalue WHERE key = ?";
+		try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(SQL)) {
+			ps.setString(1, "pot");
+			ResultSet rs = ps.executeQuery();
 			if (rs.next()) {
 				final int pot = rs.getInt("value");
-				stmt.close();
+				ps.close();
 				con.close();
 				return pot;
 			} else {
-				stmt.close();
+				ps.close();
 				con.close();
 				return -1;
 			}
@@ -872,10 +873,11 @@ public class Database {
 
 
 	public static boolean setPot(int amount) {
-		String SQL = String.format("UPDATE keyvalue SET value = %s WHERE key = 'pot'", amount);
-		try (Connection con = getConnection(); Statement stmt = con.createStatement()) {
-			stmt.executeUpdate(SQL);
-			stmt.close();
+		String SQL = String.format("UPDATE keyvalue SET value = %s WHERE key = ?", amount);
+		try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(SQL)) {
+			ps.setString(1, "pot");
+			ps.executeUpdate(SQL);
+			ps.close();
 			con.close();
 			return true;
 		} catch (SQLException e) {

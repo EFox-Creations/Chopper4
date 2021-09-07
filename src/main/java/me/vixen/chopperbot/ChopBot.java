@@ -140,4 +140,8 @@ public class ChopBot {
 	public static String getCreatorId() {
 		return CREATORID;
 	}
+
+	public static JDA getJDA() {
+		return jda;
+	}
 }
