@@ -884,12 +884,14 @@ public class Database {
 	public static boolean addToPot(int amount) {
 		final int pot = getPot();
 		amount = Math.min(pot + amount, Integer.MAX_VALUE);
-		String SQL = "INSERT INTO keyvalue(key,value) VALUES('pot',?)" +
+		String SQL = "INSERT INTO keyvalue(key,value) VALUES(?,?)" +
 			"ON CONFLICT (key) DO " +
-			"UPDATE SET value = ? WHERE key = 'pot'";
+			"UPDATE SET value = ? WHERE key = ?";
 		try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(SQL)) {
-			ps.setString(1, String.valueOf(amount));
+			ps.setString(1, "pot");
 			ps.setString(2, String.valueOf(amount));
+			ps.setString(3, String.valueOf(amount));
+			ps.setString(4, "pot");
 			ps.executeUpdate();
 			ps.close();
 			con.close();
