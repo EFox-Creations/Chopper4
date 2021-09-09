@@ -27,18 +27,16 @@ public class ScratchOff {
         int bet = (int) event.getOption("bet").getAsLong();
         Member member = event.getMember();
         if (bet <= 0) {
-            event.replyEmbeds(Embeds.getInvalidArgumentEmbed("bet", " Must be more than 0")).queue();
+            event.getHook().editOriginalEmbeds(Embeds.getInvalidArgumentEmbed("bet", " Must be more than 0")).setActionRows().queue();
             return;
         }
 
         int availableCoins = profile.getCoins();
 
         if (bet > availableCoins) {
-            event.replyEmbeds(Embeds.getInsufficientCoins()).queue();
+            event.getHook().editOriginalEmbeds(Embeds.getInsufficientCoins()).setActionRows().queue();
             return;
         }
-
-        event.deferReply().queue();
 
         int rows = 5;
         int columns = 3;

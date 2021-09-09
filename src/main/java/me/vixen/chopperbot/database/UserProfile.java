@@ -253,8 +253,8 @@ public class UserProfile {
 	}
 
 	public void adjustCoins(int adjustAmount) {
-		coins += adjustAmount;
-		coins = Math.max(coins, 0);
+		coins = (int) Math.min(Integer.MAX_VALUE, ((long) coins + (long) adjustAmount)); //Do not let coins overflow
+		coins = Math.max(coins, 0); // coins may not be negative
 	}
 
 	public int getLottoPlaysLeft() {

@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
+import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.Button;
 
 import java.awt.*;
@@ -26,37 +27,39 @@ public class HighLow {
         int bet = (int) event.getOption("bet").getAsLong();
         Member member = event.getMember();
         if (bet <= 0) {
-            event.replyEmbeds(Embeds.getInvalidArgumentEmbed("bet", " Must be more than 0")).queue();
+            event.getHook().editOriginalEmbeds(Embeds.getInvalidArgumentEmbed("bet", " Must be more than 0")).setActionRows().queue();
             return;
         }
 
         int availableCoins = profile.getCoins();
 
         if (bet > availableCoins) {
-            event.replyEmbeds(Embeds.getInsufficientCoins()).queue();
+            event.getHook().editOriginalEmbeds(Embeds.getInsufficientCoins()).setActionRows().queue();
             return;
         }
 
         int hint = new Random().nextInt(100)+1;
         int number = new Random().nextInt(100)+1;
 
-        event.replyEmbeds(new EmbedBuilder()
+        event.getHook().editOriginalEmbeds(new EmbedBuilder()
             .setAuthor(event.getUser().getAsTag(), null, event.getUser().getAvatarUrl())
             .setColor(Color.YELLOW)
             .setTitle("The first number is " + hint)
             .setDescription("Is the second number **Higher** or **Lower**" +
                 "\nClick **JACKPOT** if you think the numbers are the same")
             .build()
-        ).addActionRow(
-            Button.primary("higher", "Higher").withEmoji(Emoji.fromUnicode("🔼")),
-            Button.primary("jackpot", "Jackpot").withEmoji(Emoji.fromUnicode("🤑")),
-            Button.primary("lower", "Lower").withEmoji(Emoji.fromUnicode("🔽"))
-        ).queue(hook -> hook.retrieveOriginal().queue(msg -> {
+        ).setActionRows(
+            ActionRow.of(
+                Button.primary("higher", "Higher").withEmoji(Emoji.fromUnicode("🔼")),
+                Button.primary("jackpot", "Jackpot").withEmoji(Emoji.fromUnicode("🤑")),
+                Button.primary("lower", "Lower").withEmoji(Emoji.fromUnicode("🔽"))
+            )
+        ).queue(msg -> {
             waiter.waitForEvent(ButtonClickEvent.class,
                 (bce) -> bce.getMember().equals(member) && bce.getMessageId().equals(msg.getId()),
                 (bce) -> awardUser(bce, event, hint, number, bet, profile)
             );
-        }));
+        });
     }
 
     private void awardUser(ButtonClickEvent bce, SlashCommandEvent event, int hint, int number, int bet, UserProfile profile) {

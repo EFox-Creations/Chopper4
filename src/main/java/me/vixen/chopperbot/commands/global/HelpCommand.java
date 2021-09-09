@@ -20,7 +20,7 @@ public class HelpCommand implements ICommand {
 				These `safes` require a `lockpick skill` and can be leveled up by interacting with locks.
 				Take a look into the menu and play around with the commands!
 				""",false)
-			.addField("Questions? Comments? Concerns?", "[Join the Discord](https://discord.gg/PmmWAka)", false)
+			.addField("Questions? Comments? Concerns?", "[Join the Discord](https://www.discord.com/B8449N8QZM)", false)
 			.build()
 		).queue();
 	}

@@ -12,10 +12,10 @@ import net.dv8tion.jda.api.interactions.components.selections.SelectionMenu;
 
 import java.util.concurrent.TimeUnit;
 
-public class GambleGroup implements ICommand {
+public class GambleCommand implements ICommand {
 
     private EventWaiter waiter;
-    public GambleGroup(EventWaiter waiter) {
+    public GambleCommand(EventWaiter waiter) {
         this.waiter = waiter;
     }
 
@@ -26,7 +26,7 @@ public class GambleGroup implements ICommand {
             .setRequiredRange(1,1)
             .addOption("Scratch Off", "scratchoff", "Play a scratch ticket!", Emoji.fromUnicode("🎫"))
             .addOption("Bet", "bet", "A basic game of chance!", Emoji.fromUnicode("💵"))
-            .addOption("Slot machine", "slot", "A Real slot machine!", Emoji.fromUnicode("🎰"))
+            .addOption("Slot Machine", "slot", "A Real slot machine!", Emoji.fromUnicode("🎰"))
             .addOption("High-Low", "highlow", "Is the number higher or lower?", Emoji.fromUnicode("↕"))
             .addOption("Dice", "dice", "Roll of the dice", Emoji.fromUnicode("🎲"))
             .build();
@@ -38,6 +38,7 @@ public class GambleGroup implements ICommand {
                 (sme) -> sme.getMessage().equals(msg) && sme.getUser().equals(event.getUser()),
                 (sme) -> {
                     //noinspection ConstantConditions at least 1 selection is required
+                    sme.deferEdit().queue();
                     switch (sme.getSelectedOptions().get(0).getValue()) {
                         case "scratchoff" -> new ScratchOff(waiter).handle(event, profile);
                         case "bet" -> new Bet().handle(event, profile);

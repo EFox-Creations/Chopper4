@@ -53,9 +53,9 @@ public class WarningGroup implements ICommand {
 
 		//noinspection ConstantConditions cant be null
 		switch (name) {
-			case "give" -> warn(event, target, moderator);
-			case "infractions" -> getInfractions(event, target);
-			case "delete" -> {
+			case "give-warn" -> warn(event, target, moderator);
+			case "list-warn" -> getInfractions(event, target);
+			case "delete-warn" -> {
 				//noinspection ConstantConditions cant be null
 				final int id = (int) event.getOption("id").getAsLong();
 				Warning warning = target.getWarnings().stream().filter(it -> it.getWarningNumber() == id).findFirst().orElse(null);
@@ -70,16 +70,16 @@ public class WarningGroup implements ICommand {
 
 	@Override
 	public CommandData getCommandData() {
-		return new CommandData("warn", "Warning Commands").addSubcommands(
-			new SubcommandData("give", "Give a new warning").addOptions(
+		return new CommandData("warnings", "Warning Commands").addSubcommands(
+			new SubcommandData("give-warn", "Give a new warning").addOptions(
 				new OptionData(OptionType.USER, "user", "The user to warn",true),
 				new OptionData(OptionType.STRING, "reason", "The reason for warning",true)
 			),
-			new SubcommandData("delete", "Delete a warning (needs warning id from /warn infractions)").addOptions(
+			new SubcommandData("delete-warn", "Delete a warning (needs warning id from /warn infractions)").addOptions(
 					new OptionData(OptionType.INTEGER, "warnnum", "The warning number",true),
 					new OptionData(OptionType.USER, "user", "The user to delete from", true)
 			),
-			new SubcommandData("infractions", "Get a users warnings")
+			new SubcommandData("list-warn", "Get a users warnings")
 				.addOption(OptionType.USER, "user", "The user to get", true)
 		);
 	}

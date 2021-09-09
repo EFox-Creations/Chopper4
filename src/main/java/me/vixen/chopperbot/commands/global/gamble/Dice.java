@@ -15,14 +15,14 @@ public class Dice {
     public void handle(SlashCommandEvent event, UserProfile profile) {
         int bet = (int) event.getOption("bet").getAsLong();
         if (bet <= 0) {
-            event.replyEmbeds(Embeds.getInvalidArgumentEmbed("bet", " Must be more than 0")).queue();
+            event.getHook().editOriginalEmbeds(Embeds.getInvalidArgumentEmbed("bet", " Must be more than 0")).setActionRows().queue();
             return;
         }
 
         int availableCoins = profile.getCoins();
 
         if (bet > availableCoins) {
-            event.replyEmbeds(Embeds.getInsufficientCoins()).queue();
+            event.getHook().editOriginalEmbeds(Embeds.getInsufficientCoins()).setActionRows().queue();
             return;
         }
 
@@ -46,7 +46,7 @@ public class Dice {
             payout = bet * -1;
         }
 
-        event.replyEmbeds(new EmbedBuilder()
+        event.getHook().editOriginalEmbeds(new EmbedBuilder()
             .setAuthor(event.getUser().getAsTag(), null, event.getUser().getAvatarUrl())
             .setColor(color)
             .setTitle(title)
@@ -54,7 +54,7 @@ public class Dice {
                 String.format("Your role: %d\nMy Role: %d", yourRoll, myRoll) +"\n\n" +
                     "Payout: " + payout
             ).build()
-        ).queue();
+        ).setActionRows().queue();
 
         profile.adjustCoins(payout);
         profile.update(event.getMember());

@@ -25,25 +25,25 @@ public class Slot {
 		Guild guild = event.getGuild();
 		Guild efox = Entry.getJDA().getGuildById("882694324112994315");
 		if (efox == null) {
-			event.reply("An error occurred; aborting with Code " + Errors.JDANULLRETURN).queue();
+			event.getHook().editOriginal("An error occurred; aborting with Code " + Errors.JDANULLRETURN).setActionRows().queue();
 			return;
 		}
 		//noinspection ConstantConditions cant be null
 		UserProfile member = Database.getMember(guild, id);
 		if (member == null) {
-			event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
+			event.getHook().editOriginal("An error occurred; aborting with Code " + Errors.DBNULLRETURN).setActionRows().queue();
 			return;
 		}
 		//noinspection ConstantConditions cant be null
 		final int bet = (int) event.getOption("bet").getAsLong();
 		if (member.getCoins() < bet) {
-			event.replyEmbeds(Embeds.getInsufficientCoins()).queue();
+			event.getHook().editOriginalEmbeds(Embeds.getInsufficientCoins()).setActionRows().queue();
 			return;
 		} else if (bet > MAX_BET) {
-			event.reply("The maximum bet allowed is: " + MAX_BET).queue();
+			event.getHook().editOriginal("The maximum bet allowed is: " + MAX_BET).setActionRows().queue();
 			return;
 		} else if (bet <= 0) {
-			event.reply("Your bet must be greater than 0").setEphemeral(true).queue();
+			event.getHook().editOriginal("Your bet must be greater than 0").setActionRows().queue();
 			return;
 		}
 
@@ -51,7 +51,7 @@ public class Slot {
 
 
 		member.adjustCoins(-bet);
-		event.replyFormat("%s%s%s", slot, slot, slot).queue(hook -> {
+		event.getHook().editOriginalFormat("%s%s%s", slot, slot, slot).setActionRows().queue(msg -> {
 			SlotResult s1 = SlotResult.getRandom();
 			SlotResult s2 = SlotResult.getRandom();
 			SlotResult s3 = SlotResult.getRandom();
@@ -60,7 +60,8 @@ public class Slot {
 			Emote slottwo = getEmote(efox, s2);
 			Emote slotthree = getEmote(efox, s3);
 
-			hook.editOriginalFormat("%s%s%s", slotone, slot, slot).queueAfter(1L, TimeUnit.SECONDS, unused -> hook.editOriginalFormat("%s%s%s", slotone, slottwo, slot).queueAfter(1L, TimeUnit.SECONDS, unused1 -> {
+			msg.editMessageFormat("%s%s%s", slotone, slot, slot)
+				.queueAfter(1L, TimeUnit.SECONDS, unused -> msg.editMessageFormat("%s%s%s", slotone, slottwo, slot).queueAfter(1L, TimeUnit.SECONDS, unused1 -> {
 				int payout = 0;
 				if (allMatch(s1, s2, s3)) {
 					switch (getRank(s1, s2, s3)) {
@@ -78,14 +79,14 @@ public class Slot {
 
 				int net = payout - bet;
 				int finalPayout = payout;
-				hook.editOriginalFormat("%s%s%s", slotone, slottwo, slotthree).queueAfter(1L, TimeUnit.SECONDS, unused2 -> {
-					hook.editOriginalEmbeds(
+				msg.editMessageFormat("%s%s%s", slotone, slottwo, slotthree).queueAfter(1L, TimeUnit.SECONDS, unused2 -> {
+					msg.editMessageEmbeds(
 						new EmbedBuilder()
 							.setColor(finalPayout > 0 ? Color.GREEN : Color.RED)
 							.setTitle(String.format("%s%s%s", slotone, slottwo, slotthree))
 							.setDescription(String.format("Payout: %d\sBet: %d\sNet: %d", finalPayout, bet, net))
 							.build()
-					).setContent("").queueAfter(1L, TimeUnit.SECONDS);
+					).override(true).queueAfter(1L, TimeUnit.SECONDS);
 					member.adjustCoins(finalPayout);
 					member.update(null);
 
