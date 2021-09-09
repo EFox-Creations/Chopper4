@@ -1,17 +1,21 @@
 package me.vixen.chopperbot.commands.global;
 
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
+import me.vixen.chopperbot.Logger;
 import me.vixen.chopperbot.database.Database;
 import me.vixen.chopperbot.commands.ICommand;
 import me.vixen.chopperbot.database.UserProfile;
 import me.vixen.chopperbot.tools.Embeds;
 import me.vixen.chopperbot.tools.Errors;
 import net.dv8tion.jda.api.entities.Emoji;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
 import net.dv8tion.jda.api.events.interaction.SelectionMenuEvent;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
+import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.components.Button;
 import net.dv8tion.jda.api.interactions.components.selections.SelectionMenu;
 import java.util.concurrent.TimeUnit;
@@ -26,178 +30,161 @@ public class ShopCommand implements ICommand {
 	@Override
 	public void handle(SlashCommandEvent event, UserProfile profile) {
 		int price = getPrice(profile);
+		int exp = profile.getExp();
+		int maxCoins = (exp-(exp%10))/10; //round exp to the closest bottom 10
+		event.deferReply().queue();
+		//noinspection ConstantConditions can't be null, is required
+		String item = event.getOption("item").getAsString();
+		switch (item) {
+			case "coins" -> {
+				if (exp < 100) {
+					event.getHook().editOriginal("You don't have enough EXP for this").queue();
+					return;
+				}
+				event.getHook().editOriginalFormat("Exchange 100 exp for 10 coins or %d (max) exp for %d coins?", exp, exp*10)
+					.setActionRow(
+						Button.primary("oneexp", "100xp"),
+						Button.secondary("allexp", "Max").withEmoji(Emoji.fromUnicode("⚠")),
+						Button.secondary("cancel", "Cancel")
+					)
+				.queue(msg ->
+					waiter.waitForEvent(
+						ButtonClickEvent.class,
+						(bce) -> bce.getMessageId().equals(msg.getId()) && bce.getUser().equals(event.getUser()),
+						(bce) -> resolveClick(event, bce, profile),
+						30L, TimeUnit.SECONDS,
+						() -> msg.delete().queue()
+					)
+				);
+			}
+			case "exp" -> {
+				if (profile.getCoins() < 10) {
+					event.getHook().editOriginal("You don't have enough coins for this").queue();
+					return;
+				}
+				event.getHook().editOriginalFormat("Exchange 10 coins for 100 exp or %d (max) coins for %d exp?", (exp-(exp%10)), maxCoins)
+					.setActionRow(
+						Button.primary("onecoin", "100xp"),
+						Button.secondary("allcoin", "Max").withEmoji(Emoji.fromUnicode("⚠")),
+						Button.secondary("cancel", "Cancel")
+					)
+					.queue(msg ->
+						waiter.waitForEvent(
+							ButtonClickEvent.class,
+							(bce) -> bce.getMessageId().equals(msg.getId()) && bce.getUser().equals(event.getUser()),
+							(bce) -> resolveClick(event, bce, profile),
+							30L, TimeUnit.SECONDS,
+							() -> msg.delete().queue()
+						)
+					);
+			}
+			case "locks" -> {
+				event.getHook().editOriginalFormat("Buy a lock for %d coins?", price)
+					.setActionRow(
+						Button.primary("yes", "Yes"),
+						Button.secondary("cancel", "Cancel")
+					)
+				.queue(msg ->
+					waiter.waitForEvent(
+						ButtonClickEvent.class,
+						(bce) -> bce.getMessage().equals(msg) && bce.getUser().equals(event.getUser()),
+						(bce) -> {
+							switch (bce.getComponentId()) {
+								case "yes" -> {
+									profile.adjustLockCount(1);
+									profile.adjustCoins(-price);
+									profile.update(bce.getMember());
+									event.getHook().editOriginalFormat("Bought 1 lock for %d coins", price)
+										.setActionRows().queue();
+								}
+								case "cancel" -> {
+									bce.deferEdit().queue();
+									msg.delete().queue();
+								}
+							}
+						},
+						30L, TimeUnit.SECONDS,
+						() -> msg.delete().queue()
+					)
+				);
+			}
+			case "book" -> {
+				event.getHook().editOriginalFormat("Buy a Textbook for %d coins?", price*2)
+					.setActionRow(
+						Button.primary("yes", "Yes"),
+						Button.secondary("cancel", "Cancel")
+					)
+					.queue(msg ->
+						waiter.waitForEvent(
+							ButtonClickEvent.class,
+							(bce) -> bce.getMessage().equals(msg) && bce.getUser().equals(event.getUser()),
+							(bce) -> {
+								switch (bce.getComponentId()) {
+									case "yes" -> {
+										profile.adjustSkill(2);
+										profile.adjustCoins(-(price*2));
+										profile.update(bce.getMember());
+										event.getHook().editOriginalFormat("Bought 1 textbook for %d coins", price*2)
+											.setActionRows().queue();
+									}
+									case "cancel" -> {
+										bce.deferEdit().queue();
+										msg.delete().queue();
+									}
+								}
+							},
+							30L, TimeUnit.SECONDS,
+							() -> msg.delete().queue()
+						)
+					);
+			}
+		}
+	}
 
-		SelectionMenu menu = SelectionMenu.create("menu:shop")
-			.setPlaceholder("Choose your item!")
-			.setRequiredRange(1, 1)
-			.addOption("Coins", "coins", "Trade some EXP for coins", Emoji.fromUnicode("💰"))
-			.addOption("Exp", "exp", "Buy some exp!", Emoji.fromUnicode("📈"))
-			.addOption("Practice Lock", "lock", "Buy a practice lock for " + price + " coins!", Emoji.fromUnicode("🔐"))
-			.addOption("Textbook", "book", "Guarantees a skill increase for " + price*2 + " coins!", Emoji.fromUnicode("📚"))
-			.build();
-
-		//noinspection ConstantConditions wont be null
-		event.reply("Choose your item!").addActionRow(menu).queue(hook ->
-			hook.retrieveOriginal().queue(msg ->
-				waiter.waitForEvent(SelectionMenuEvent.class,
-					e -> e.getMessage().getId().equals(msg.getId()) && e.getUser().equals(event.getUser()),
-					this::resolveSelection,
-					1L, TimeUnit.MINUTES,
-					() -> {
-						msg.delete().queue();
-						msg.getChannel().sendMessage("Shop Timed Out").mention(event.getUser()).queue();
-					}
-				)
-			)
-		);
+	private void resolveClick(SlashCommandEvent sce, ButtonClickEvent bce, UserProfile profile) {
+		bce.deferEdit().queue();
+		int exp = profile.getExp();
+		int coins = profile.getCoins();
+		switch (bce.getComponentId()) {
+			case "oneexp" -> { // Exchange 100 exp for 10 coins
+				profile.adjustExp(-100);
+				profile.adjustCoins(10);
+				sce.getHook().editOriginal("Exchanged 100 exp for 10 coins").setActionRows().queue();
+			}
+			case "allexp" -> { // Exchange max exp for max coins
+				int maxExpForCoins = (exp-(exp%10));
+				int maxCoinsForExp = (exp-(exp%10))/10; //round exp to the closest bottom 10
+				profile.adjustCoins(maxCoinsForExp);
+				profile.adjustExp(-maxExpForCoins);
+				sce.getHook().editOriginalFormat("Exchanged %d exp for %d coins", maxExpForCoins, maxCoinsForExp)
+					.setActionRows().queue();
+			}
+			case "onecoin" -> { // Exchange 10 coins for 100 exp
+				profile.adjustExp(100);
+				profile.adjustCoins(-10);
+				sce.getHook().editOriginal("Exchanged 10 coins for 100 exp").setActionRows().queue();
+			}
+			case "allcoin" -> { // Exchange max coins for max exp
+				coins = Math.min(coins, 21474836); //Limit exchange to (Integer.MAX_VALUE\100) so that exp becomes Integer.MAX_VALUE
+				profile.adjustCoins(-coins);
+				profile.adjustExp(coins*100);
+				sce.getHook().editOriginalFormat("Exchanged %d coins for %d exp", coins, coins*100).setActionRows().queue();
+			}
+			case "cancel" -> bce.getMessage().delete().queue();
+		}
+		profile.update(bce.getMember());
 	}
 
 	@Override
 	public CommandData getCommandData() {
-		return new CommandData("shop", "Displays the Shop!");
-	}
-
-	private void resolveSelection(SelectionMenuEvent event) {
-		event.getHook().deleteOriginal().queue();
-		String selection = event.getValues().stream().findFirst().orElse(null);
-		if (selection == null) {
-			event.reply("An unknown error occurred; aborting with ErrorCode: `Shop01`").queue();
-			return;
-		}
-		switch (selection) {
-			case "exp" -> event.reply("Exchange how many coins?").addActionRow(
-				Button.primary("allcoins", "Max"),
-				Button.secondary("customcoins", "Custom")
-			).queue(hook ->
-				hook.retrieveOriginal().queue(msg ->
-					waiter.waitForEvent(
-						ButtonClickEvent.class,
-						e -> e.getUser().equals(event.getUser()) && event.getMessageId().equals(e.getMessageId()),
-						this::resolveClick
-					)
-				)
+		return new CommandData("shop", "Displays the Shop!")
+			.addOptions(
+				new OptionData(OptionType.STRING, "item", "What would you like to shop for?", true)
+					.addChoice("Coins", "coins")
+					.addChoice("Exp", "exp")
+					.addChoice("Practice Locks", "locks")
+					.addChoice("Textbook (2x the price of locks, guaranteed 2 skill points)", "book")
 			);
-			case "coins" -> event.reply("Exchange how much exp?").addActionRow(
-				Button.primary("allexp", "Max"),
-				Button.secondary("customexp", "Custom")
-			).queue(hook ->
-				hook.retrieveOriginal().queue(msg ->
-					waiter.waitForEvent(
-						ButtonClickEvent.class,
-						e -> e.getUser().equals(event.getUser()) && event.getMessageId().equals(e.getMessageId()),
-						this::resolveClick
-					)
-				)
-			);
-			case "lock" -> {
-				//noinspection ConstantConditions cant be null
-				UserProfile dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
-				if (dbMember == null) {
-					event.reply("An unknown error occurred; aborting with Error Code ShC2").queue();
-					return;
-				}
-				if (dbMember.getCoins() < getPrice(dbMember)) {
-					event.replyEmbeds(Embeds.getInsufficientCoins()).queue();
-					return;
-				}
-				dbMember.adjustLockCount(1);
-				dbMember.adjustCoins(-1 * getPrice(dbMember));
-				dbMember.update(null);
-			}
-			case "book" -> {
-				//noinspection ConstantConditions cant be null
-				UserProfile dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
-				if (dbMember == null) {
-					event.reply("An unknown error occurred; aborting with Error Code ShC3").queue();
-					return;
-				}
-				if (dbMember.getCoins() < getPrice(dbMember)*2) {
-					event.replyEmbeds(Embeds.getInsufficientCoins()).queue();
-					return;
-				}
-				dbMember.adjustSkill(2);
-				dbMember.adjustCoins(-1 * getPrice(dbMember));
-				dbMember.update(null);
-				event.reply("Skill increased by 2!").queue();
-			}
-		}
-	}
-
-	private void resolveClick(ButtonClickEvent event) {
-		//noinspection ConstantConditions cant be null
-		UserProfile dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
-		if (dbMember == null) {
-			event.reply("An unknown error occurred; aborting with Error Code ShC4").queue();
-			return;
-		}
-		switch (event.getComponentId()) {
-			case "allcoins" -> { //buying max amount of exp
-				int availableCoins = dbMember.getCoins();
-				int maxExp = availableCoins*10;
-				dbMember.adjustCoins(-1 * availableCoins);
-				dbMember.adjustExp(maxExp);
-				dbMember.update(null);
-				event.reply(String.format("Exchanged %d coins for %d exp", availableCoins, maxExp)).queue();
-			}
-			case "customcoins" -> //buying custom amount of exp
-				event.getChannel().sendMessage("How many coins to exchange?\n1 Coin = 10 Exp\n(Type in amount)").queue(msg -> waiter.waitForEvent(GuildMessageReceivedEvent.class,
-					e -> e.getAuthor().equals(event.getUser()) && e.getMessageId().equals(event.getMessageId()),
-					e -> {
-						try {
-							int coinsForExchange = Integer.parseInt(e.getMessage().getContentRaw());
-							int availableCoins = dbMember.getCoins();
-							if (coinsForExchange > availableCoins) {
-								event.replyEmbeds(Embeds.getInsufficientCoins()).queue();
-								return;
-							}
-							dbMember.adjustExp(coinsForExchange*10);
-							dbMember.adjustCoins(-1 * coinsForExchange);
-							dbMember.update(null);
-							event.reply(String.format("Exchanged %d coins for %d exp", coinsForExchange, coinsForExchange*10)).queue();
-						} catch (NumberFormatException t) {
-							event.reply("Invalid number entered; aborting").queue();
-						}
-					},
-					1L, TimeUnit.MINUTES,
-					() -> {
-						msg.delete().queue();
-						msg.getChannel().sendMessage("Timed out waiting").queue();
-					}
-				));
-			case "allexp" -> { //buying max amount of coins
-				int availableExp = dbMember.getExp();
-				int maxCoins = (availableExp-(availableExp%10))/10;
-				dbMember.adjustCoins(maxCoins);
-				dbMember.adjustExp(-1 * (maxCoins*10));
-				dbMember.update(null);
-				event.reply(String.format("Exchanged %d exp for %d coins", availableExp-(availableExp%10), maxCoins)).queue();
-			}
-			case "customexp" -> //buying custom amount of coins
-				event.getChannel().sendMessage("How much exp to exchange?\n1 Coin = 10 Exp\n(Type in amount)").queue(msg -> waiter.waitForEvent(GuildMessageReceivedEvent.class,
-					e -> e.getAuthor().equals(event.getUser()) && e.getMessageId().equals(event.getMessageId()),
-					e -> {
-						try {
-							int expForExchange = Integer.parseInt(e.getMessage().getContentRaw());
-							int availableExp = dbMember.getCoins();
-							if (expForExchange > availableExp) {
-								event.replyEmbeds(Embeds.getInsufficientExp()).queue();
-								return;
-							}
-							dbMember.adjustExp(-1 * expForExchange);
-							dbMember.adjustCoins(expForExchange/10);
-							dbMember.update(null);
-							event.reply(String.format("Exchanged %d exp for %d coins", expForExchange, expForExchange/10)).queue();
-						} catch (NumberFormatException t) {
-							event.reply("Invalid number entered; aborting").queue();
-						}
-					},
-					1L, TimeUnit.MINUTES,
-					() -> {
-						msg.delete().queue();
-						msg.getChannel().sendMessage("Timed out waiting").queue();
-					}
-				));
-		}
 	}
 
 

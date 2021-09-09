@@ -1,7 +1,7 @@
 package me.vixen.chopperbot;
 
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
-import me.vixen.chopperbot.commands.global.gamble.Lotto;
+import me.vixen.chopperbot.commands.global.gamble.LottoGroup;
 import me.vixen.chopperbot.database.Database;
 import me.vixen.chopperbot.database.UserProfile;
 import me.vixen.chopperbot.guilds.Config;
@@ -98,7 +98,7 @@ public class Scheduling {
 	private static void tryLotto() {
 		//Start lotto
 		StringBuilder builder = new StringBuilder();
-		for (int i=1; i<=5; i++) builder.append(new Random().nextInt(Lotto.UPPER)+1).append(", ");
+		for (int i=1; i<=5; i++) builder.append(new Random().nextInt(LottoGroup.UPPER)+1).append(", ");
 		String winningBet = Database.getWinningBet(builder.toString().trim());
 		if (winningBet != null)  {
 			String userId = winningBet.split(",")[0];

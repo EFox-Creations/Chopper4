@@ -14,7 +14,6 @@ public class Dice {
 
     public void handle(SlashCommandEvent event, UserProfile profile) {
         int bet = (int) event.getOption("bet").getAsLong();
-        Member member = event.getMember();
         if (bet <= 0) {
             event.replyEmbeds(Embeds.getInvalidArgumentEmbed("bet", " Must be more than 0")).queue();
             return;

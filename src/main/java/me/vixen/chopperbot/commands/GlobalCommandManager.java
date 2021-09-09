@@ -3,6 +3,7 @@ package me.vixen.chopperbot.commands;
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import me.vixen.chopperbot.commands.global.*;
 import me.vixen.chopperbot.commands.global.gamble.GambleGroup;
+import me.vixen.chopperbot.commands.global.gamble.LottoGroup;
 import me.vixen.chopperbot.guilds.GuildManager;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 
@@ -42,6 +43,7 @@ public class GlobalCommandManager {
 		addGlobalCommand(new RobCommand());
 
 		addGlobalCommand(new GambleGroup(waiter));
+		addGlobalCommand(new LottoGroup());
 
 		addGlobalCommand(new ShopCommand(waiter));
 		addGlobalCommand(new StickyGroup());

@@ -1,7 +1,7 @@
 package me.vixen.chopperbot.commands.global;
 
 import me.vixen.chopperbot.commands.ICommand;
-import me.vixen.chopperbot.commands.global.gamble.Lotto;
+import me.vixen.chopperbot.commands.global.gamble.LottoGroup;
 import me.vixen.chopperbot.database.UserProfile;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -53,7 +53,7 @@ public class OddsCommand implements ICommand {
                     Rare 20%
                     Uncommon 29%
                     Common 37%
-                    """.replace("$", String.valueOf(factorial(Lotto.UPPER) / (factorial(5) * factorial(Lotto.UPPER-5))))
+                    """.replace("$", String.valueOf(factorial(LottoGroup.UPPER) / (factorial(5) * factorial(LottoGroup.UPPER-5))))
 			)
 			.setColor(Color.BLUE)
 			.build();

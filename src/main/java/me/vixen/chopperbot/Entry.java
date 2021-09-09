@@ -19,7 +19,6 @@ public class Entry {
 
         if (token == null) throw new IllegalArgumentException("Token not provided");
         bot = ChopBot.createNew(token);
-        System.out.println("Bot created");
     }
 
     public static JDA getJDA() {
