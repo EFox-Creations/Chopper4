@@ -48,14 +48,16 @@ public class Embeds {
 					"new people with /mod authorize", false)
 			.addField("Additionally:", "Some commands may not function correctly until an authorized member completes" +
 				" the `/config set` setup", false)
-			.addField("Any other questions?", "Use [Home Base](https://discord.gg/PmmWAka) to ask!", false)
+			.addField("Any other questions?", "Use [Home Base](https://www.discord.com/B8449N8QZM) to ask!", false)
 			.build();
 	}
 
-	public static MessageEmbed getLevelUpEmbed(int level) {
+	public static MessageEmbed getLevelUpEmbed(User user, int level) {
 		return new EmbedBuilder()
+			.setAuthor(user.getAsTag(), null, user.getAvatarUrl())
 			.setColor(Color.ORANGE)
-			.setTitle("🔼 Level Up! " + level + "🔼")
+			.setTitle("🔼 Level Up! Level: " + level + " achieved!🔼")
+			.setFooter("Use /profile to turn these messages off!")
 			.build();
 	}
 

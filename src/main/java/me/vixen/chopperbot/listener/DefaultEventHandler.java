@@ -36,8 +36,7 @@ public class DefaultEventHandler {
 			Config config = Database.getConfig(event.getGuild().getId());
 			if (profile.awardExp(false) && config != null && !config.arelvlMsgOverridden()) {
 				event.getChannel()
-					.sendMessageEmbeds(Embeds.getLevelUpEmbed(profile.getLevel()))
-					.append(event.getMember().getAsMention())
+					.sendMessageEmbeds(Embeds.getLevelUpEmbed(event.getUser(), profile.getLevel()))
 					.queue();
 			}
 		} else Logger.log("DEH: 43: DB failed to return member");
@@ -62,8 +61,7 @@ public class DefaultEventHandler {
 			Config config = Database.getConfig(event.getGuild().getId());
 			if (profile.awardExp(false) && config != null && !config.arelvlMsgOverridden()) {
 				event.getChannel()
-					.sendMessageEmbeds(Embeds.getLevelUpEmbed(profile.getLevel()))
-					.append(event.getAuthor().getAsMention())
+					.sendMessageEmbeds(Embeds.getLevelUpEmbed(event.getAuthor(), profile.getLevel()))
 					.queue();
 			}
 		} else Logger.log("DEH: 66: DB failed to return member");
