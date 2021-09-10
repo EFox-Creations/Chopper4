@@ -35,7 +35,7 @@ public class EconCommand implements ICommand {
             .addOption("Rob", "rob", "Try and rob someone", Emoji.fromUnicode("🚓"))
             .build();
 
-        event.getHook().editOriginal("").setActionRow(econMenu).queue(msg ->
+        event.getHook().editOriginal("Select your action:").setActionRow(econMenu).queue(msg ->
             waiter.waitForEvent(
                 SelectionMenuEvent.class,
                 (sme) -> sme.getMessage().equals(msg) && sme.getUser().equals(event.getUser()),
@@ -44,6 +44,7 @@ public class EconCommand implements ICommand {
                     switch (sme.getSelectedOptions().get(0).getValue()) {
                         case "claimdaily" -> new DailyClaim(guildManager).handle(event, profile);
                         case "rob" -> new Rob().handle(event, profile);
+                        case "beg", "search", "work" -> event.getHook().editOriginal("This doesn't do anything yet!").setActionRows().queue();
                     }
                 },
                 30L, TimeUnit.SECONDS,

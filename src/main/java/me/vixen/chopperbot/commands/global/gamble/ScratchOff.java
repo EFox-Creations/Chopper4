@@ -1,10 +1,13 @@
 package me.vixen.chopperbot.commands.global.gamble;
 
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
+import me.vixen.chopperbot.Entry;
 import me.vixen.chopperbot.database.Database;
 import me.vixen.chopperbot.database.UserProfile;
 import me.vixen.chopperbot.tools.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.Emoji;
+import net.dv8tion.jda.api.entities.Emote;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
@@ -17,7 +20,7 @@ import java.util.List;
 import java.util.Random;
 
 public class ScratchOff {
-    private static String EMPTY_LABEL = "   ";
+    private static Emote EMPTY_LABEL = Entry.getJDA().getGuildById("882694324112994315").getEmotesByName("replyspacer", true).get(0);
 
     private EventWaiter waiter;
     public ScratchOff(EventWaiter waiter) {
@@ -80,7 +83,7 @@ public class ScratchOff {
                 waiter.waitForEvent(
                     ButtonClickEvent.class,
                     (bce) -> bce.getMessageId().equals(msg.getId()) && bce.getMember().equals(member),
-                    (bce) -> advanceGame(bce, cellGrid, turnsLeft, bet, 0)
+                    (bce) -> advanceGame(event, bce, cellGrid, turnsLeft, bet, 0)
                 )
             );
     }
@@ -109,7 +112,7 @@ public class ScratchOff {
         );
     }
 
-    private void advanceGame(ButtonClickEvent bce, Cell[][] cellArr, int turnsLeft, double bet, double winnings) {
+    private void advanceGame(SlashCommandEvent sce, ButtonClickEvent bce, Cell[][] cellArr, int turnsLeft, double bet, double winnings) {
         bce.deferEdit().queue();
         String buttonName = bce.getComponentId();
         String[] coordsArr = buttonName.split(",");
@@ -121,23 +124,23 @@ public class ScratchOff {
         switch (cell.prizeType) {
             case "topprize" -> {
                 earnings += bet * 1.5;
-                cell.button = Button.success(String.format("%d,%d", r, c), "👑").asDisabled();
+                cell.button = Button.success(String.format("%d,%d", r, c), "\u200b").withEmoji(Emoji.fromUnicode("👑")).asDisabled();
             }
             case "mediumprize" -> {
                 earnings += bet * .75;
-                cell.button = Button.success(String.format("%d,%d", r, c), "🏆").asDisabled();
+                cell.button = Button.success(String.format("%d,%d", r, c), "\u200b").withEmoji(Emoji.fromUnicode("🏆")).asDisabled();
             }
             case "smallprize" -> {
                 earnings += bet * .5;
-                cell.button = Button.success(String.format("%d,%d", r, c), "🏅").asDisabled();
+                cell.button = Button.success(String.format("%d,%d", r, c), "\u200b").withEmoji(Emoji.fromUnicode("🏅")).asDisabled();
             }
             case "tinyprize" -> {
                 earnings += bet * .15;
-                cell.button = Button.success(String.format("%d,%d", r, c), "💰").asDisabled();
+                cell.button = Button.success(String.format("%d,%d", r, c), "\u200b").withEmoji(Emoji.fromUnicode("💰")).asDisabled();
             }
             case "noprize" -> {
                 earnings += 0;
-                cell.button = Button.danger(String.format("%d,%d", r, c), EMPTY_LABEL).asDisabled();
+                cell.button = Button.danger(String.format("%d,%d", r, c), "\u200b").withEmoji(Emoji.fromEmote(EMPTY_LABEL)).asDisabled();
             }
         }
         final int trueTurnsLeft = turnsLeft - 1;
@@ -156,11 +159,11 @@ public class ScratchOff {
             return;
         }
 
-        bce.getMessage().editMessageEmbeds(embed).setActionRows(getActionRows(cellArr)).queue(msg -> {
+        sce.getHook().editOriginalEmbeds(embed).setActionRows(getActionRows(cellArr)).queue(msg -> {
             waiter.waitForEvent(
                 ButtonClickEvent.class,
                 (bce1) -> bce1.getMessageId().equals(msg.getId()) && bce1.getMember().equals(bce.getMember()),
-                (bce1) -> advanceGame(bce1, cellArr, trueTurnsLeft, bet, trueWinnings)
+                (bce1) -> advanceGame(sce, bce1, cellArr, trueTurnsLeft, bet, trueWinnings)
             );
         });
     }
@@ -183,26 +186,26 @@ public class ScratchOff {
             this.rCoord = rCoord;
             this.cCoord = cCoord;
             this.prizeType = prizeType;
-            this.button = Button.secondary(String.format("%d,%d", rCoord, cCoord), EMPTY_LABEL).asEnabled();
+            this.button = Button.secondary(String.format("%d,%d", rCoord, cCoord), "\u200b").withEmoji(Emoji.fromEmote(EMPTY_LABEL)).asEnabled();
         }
 
         public void revealButton() {
             if (visited) return;
             switch (prizeType) {
                 case "topprize" -> {
-                    button = Button.secondary(String.format("%d,%d", rCoord, cCoord), "👑").asDisabled();
+                    button = Button.secondary(String.format("%d,%d", rCoord, cCoord), "\u200b").withEmoji(Emoji.fromUnicode("👑")).asDisabled();
                 }
                 case "mediumprize" -> {
-                    button = Button.secondary(String.format("%d,%d", rCoord, cCoord), "🏆").asDisabled();
+                    button = Button.secondary(String.format("%d,%d", rCoord, cCoord), "\u200b").withEmoji(Emoji.fromUnicode("🏆")).asDisabled();
                 }
                 case "smallprize" -> {
-                    button = Button.secondary(String.format("%d,%d", rCoord, cCoord), "🎖").asDisabled();
+                    button = Button.secondary(String.format("%d,%d", rCoord, cCoord), "\u200b").withEmoji(Emoji.fromUnicode("🏅")).asDisabled();
                 }
                 case "tinyprize" -> {
-                    button = Button.secondary(String.format("%d,%d", rCoord, cCoord), "💰").asDisabled();
+                    button = Button.secondary(String.format("%d,%d", rCoord, cCoord), "\u200b").withEmoji(Emoji.fromUnicode("💰")).asDisabled();
                 }
                 case "noprize" -> {
-                    button = Button.secondary(String.format("%d,%d", rCoord, cCoord), EMPTY_LABEL).asDisabled();
+                    button = Button.secondary(String.format("%d,%d", rCoord, cCoord), "\u200b").withEmoji(Emoji.fromEmote(EMPTY_LABEL)).asDisabled();
                 }
             }
         }
