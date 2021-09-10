@@ -108,22 +108,6 @@ public class Embeds {
 			.build();
 	}
 
-	public static MessageEmbed getInsufficientExp() {
-		return new EmbedBuilder()
-			.setTitle("🚫 You do not have enough exp for that! 🚫")
-			.setDescription(BUG_ERROR)
-			.setColor(Colors.RED.get())
-			.build();
-	}
-
-	public static MessageEmbed getInsufficientLocks() {
-		return new EmbedBuilder()
-			.setTitle("🚫 You do not have enough locks for that! 🚫")
-			.setDescription(BUG_ERROR)
-			.setColor(Colors.RED.get())
-			.build();
-	}
-
 	public static MessageEmbed getUnknownMember() {
 		return new EmbedBuilder()
 			.setTitle("❓ I couldn't seem to find that person in this guild ❓")

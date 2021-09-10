@@ -67,8 +67,8 @@ public class Inventory {
 	}
 
 	private static File draw(Guild g, Member m) throws IOException {
-		UserProfile dbMember = Database.getMember(g, m.getId());
-		if (dbMember == null) {
+		UserProfile profile = Database.getMember(g, m.getId());
+		if (profile == null) {
 			return null;
 		}
 		String name = m.getUser().getName();
@@ -77,11 +77,11 @@ public class Inventory {
 		String nickname = m.getNickname();
 		String alias = nickname == null ? "None" : nickname;
 		if (alias.length() > 15) alias = alias.substring(0,11) + "...";
-		final int exp = dbMember.getExp();
-		final int level = dbMember.getLevel();
-		final int locks = dbMember.getLockCount();
-		final int skill = dbMember.getSkill();
-		final int currency = dbMember.getCoins();
+		final int exp = profile.getExp();
+		final int level = profile.getLevel();
+		final int locks = profile.getLockCount();
+		final int skill = profile.getSkill();
+		final int currency = profile.getCoins();
 
 		//The card
 		BufferedImage card = new BufferedImage(1000,550, BufferedImage.TYPE_INT_RGB);
@@ -141,15 +141,17 @@ public class Inventory {
 	}
 
 	private static double calcProgress(int exp, int currentLevel) {
-		//  p | exp |  x
-		//  W | lvl | 100
-
-		int currentlvlexp = ((currentLevel*150) + ((currentLevel*150)/2));
+		//  p |  x  | currExp
+		//  W | 100 | totalXP
+		int currentLvlExp = ((currentLevel*150) + ((currentLevel*150)/2));
 		int nextLevel = currentLevel+1;
 		int nextlvlexp = ((nextLevel*150) + ((nextLevel*150)/2));
 
-		//Math?... IDK.. I wrote it and it works so...
-		return Math.max(.01, (int) ((((exp-currentlvlexp)*100)/nextlvlexp)*.01));
+		// Exp is cumulative, we need to remove previous level XP from both the current level
+		// and the next level to calculate progress just on this level
+		int currentExp = exp-currentLvlExp;
+		int nextExp = nextlvlexp-currentLvlExp;
+		return Math.max(.01, ((double) (currentExp*100)/nextExp)*.01); // * .01 to return the percentage as a decimal
 	}
 
 	private static File download(String avatarUrl) throws IOException {
