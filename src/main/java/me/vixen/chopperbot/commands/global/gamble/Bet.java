@@ -17,7 +17,7 @@ public class Bet {
 		final int bet = (int) event.getOption("bet").getAsLong();
 
 		if (bet > profile.getCoins()) {
-			event.getHook().editOriginalEmbeds(Embeds.getInsufficientCoins()).setActionRows().queue();
+			event.getHook().editOriginalEmbeds(Embeds.getInsufficientCoins()).setActionRows().setContent("").queue();
 			return;
 		} else if (bet <= 0) {
 			event.getHook().editOriginal("Your bet must be greater than 0").setActionRows().queue();
@@ -47,7 +47,7 @@ public class Bet {
 
 		profile.adjustCoins(payout-bet);
 		profile.playLotto();
-		event.getHook().editOriginalEmbeds(embed).setActionRows().queue();
+		event.getHook().editOriginalEmbeds(embed).setActionRows().setContent("").queue();
 		profile.update(null);
 		if (payout <= 0) Database.addToPot(bet);
 	}

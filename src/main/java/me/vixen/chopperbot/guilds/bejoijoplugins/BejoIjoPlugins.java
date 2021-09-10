@@ -19,6 +19,8 @@ import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEve
 
 import java.awt.*;
 import java.io.File;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -159,14 +161,13 @@ public class BejoIjoPlugins extends CustomGuild {
 		//noinspection ConstantConditions cant be null
 		UserProfile dbMember = Database.getMember(event.getGuild(), event.getUser().getId());
 		if (dbMember == null) {
-			event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
+			event.getHook().editOriginal("An error occurred; aborting with Code " + Errors.DBNULLRETURN).setActionRows().queue();
 			return;
 		}
-		event.deferReply().queue();
 		final String userId = event.getUser().getId();
 		final int dailyChestCount = dbMember.getChestCount();
 		if (dailyChestCount <= 0) {
-			event.getHook().editOriginalEmbeds(Embeds.getAlreadyClaimed()).queue();
+			event.getHook().editOriginalEmbeds(Embeds.getAlreadyClaimed()).setContent("").setActionRows().queue();
 			return;
 		}
 
@@ -193,19 +194,21 @@ public class BejoIjoPlugins extends CustomGuild {
 						.setColor(REWARDS.getRarityColor(drawnCard))
 						.setTitle(drawnCard.toString())
 						.build();
-					event.getHook().editOriginalEmbeds(dailyChests, embed).queue();
+					event.getHook().editOriginalEmbeds(dailyChests, embed).setContent(event.getMember().getAsMention()).setActionRows().queue();
 				} else {
-					event.getHook().editOriginal("Claimed all Dailies!").queue();
-					//noinspection ResultOfMethodCallIgnored,ConstantConditions
-					event.getTextChannel()
-						.sendMessageEmbeds(dailyChests)
-						.addFile(file)
-						.append(event.getMember().getAsMention())
+					EmbedBuilder pictureEmbed = new EmbedBuilder();
+						pictureEmbed.copyFrom(dailyChests);
+						pictureEmbed.setImage("attachment://card.png");
+					event.getHook()
+						.editOriginalEmbeds(pictureEmbed.build())
+						.addFile(file, "card.png")
+						.setContent(event.getMember().getAsMention())
+						.setActionRows()
 						.queue(onSuccess -> file.delete());
 				}
 				dbMember.update(event.getMember());
 			});
-		} else event.getHook().editOriginal("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
+		} else event.getHook().editOriginal("An error occurred; aborting with Code " + Errors.DBNULLRETURN).setActionRows().queue();
 	}
 
 	private boolean isStaff(Guild g, Member m) {

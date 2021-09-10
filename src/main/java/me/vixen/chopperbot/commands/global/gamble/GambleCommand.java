@@ -29,6 +29,7 @@ public class GambleCommand implements ICommand {
             .addOption("Slot Machine", "slot", "A Real slot machine!", Emoji.fromUnicode("🎰"))
             .addOption("High-Low", "highlow", "Is the number higher or lower?", Emoji.fromUnicode("↕"))
             .addOption("Dice", "dice", "Roll of the dice", Emoji.fromUnicode("🎲"))
+            .addOption("View Odds", "odds", "View the odds for each game", Emoji.fromUnicode("❓"))
             .build();
 
         event.deferReply().queue();
@@ -45,6 +46,7 @@ public class GambleCommand implements ICommand {
                         case "slot" -> new Slot().handle(event,profile);
                         case "highlow" -> new HighLow(waiter).handle(event, profile);
                         case "dice" -> new Dice().handle(event, profile);
+                        case "odds" -> new Odds().handle(event,profile);
                     }
                 },
                 1L, TimeUnit.MINUTES,

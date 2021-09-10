@@ -1,7 +1,5 @@
-package me.vixen.chopperbot.commands.global;
+package me.vixen.chopperbot.commands.global.econ;
 
-import me.vixen.chopperbot.database.Database;
-import me.vixen.chopperbot.commands.ICommand;
 import me.vixen.chopperbot.database.UserProfile;
 import me.vixen.chopperbot.guilds.GuildManager;
 import me.vixen.chopperbot.tools.Embeds;
@@ -10,30 +8,28 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
-import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 
 import java.util.Random;
 
-public class DailyClaimCommand implements ICommand {
+public class DailyClaim {
 	public GuildManager gManager;
 
-	public DailyClaimCommand(GuildManager gManager) {
+	public DailyClaim(GuildManager gManager) {
 		this.gManager = gManager;
 	}
 
-	@Override
 	public void handle(SlashCommandEvent event, UserProfile profile) {
 		Guild guild = event.getGuild();
 		if (gManager.contains(guild) && gManager.getGuild(guild).hasCustomClaims()) {
 			gManager.getGuild(guild).getCustomClaim(event);
 		} else { //Default claiming
 			if (profile == null) {
-				event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
+				event.getHook().editOriginal("An error occurred; aborting with Code " + Errors.DBNULLRETURN).setActionRows().queue();
 				return;
 			}
 			int dailyChests = profile.getChestCount();
 			if (dailyChests == 0) {
-				event.replyEmbeds(Embeds.getAlreadyClaimed()).queue();
+				event.getHook().editOriginalEmbeds(Embeds.getAlreadyClaimed()).setContent("").setActionRows().queue();
 				return;
 			}
 
@@ -48,13 +44,8 @@ public class DailyClaimCommand implements ICommand {
 			}
 			profile.setChestCount(0);
 			profile.update(null);
-			event.replyEmbeds(builder.build()).queue();
+			event.getHook().editOriginalEmbeds(builder.build()).setContent(event.getMember().getAsMention()).setActionRows().queue();
 		}
-	}
-
-	@Override
-	public CommandData getCommandData() {
-		return new CommandData("claimdaily", "Claim all daily claimables");
 	}
 
 	private MessageEmbed.Field getReward(UserProfile dbMember) {

@@ -1,18 +1,14 @@
-package me.vixen.chopperbot.commands.global;
+package me.vixen.chopperbot.commands.global.econ;
 
 import me.vixen.chopperbot.database.Database;
-import me.vixen.chopperbot.commands.ICommand;
 import me.vixen.chopperbot.database.UserProfile;
-import me.vixen.chopperbot.tools.Errors;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
-import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import java.util.Random;
 
-public class RobCommand implements ICommand {
-	@Override
+public class Rob {
 	public void handle(SlashCommandEvent event, UserProfile profile) {
 		if (profile.hasRobbed()) {
-			event.reply("You have already robbed today").setEphemeral(true).queue();
+			event.getHook().editOriginal("You have already robbed today").setActionRows().queue();
 			return;
 		}
 
@@ -22,9 +18,9 @@ public class RobCommand implements ICommand {
 			case FINED -> {
 				profile.adjustCoins(-50);
 				profile.update(event.getMember());
-				event.reply("You were caught by the State Police and fined 50 coins").queue();
+				event.getHook().editOriginal("You were caught by the State Police and fined 50 coins").setActionRows().queue();
 			}
-			case NOTHING -> event.reply("You tried your best but came up empty handed").queue();
+			case NOTHING -> event.getHook().editOriginal("You tried your best but came up empty handed").setActionRows().queue();
 			case SUCCESS -> {
 				final UserProfile unfortunateSoul =
 					Database.getRandomProfile(event.getGuild(), event.getUser().getId());
@@ -41,14 +37,9 @@ public class RobCommand implements ICommand {
 				profile.adjustCoins(tenPercent);
 				profile.rob();
 				profile.update(event.getMember());
-				event.reply("You stole " + tenPercent + " coins from " + unfortunateSoul.getNickname()).queue();
+				event.getHook().editOriginal("You stole " + tenPercent + " coins from " + unfortunateSoul.getNickname()).setActionRows().queue();
 			}
 		}
-	}
-
-	@Override
-	public CommandData getCommandData() {
-		return new CommandData("rob", "Attempt to rob a random person");
 	}
 
 	private enum OUTCOME {

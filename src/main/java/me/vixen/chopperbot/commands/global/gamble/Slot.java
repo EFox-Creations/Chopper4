@@ -37,7 +37,7 @@ public class Slot {
 		//noinspection ConstantConditions cant be null
 		final int bet = (int) event.getOption("bet").getAsLong();
 		if (member.getCoins() < bet) {
-			event.getHook().editOriginalEmbeds(Embeds.getInsufficientCoins()).setActionRows().queue();
+			event.getHook().editOriginalEmbeds(Embeds.getInsufficientCoins()).setActionRows().setContent("").queue();
 			return;
 		} else if (bet > MAX_BET) {
 			event.getHook().editOriginal("The maximum bet allowed is: " + MAX_BET).setActionRows().queue();

@@ -1,17 +1,13 @@
-package me.vixen.chopperbot.commands.global;
+package me.vixen.chopperbot.commands.global.gamble;
 
-import me.vixen.chopperbot.commands.ICommand;
-import me.vixen.chopperbot.commands.global.gamble.LottoGroup;
 import me.vixen.chopperbot.database.UserProfile;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
-import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 
 import java.awt.*;
 
-public class OddsCommand implements ICommand {
-	@Override
+public class Odds {
 	public void handle(SlashCommandEvent event, UserProfile profile) {
 		MessageEmbed embed = new EmbedBuilder()
 			.setTitle("🎲 Feeling Lucky? 🎲")
@@ -57,12 +53,7 @@ public class OddsCommand implements ICommand {
 			)
 			.setColor(Color.BLUE)
 			.build();
-		event.replyEmbeds(embed).queue();
-	}
-
-	@Override
-	public CommandData getCommandData() {
-		return new CommandData("displayodds", "Displays the luck-based odds");
+		event.getHook().editOriginalEmbeds(embed).setContent("").setActionRows().queue();
 	}
 
 	static int factorial(int n)

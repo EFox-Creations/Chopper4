@@ -3,9 +3,7 @@ package me.vixen.chopperbot.guilds;
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import me.vixen.chopperbot.guilds.bejoijoplugins.BejoIjoPlugins;
 import me.vixen.chopperbot.guilds.efox.EFoxHomeBase;
-import me.vixen.chopperbot.guilds.lspdfrts.LSPDFRTS;
 import me.vixen.chopperbot.guilds.outlierscoaching.OutliersCoaching;
-import me.vixen.chopperbot.guilds.vincentgsmmods.VincentsGMMods;
 import net.dv8tion.jda.api.entities.Guild;
 
 import java.util.ArrayList;

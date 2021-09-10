@@ -1,28 +1,20 @@
-package me.vixen.chopperbot.commands.global;
+package me.vixen.chopperbot.commands.global.userprofile;
 
-import me.vixen.chopperbot.database.Database;
-import me.vixen.chopperbot.commands.ICommand;
 import me.vixen.chopperbot.database.UserProfile;
 import me.vixen.chopperbot.tools.Embeds;
-import me.vixen.chopperbot.tools.Errors;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
-import net.dv8tion.jda.api.interactions.commands.OptionType;
-import net.dv8tion.jda.api.interactions.commands.build.CommandData;
-import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
 import java.awt.*;
 import java.util.Random;
 
-public class PracticeCommand implements ICommand {
-	@Override
+public class Practice {
 	public void handle(SlashCommandEvent event, UserProfile profile) {
 		//noinspection ConstantConditions is required
 		int numoflocks = (int) event.getOption("numoflocks").getAsLong();
 		//noinspection ConstantConditions cant be null
 		if (profile.getLockCount() < numoflocks) {
-			event.replyEmbeds(Embeds.getInsufficientLocks()).queue();
+			event.getHook().editOriginalEmbeds(Embeds.getInsufficientLocks()).setActionRows().setContent("").queue();
 			return;
 		}
 
@@ -44,20 +36,12 @@ public class PracticeCommand implements ICommand {
 
 		int newSkill = skill+skillIncrease;
 
-		event.replyEmbeds(
+		event.getHook().editOriginalEmbeds(
 			new EmbedBuilder()
 				.setColor(skillIncrease > 0 ? Color.GREEN : Color.YELLOW)
 				.setTitle("Practice Lock Results")
 				.setDescription("Used " + usedLocks + " locks!\nSkill: " + skill + " -> " + newSkill)
 				.build()
-		).queue();
-	}
-
-	@Override
-	public CommandData getCommandData() {
-		return new CommandData("practice", "Use your locks to up your skill")
-			.addOptions(
-				new OptionData(OptionType.INTEGER, "numoflocks", "How many locks to use?",true)
-			);
+		).setActionRows().setContent("").queue();
 	}
 }

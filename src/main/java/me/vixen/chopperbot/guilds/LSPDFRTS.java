@@ -1,4 +1,4 @@
-package me.vixen.chopperbot.guilds.lspdfrts;
+package me.vixen.chopperbot.guilds;
 
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import me.vixen.chopperbot.commands.ICommand;

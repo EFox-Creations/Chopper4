@@ -1,18 +1,14 @@
-package me.vixen.chopperbot.commands.global;
+package me.vixen.chopperbot.commands.global.userprofile;
 
 import me.vixen.chopperbot.database.Database;
-import me.vixen.chopperbot.commands.ICommand;
 import me.vixen.chopperbot.database.UserProfile;
 import me.vixen.chopperbot.tools.Embeds;
 import me.vixen.chopperbot.tools.Errors;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
-import net.dv8tion.jda.api.interactions.commands.OptionMapping;
-import net.dv8tion.jda.api.interactions.commands.OptionType;
-import net.dv8tion.jda.api.interactions.commands.build.CommandData;
-
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -21,22 +17,18 @@ import java.net.URL;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 
-public class ProfileCommand implements ICommand {
-	@Override
-	public void handle(SlashCommandEvent event, UserProfile profile) {
-		event.deferReply(false).queue();
-		OptionMapping userOpt = event.getOption("user");
-		if (userOpt == null) { //retrieve self
-			Member member = event.getMember();
+public class Inventory {
+	public void handle(SlashCommandEvent event, User target) {
+		event.getGuild().retrieveMemberById(target.getId()).queue(member -> {
 			try {
 				//noinspection ConstantConditions cant be null
 				File draw = draw(event.getGuild(), member);
 				if (draw == null) {
-					event.reply("An error occurred; aborting with Code " + Errors.PROFILE1).queue();
+					event.getHook().editOriginal("An error occurred; aborting with Code " + Errors.PROFILE1).setActionRows().setEmbeds().queue();
 					return;
 				}
 				//noinspection ResultOfMethodCallIgnored
-				event.getHook().editOriginal(draw).queue(unused -> draw.delete());
+				event.getHook().editOriginal("").setActionRows().addFile(draw).queue(onSuccess -> draw.delete());
 			} catch (IOException e) {
 				//noinspection ConstantConditions cant be null
 				UserProfile dbMember = Database.getMember(event.getGuild(), member.getId());
@@ -50,15 +42,15 @@ public class ProfileCommand implements ICommand {
 						.setTitle(member.getEffectiveName())
 						.setThumbnail(member.getUser().getAvatarUrl())
 						.setDescription(String.format("""
-								Alias: %s
-								Time in Server: %s
-								Exp: %d
-								Level: %d
-								Locks: %d
-								Skill: %s
-								Currency: %d
-								Progress: %s
-								""",
+							Alias: %s
+							Time in Server: %s
+							Exp: %d
+							Level: %d
+							Locks: %d
+							Skill: %s
+							Currency: %d
+							Progress: %s
+							""",
 							member.getEffectiveName(),
 							ChronoUnit.MONTHS.between(member.getTimeJoined(), OffsetDateTime.now()),
 							dbMember.getExp(),
@@ -69,63 +61,9 @@ public class ProfileCommand implements ICommand {
 							calcProgress(dbMember.getExp(), dbMember.getLevel())
 						))
 						.build()
-				).queue();
+				).setContent("").setActionRows().queue();
 			}
-		} else { //retrieve user
-			Member member = userOpt.getAsMember();
-			if (member == null) {
-				event.getHook().editOriginalEmbeds(Embeds.getUnknownMember()).queue();
-			} else {
-				try {
-					File draw = draw(event.getGuild(), member);
-					if (draw == null) {
-						event.reply("An error occurred; aborting with Code " + Errors.PROFILE1).queue();
-						return;
-					}
-					//noinspection ResultOfMethodCallIgnored
-					event.getHook().editOriginal(draw).queue(unused -> draw.delete());
-				} catch (IOException e) {
-					//noinspection ConstantConditions cant be null
-					UserProfile dbMember = Database.getMember(event.getGuild(), member.getId());
-					if (dbMember == null) {
-						event.reply("An error occurred; aborting with Code " + Errors.DBNULLRETURN).queue();
-						return;
-					}
-					event.getHook().editOriginalEmbeds(
-						new EmbedBuilder()
-							.setColor(Embeds.Colors.FOXORANGE.get())
-							.setTitle(member.getEffectiveName())
-							.setThumbnail(member.getUser().getAvatarUrl())
-							.setDescription(String.format("""
-								Alias: %s
-								Time in Server: %s
-								Exp: %d
-								Level: %d
-								Locks: %d
-								Skill: %s
-								Currency: %d
-								Progress: %s
-								""",
-								member.getEffectiveName(),
-								ChronoUnit.MONTHS.between(member.getTimeJoined(), OffsetDateTime.now()),
-								dbMember.getExp(),
-								dbMember.getLevel(),
-								dbMember.getLockCount(),
-								dbMember.getSkill() + "%",
-								dbMember.getCoins(),
-								calcProgress(dbMember.getExp(), dbMember.getLevel())
-								))
-							.build()
-					).queue();
-				}
-			}
-		}
-	}
-
-	@Override
-	public CommandData getCommandData() {
-		return new CommandData("profile", "Get the profile of a user")
-			.addOption(OptionType.USER, "user", "The user to get (leave blank for yours)", false);
+		});
 	}
 
 	private static File draw(Guild g, Member m) throws IOException {

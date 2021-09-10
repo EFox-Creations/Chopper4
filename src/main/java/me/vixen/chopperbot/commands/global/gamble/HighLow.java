@@ -7,7 +7,6 @@ import me.vixen.chopperbot.tools.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Emoji;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
@@ -27,14 +26,14 @@ public class HighLow {
         int bet = (int) event.getOption("bet").getAsLong();
         Member member = event.getMember();
         if (bet <= 0) {
-            event.getHook().editOriginalEmbeds(Embeds.getInvalidArgumentEmbed("bet", " Must be more than 0")).setActionRows().queue();
+            event.getHook().editOriginalEmbeds(Embeds.getInvalidArgumentEmbed("bet", " Must be more than 0")).setContent("").setActionRows().queue();
             return;
         }
 
         int availableCoins = profile.getCoins();
 
         if (bet > availableCoins) {
-            event.getHook().editOriginalEmbeds(Embeds.getInsufficientCoins()).setActionRows().queue();
+            event.getHook().editOriginalEmbeds(Embeds.getInsufficientCoins()).setContent("").setActionRows().queue();
             return;
         }
 
@@ -54,7 +53,7 @@ public class HighLow {
                 Button.primary("jackpot", "Jackpot").withEmoji(Emoji.fromUnicode("🤑")),
                 Button.primary("lower", "Lower").withEmoji(Emoji.fromUnicode("🔽"))
             )
-        ).queue(msg -> {
+        ).setContent("").queue(msg -> {
             waiter.waitForEvent(ButtonClickEvent.class,
                 (bce) -> bce.getMember().equals(member) && bce.getMessageId().equals(msg.getId()),
                 (bce) -> awardUser(bce, event, hint, number, bet, profile)

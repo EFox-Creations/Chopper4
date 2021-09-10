@@ -12,6 +12,7 @@ import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.Button;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -27,14 +28,14 @@ public class ScratchOff {
         int bet = (int) event.getOption("bet").getAsLong();
         Member member = event.getMember();
         if (bet <= 0) {
-            event.getHook().editOriginalEmbeds(Embeds.getInvalidArgumentEmbed("bet", " Must be more than 0")).setActionRows().queue();
+            event.getHook().editOriginalEmbeds(Embeds.getInvalidArgumentEmbed("bet", " Must be more than 0")).setContent("").setActionRows().queue();
             return;
         }
 
         int availableCoins = profile.getCoins();
 
         if (bet > availableCoins) {
-            event.getHook().editOriginalEmbeds(Embeds.getInsufficientCoins()).setActionRows().queue();
+            event.getHook().editOriginalEmbeds(Embeds.getInsufficientCoins()).setContent("").setActionRows().queue();
             return;
         }
 
@@ -48,59 +49,33 @@ public class ScratchOff {
         int tinyPrizes = 5;
         int noPrizes = 4;
 
+        List<Integer> prizes = new ArrayList<>();
+        for (int i = 0; i < topPrizes; i++)
+            prizes.add(1);
+        for (int i = 0; i < mediumPrizes; i++)
+            prizes.add(2);
+        for (int i = 0; i < smallPrizes; i++)
+            prizes.add(3);
+        for (int i = 0; i < tinyPrizes; i++)
+            prizes.add(4);
+        for (int i = 0; i < noPrizes; i++)
+            prizes.add(5);
+
         for (int r = 0; r < rows; r++) {
             for (int c = 0; c < columns; c++) {
-                switch (new Random().nextInt(5)+1) {
-                    case 1 -> {
-                        if (topPrizes == 0) {
-                            c--;
-                            continue;
-                        } else {
-                            cellGrid[r][c] = new Cell(r, c, "topprize");
-                            topPrizes--;
-                        }
-                    }
-                    case 2 -> {
-                        if (mediumPrizes == 0) {
-                            c--;
-                            continue;
-                        } else {
-                            cellGrid[r][c] = new Cell(r, c, "mediumprize");
-                            mediumPrizes--;
-                        }
-                    }
-                    case 3 -> {
-                        if (smallPrizes == 0) {
-                            c--;
-                            continue;
-                        } else {
-                            cellGrid[r][c] = new Cell(r, c, "smallprize");
-                            smallPrizes--;
-                        }
-                    }
-                    case 4 -> {
-                        if (tinyPrizes == 0) {
-                            c--;
-                            continue;
-                        } else {
-                            cellGrid[r][c] = new Cell(r, c, "tinyprize");
-                            tinyPrizes--;
-                        }
-                    }
-                    case 5 -> {
-                        if (noPrizes == 0) {
-                            c--;
-                            continue;
-                        } else {
-                            cellGrid[r][c] = new Cell(r, c, "noprize");
-                            noPrizes--;
-                        }
-                    }
+                Integer prizeNum = prizes.get(new Random().nextInt(prizes.size()));
+                prizes.remove(prizeNum);
+                switch (prizeNum) {
+                    case 1 -> cellGrid[r][c] = new Cell(r, c, "topprize");
+                    case 2 -> cellGrid[r][c] = new Cell(r, c, "mediumprize");
+                    case 3 -> cellGrid[r][c] = new Cell(r, c, "smallprize");
+                    case 4 -> cellGrid[r][c] = new Cell(r, c, "tinyprize");
+                    case 5 -> cellGrid[r][c] = new Cell(r, c, "noprize");
                 }
             }
         }
         int turnsLeft = 3;
-        event.getHook().editOriginalEmbeds(getEmbed(member, turnsLeft, bet, 0))
+        event.getHook().editOriginalEmbeds(getEmbed(member, turnsLeft, bet, 0)).setContent("")
             .setActionRows(getActionRows(cellGrid)).queue(msg ->
                 waiter.waitForEvent(
                     ButtonClickEvent.class,

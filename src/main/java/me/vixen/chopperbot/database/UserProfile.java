@@ -124,6 +124,13 @@ public class UserProfile {
 		return lvlMsgsEnabled; //Return new value
 	}
 
+	/**
+	 * Sets messages on (true) or off (false)
+	 */
+	public void setLvlMsgs(boolean setting) {
+		lvlMsgsEnabled = setting;
+	}
+
 	public OffsetDateTime getLstMsgTime() {
 		try {
 			OffsetDateTime parse = OffsetDateTime.parse(lstMsgTime);

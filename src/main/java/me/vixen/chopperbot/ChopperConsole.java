@@ -71,6 +71,7 @@ public class ChopperConsole {
         txtLogList.setText(text);
     }
 
+    // TODO i want to be able to edit member profiles from the console
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         // Generated using JFormDesigner non-commercial license

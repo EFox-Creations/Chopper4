@@ -4,7 +4,6 @@ import me.vixen.chopperbot.database.Database;
 import me.vixen.chopperbot.database.UserProfile;
 import me.vixen.chopperbot.tools.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 
 import java.awt.*;
@@ -15,14 +14,14 @@ public class Dice {
     public void handle(SlashCommandEvent event, UserProfile profile) {
         int bet = (int) event.getOption("bet").getAsLong();
         if (bet <= 0) {
-            event.getHook().editOriginalEmbeds(Embeds.getInvalidArgumentEmbed("bet", " Must be more than 0")).setActionRows().queue();
+            event.getHook().editOriginalEmbeds(Embeds.getInvalidArgumentEmbed("bet", " Must be more than 0")).setActionRows().setContent("").queue();
             return;
         }
 
         int availableCoins = profile.getCoins();
 
         if (bet > availableCoins) {
-            event.getHook().editOriginalEmbeds(Embeds.getInsufficientCoins()).setActionRows().queue();
+            event.getHook().editOriginalEmbeds(Embeds.getInsufficientCoins()).setActionRows().setContent("").queue();
             return;
         }
 
@@ -54,7 +53,7 @@ public class Dice {
                 String.format("Your role: %d\nMy Role: %d", yourRoll, myRoll) +"\n\n" +
                     "Payout: " + payout
             ).build()
-        ).setActionRows().queue();
+        ).setActionRows().setContent("").queue();
 
         profile.adjustCoins(payout);
         profile.update(event.getMember());

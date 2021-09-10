@@ -1,4 +1,4 @@
-package me.vixen.chopperbot.guilds.vincentgsmmods;
+package me.vixen.chopperbot.guilds;
 
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import me.vixen.chopperbot.guilds.CustomGuild;

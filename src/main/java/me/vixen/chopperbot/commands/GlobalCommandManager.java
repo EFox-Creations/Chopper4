@@ -2,8 +2,11 @@ package me.vixen.chopperbot.commands;
 
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import me.vixen.chopperbot.commands.global.*;
+import me.vixen.chopperbot.commands.global.DonateCommand;
+import me.vixen.chopperbot.commands.global.econ.EconCommand;
 import me.vixen.chopperbot.commands.global.gamble.GambleCommand;
 import me.vixen.chopperbot.commands.global.gamble.LottoGroup;
+import me.vixen.chopperbot.commands.global.userprofile.ProfileCommand;
 import me.vixen.chopperbot.guilds.GuildManager;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 
@@ -17,39 +20,26 @@ public class GlobalCommandManager {
 	public GlobalCommandManager(EventWaiter waiter, GuildManager guildManager) {
 
 		//Admin Commands
-		addGlobalCommand(new ChangelogCommand());
-		addGlobalCommand(new EmoteIdCommand());
-		addGlobalCommand(new InjectionCommand());
-		addGlobalCommand(new QueryCommand());
 		addGlobalCommand(new ResetCommand(guildManager));
 		addGlobalCommand(new SummonCommand(waiter, guildManager));
 
 		//Global Commands
-		addGlobalCommand(new AvatarCommand());
 		addGlobalCommand(new ConfigCommand());
 		addGlobalCommand(new CustomCommand());
+		addGlobalCommand(new EconCommand(waiter, guildManager));
 		addGlobalCommand(new EmbedSendCommand(waiter));
 		addGlobalCommand(new CustomGroup(this, waiter));
-		addGlobalCommand(new DailyClaimCommand(guildManager));
 		addGlobalCommand(new DonateCommand());
 		addGlobalCommand(new EchoCommand());
-
 		addGlobalCommand(new GambleCommand(waiter));
 		addGlobalCommand(new HelpCommand());
-		addGlobalCommand(new ModGroup()); //houses moderation commands
-		addGlobalCommand(new OddsCommand()); //displays GOC odds
-		addGlobalCommand(new PollCommand());
-		addGlobalCommand(new PracticeCommand());
-		addGlobalCommand(new ProfileCommand());
-		addGlobalCommand(new ReportCommand(waiter));
-		addGlobalCommand(new RobCommand());
-
-
 		addGlobalCommand(new LottoGroup());
-
+		addGlobalCommand(new ModGroup()); //houses moderation commands
+		addGlobalCommand(new PollCommand());;
+		addGlobalCommand(new ProfileCommand(waiter));
+		addGlobalCommand(new ReportCommand(waiter));
 		addGlobalCommand(new ShopCommand(waiter));
 		addGlobalCommand(new StickyGroup());
-		addGlobalCommand(new ToggleLvlMsgsCommand());
 		addGlobalCommand(new UserInfoCommand()); //whois
 		addGlobalCommand(new WarningGroup(waiter));
 	}
