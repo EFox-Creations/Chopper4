@@ -260,9 +260,9 @@ public class Embeds {
 	public static MessageEmbed getCandidatesEmbed(Message msg) {
 		//noinspection ConstantConditions cant be null
 		return new EmbedBuilder()
-			.setTitle(String.format("%s's idea", msg.getAuthor().getAsTag()))
-			.setDescription(msg.getContentRaw())
-			.setColor(msg.getMember().getColor())
+			.setTitle("New Considered Idea")
+			.setDescription(msg.getEmbeds().get(0).getDescription())
+			.setColor(Color.YELLOW)
 			.build();
 	}
 

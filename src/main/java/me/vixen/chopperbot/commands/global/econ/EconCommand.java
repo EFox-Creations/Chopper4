@@ -44,6 +44,7 @@ public class EconCommand implements ICommand {
                     switch (sme.getSelectedOptions().get(0).getValue()) {
                         case "claimdaily" -> new DailyClaim(guildManager).handle(event, profile);
                         case "rob" -> new Rob().handle(event, profile);
+                        // TODO
                         case "beg", "search", "work" -> event.getHook().editOriginal("This doesn't do anything yet!").setActionRows().queue();
                     }
                 },

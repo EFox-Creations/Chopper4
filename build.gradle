@@ -26,6 +26,7 @@ repositories {
 }
 
 dependencies {
+    implementation 'com.formdev:flatlaf:1.5'                // Better LAF for console
     implementation 'com.google.code.gson:gson:2.8.8'        // JSON serializing
     implementation 'net.dv8tion:JDA:4.3.0_324'              // Discord API
     implementation 'pw.chew:jda-chewtils-commons:1.21.0'    // Event Waiter

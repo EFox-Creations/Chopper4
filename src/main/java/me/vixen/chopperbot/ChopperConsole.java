@@ -4,6 +4,8 @@
 
 package me.vixen.chopperbot;
 
+import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.FlatLightLaf;
 import org.apache.commons.lang3.ObjectUtils;
 
 import java.awt.event.*;
@@ -60,8 +62,8 @@ public class ChopperConsole {
     }
 
     private void btnCloseMouseClicked(MouseEvent e) {
-        int choice = JOptionPane.showConfirmDialog(frame, "Are you sure you want to shut down the bot?", "Shutdown?", JOptionPane.OK_CANCEL_OPTION);
-        if (choice == JOptionPane.OK_OPTION)
+        String confirm_shutdown = JOptionPane.showInputDialog(frame, "Please type \"Chopper\" to shut down the bot", "Confirm Shutdown", JOptionPane.WARNING_MESSAGE);
+        if (confirm_shutdown.equals("Chopper"))
             System.exit(Entry.shutdown());
     }
 
@@ -73,9 +75,11 @@ public class ChopperConsole {
 
     // TODO i want to be able to edit member profiles from the console
     private void initComponents() {
+        FlatDarkLaf.setup();
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         // Generated using JFormDesigner non-commercial license
-        Panel = new JPanel();
+        pnlTabs = new JTabbedPane();
+        pnlLunch = new JPanel();
         rdbtnChopper = new JRadioButton();
         rdbtnTestBot = new JRadioButton();
         lblChooseToken = new JLabel();
@@ -85,106 +89,123 @@ public class ChopperConsole {
         btnClose = new JButton();
         lblLog = new JLabel();
 
-        //======== Panel ========
+        //======== pnlTabs ========
         {
 
-            //---- rdbtnChopper ----
-            rdbtnChopper.setText("Chopper");
-            rdbtnChopper.addChangeListener(e -> chopTokenSelected(e));
-
-            //---- rdbtnTestBot ----
-            rdbtnTestBot.setText("Test Bot");
-            rdbtnTestBot.addChangeListener(e -> testTokenSelected(e));
-
-            //---- lblChooseToken ----
-            lblChooseToken.setText("Choose a launch token");
-
-            //---- btnLaunch ----
-            btnLaunch.setText("Launch");
-            btnLaunch.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    btnLaunchMouseClicked(e);
-                }
-            });
-
-            //======== scrollPane1 ========
+            //======== pnlLunch ========
             {
-                scrollPane1.setViewportView(txtLogList);
-            }
 
-            //---- btnClose ----
-            btnClose.setText("SHUTDOWN");
-            btnClose.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    btnCloseMouseClicked(e);
+                //---- rdbtnChopper ----
+                rdbtnChopper.setText("Chopper");
+                rdbtnChopper.addChangeListener(e -> chopTokenSelected(e));
+
+                //---- rdbtnTestBot ----
+                rdbtnTestBot.setText("Test Bot");
+                rdbtnTestBot.addChangeListener(e -> testTokenSelected(e));
+
+                //---- lblChooseToken ----
+                lblChooseToken.setText("Choose a launch token");
+
+                //---- btnLaunch ----
+                btnLaunch.setText("Launch");
+                btnLaunch.addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        btnLaunchMouseClicked(e);
+                    }
+                });
+
+                //======== scrollPane1 ========
+                {
+                    scrollPane1.setViewportView(txtLogList);
                 }
-            });
 
-            //---- lblLog ----
-            lblLog.setText("Recent log actions:");
+                //---- btnClose ----
+                btnClose.setText("SHUTDOWN");
+                btnClose.addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        btnCloseMouseClicked(e);
+                    }
+                });
 
-            GroupLayout PanelLayout = new GroupLayout(Panel);
-            Panel.setLayout(PanelLayout);
-            PanelLayout.setHorizontalGroup(
-                PanelLayout.createParallelGroup()
-                    .addGroup(PanelLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(PanelLayout.createParallelGroup()
-                            .addComponent(scrollPane1, GroupLayout.DEFAULT_SIZE, 494, Short.MAX_VALUE)
-                            .addGroup(PanelLayout.createSequentialGroup()
-                                .addGroup(PanelLayout.createParallelGroup()
-                                    .addGroup(GroupLayout.Alignment.TRAILING, PanelLayout.createSequentialGroup()
-                                        .addGap(0, 387, Short.MAX_VALUE)
-                                        .addComponent(btnClose))
-                                    .addGroup(PanelLayout.createSequentialGroup()
-                                        .addGroup(PanelLayout.createParallelGroup()
-                                            .addGroup(PanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
-                                                .addComponent(lblChooseToken, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                .addComponent(rdbtnChopper, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                .addComponent(rdbtnTestBot, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                .addComponent(btnLaunch, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                            .addComponent(lblLog))
-                                        .addGap(0, 0, Short.MAX_VALUE)))
-                                .addContainerGap())))
-            );
-            PanelLayout.setVerticalGroup(
-                PanelLayout.createParallelGroup()
-                    .addGroup(PanelLayout.createSequentialGroup()
-                        .addGap(10, 10, 10)
-                        .addComponent(lblChooseToken)
-                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(rdbtnChopper)
-                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(rdbtnTestBot)
-                        .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(btnLaunch)
-                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(lblLog)
-                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(scrollPane1, GroupLayout.DEFAULT_SIZE, 310, Short.MAX_VALUE)
-                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnClose)
-                        .addContainerGap())
-            );
+                //---- lblLog ----
+                lblLog.setText("Recent log actions:");
+
+                GroupLayout pnlLunchLayout = new GroupLayout(pnlLunch);
+                pnlLunch.setLayout(pnlLunchLayout);
+                pnlLunchLayout.setHorizontalGroup(
+                    pnlLunchLayout.createParallelGroup()
+                        .addGroup(pnlLunchLayout.createSequentialGroup()
+                            .addContainerGap()
+                            .addGroup(pnlLunchLayout.createParallelGroup()
+                                .addComponent(scrollPane1, GroupLayout.DEFAULT_SIZE, 588, Short.MAX_VALUE)
+                                .addGroup(GroupLayout.Alignment.TRAILING, pnlLunchLayout.createSequentialGroup()
+                                    .addGap(0, 487, Short.MAX_VALUE)
+                                    .addComponent(btnClose))
+                                .addGroup(pnlLunchLayout.createSequentialGroup()
+                                    .addGroup(pnlLunchLayout.createParallelGroup()
+                                        .addGroup(pnlLunchLayout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
+                                            .addComponent(lblChooseToken, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                            .addComponent(rdbtnChopper, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                            .addComponent(rdbtnTestBot, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                            .addComponent(btnLaunch, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                        .addComponent(lblLog))
+                                    .addGap(0, 0, Short.MAX_VALUE)))
+                            .addContainerGap())
+                );
+                pnlLunchLayout.setVerticalGroup(
+                    pnlLunchLayout.createParallelGroup()
+                        .addGroup(pnlLunchLayout.createSequentialGroup()
+                            .addGap(10, 10, 10)
+                            .addComponent(lblChooseToken)
+                            .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(rdbtnChopper)
+                            .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(rdbtnTestBot)
+                            .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+                            .addComponent(btnLaunch)
+                            .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(lblLog)
+                            .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(scrollPane1, GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE)
+                            .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(btnClose)
+                            .addContainerGap())
+                );
+            }
+            pnlTabs.addTab("Launch & Log", pnlLunch);
         }
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
 
         JFrame frame = new JFrame();
         frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-        frame.setName("Chopper Console");
+        frame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                String confirm_shutdown = JOptionPane.showInputDialog(frame, "Please type \"Chopper\" to shut down the bot", "Confirm Shutdown", JOptionPane.WARNING_MESSAGE);
+                if (confirm_shutdown.equals("Chopper"))
+                    System.exit(Entry.shutdown());
+            }
+        });
+        frame.setName("frmConsole");
         frame.setTitle("Chopper Console");
-        frame.add(Panel);
-        frame.setSize(500,500);
-        frame.setMinimumSize(new Dimension(500,500));
+        frame.add(pnlTabs);
+        frame.setSize(600,500);
+        frame.setMinimumSize(new Dimension(600,500));
+        try {
+            UIManager.setLookAndFeel(new FlatDarkLaf());
+        } catch (UnsupportedLookAndFeelException e) {
+            e.printStackTrace();
+        }
         this.frame = frame;
 
     }
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
     // Generated using JFormDesigner non-commercial license
-    private JPanel Panel;
+    private JTabbedPane pnlTabs;
+    private JPanel pnlLunch;
     private JRadioButton rdbtnChopper;
     private JRadioButton rdbtnTestBot;
     private JLabel lblChooseToken;

@@ -25,12 +25,13 @@ public class SuggestCommand implements ICommand {
         ideadump.sendMessageEmbeds(
                 new EmbedBuilder()
                     .setColor(Color.CYAN)
-                    .setTitle(asTag)
-                    .addField("New Suggestion", text, false)
+                    .setAuthor(asTag, null, event.getUser().getAvatarUrl())
+                    .setTitle("New Suggestion")
+                    .setDescription(text)
                     .build()
         ).queue(msg -> {
             msg.addReaction("⬆").queue();
-            event.reply("Suggestion Submitted").queue();
+            event.getHook().editOriginal("Suggestion Submitted").queue();
         });
     }
 

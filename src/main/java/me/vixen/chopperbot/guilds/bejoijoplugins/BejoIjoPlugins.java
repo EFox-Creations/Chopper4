@@ -1,6 +1,7 @@
 package me.vixen.chopperbot.guilds.bejoijoplugins;
 
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
+import me.vixen.chopperbot.Logger;
 import me.vixen.chopperbot.database.Database;
 import me.vixen.chopperbot.Entry;
 import me.vixen.chopperbot.commands.GlobalCommandManager;
@@ -241,7 +242,8 @@ public class BejoIjoPlugins extends CustomGuild {
 					.filter(it -> it.getReactionEmote().getName().equals(upvoteEmote))
 					.findFirst()
 					.orElse(null);
-				if (checkmark == null) return;
+				if (checkmark == null)
+					return;
 				if (checkmark.getCount() >= NEEDED_VOTES)
 					promote(message);
 			}
