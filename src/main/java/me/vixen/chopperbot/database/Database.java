@@ -17,7 +17,10 @@ import javax.annotation.Nullable;
 import java.lang.annotation.Annotation;
 import java.sql.*;
 import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class Database {
 
@@ -240,9 +243,11 @@ public class Database {
 		}
 	}
 
-	public static UserProfile getRandomProfile(Guild g, String robberSelfId) {
+	public static UserProfile getRandomProfile(Guild g, String robberSelfId, int minCoins) {
 		Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
-		String SQL = "SELECT * FROM " + getGuildMemberTable(g.getId()) + "WHERE user_id != " + robberSelfId + " ORDER BY RANDOM() LIMIT 1";
+		String SQL = "SELECT * FROM " + getGuildMemberTable(g.getId()) +
+			" WHERE json_extract(profile_json, \"$.Coins\") >= " + minCoins +
+			" user_id != " + robberSelfId + " ORDER BY RANDOM() LIMIT 1";
 		try (Connection con = getConnection(); Statement stmt = con.createStatement()) {
 			ResultSet rs = stmt.executeQuery(SQL);
 			if (rs.next()) {
@@ -1027,6 +1032,58 @@ public class Database {
 			return false;
 		}
 	}
+
+	// ************************************************************
+	// *                      Editing Methods                     *
+	// ************************************************************
+
+	public static boolean deleteOldProfiles(List<Guild> guilds, long duration, TimeUnit unit) {
+		Gson gson = new Gson();
+		List<UserProfile> profiles = new ArrayList<>();
+		for (Guild g : guilds) {
+			String loadSQL = "SELECT * FROM " + getGuildMemberTable(g.getId());
+			try (Connection con = getConnection(); Statement stmt = con.createStatement()) {
+				ResultSet rs = stmt.executeQuery(loadSQL);
+				while (rs.next()) {
+					final String profileJson = rs.getString("profile_json");
+					final int chestCount = rs.getInt("chest_count");
+					final boolean robbedToday = rs.getBoolean("robbed_today");
+					final int lottoPlays = rs.getInt("lottery_plays");
+					stmt.close();
+					con.close();
+
+					JsonObject profile = gson.fromJson(profileJson, JsonObject.class);
+					profile.addProperty("chestCount", chestCount);
+					profile.addProperty("successOnRobToday", robbedToday);
+					profile.addProperty("lottoPlaysLeft", lottoPlays);
+					profiles.add(gson.fromJson(profile, UserProfile.class));
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+
+			// Create list of members to delete
+			List<UserProfile> oldProfiles = profiles.stream().filter(
+				it -> it.getLstMsgTime().isBefore(OffsetDateTime.now().minus(1, ChronoUnit.MONTHS))
+			).collect(Collectors.toList());
+
+			// Delete them
+			for (UserProfile p : oldProfiles) {
+				String SQL = String.format("""
+					DELETE FROM %s
+					WHERE user_id = %s
+					""", getGuildMemberTable(g.getId()), p.getUserId()
+				);
+				try (Connection con = getConnection(); Statement stmt = con.createStatement()) {
+					stmt.executeUpdate(SQL);
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		return true;
+	}
+
 
 	// ************************************************************
 	// *                   Remote Access Methods                  *

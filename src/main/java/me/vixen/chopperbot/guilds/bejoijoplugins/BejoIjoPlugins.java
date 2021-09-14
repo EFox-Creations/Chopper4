@@ -215,8 +215,9 @@ public class BejoIjoPlugins extends CustomGuild {
 	private boolean isStaff(Guild g, Member m) {
 		final Role staff = g.getRoleById("761056641860763668");
 		final Role helper = g.getRoleById("663801966194851860");
+		final Role heisenberg = g.getRoleById("663801805809123349");
 
-		return m.getRoles().stream().anyMatch(it -> it.equals(staff) || it.equals(helper))
+		return m.getRoles().stream().anyMatch(it -> it.equals(staff) || it.equals(helper) || it.equals(heisenberg))
 			|| m.getId().equals(Entry.getCreatorId());
 	}
 
@@ -253,7 +254,12 @@ public class BejoIjoPlugins extends CustomGuild {
 	private void promote(Message message) {
 		final Guild guild = message.getGuild();
 		final TextChannel candidates = guild.getTextChannelById("683070989319667829");
-		if (candidates != null)
+		boolean blocked = false;
+		for (MessageReaction mr : message.getReactions())
+			if (mr.getReactionEmote().getName().equals("choppereyes"))
+				blocked = true;
+
+		if (candidates != null && !blocked)
 			candidates.sendMessageEmbeds(Embeds.getCandidatesEmbed(message)).queue();
 	}
 

@@ -10,7 +10,6 @@ import java.io.FileReader;
 import java.io.IOException;
 
 public class ChopConfig {
-
     @SerializedName("ChopperToken")
     private String chopToken;
     @SerializedName("TestBotToken")

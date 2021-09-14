@@ -23,7 +23,7 @@ public class Rob {
 			case NOTHING -> event.getHook().editOriginal("You tried your best but came up empty handed").setActionRows().queue();
 			case SUCCESS -> {
 				final UserProfile unfortunateSoul =
-					Database.getRandomProfile(event.getGuild(), event.getUser().getId());
+					Database.getRandomProfile(event.getGuild(), event.getUser().getId(), 100);
 
 				if (unfortunateSoul == null) {
 					event.reply("You tried your best but came up empty handed").queue();

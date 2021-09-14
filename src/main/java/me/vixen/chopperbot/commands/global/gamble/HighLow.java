@@ -72,7 +72,9 @@ public class HighLow {
             case "lower" -> won = number < hint;
         }
 
-        int payout = (int) Math.round(bet * new Random().nextDouble() + 1.1);
+        // Payout is 1.1x to 1.5x of the original bet
+        double modifier = (((double) (new Random().nextInt(40) + 110)) / 100D);
+        int payout = (int) Math.round(bet * modifier);
 
         bce.getMessage().editMessageEmbeds(new EmbedBuilder()
             .setColor(won ? Color.GREEN: Color.RED)

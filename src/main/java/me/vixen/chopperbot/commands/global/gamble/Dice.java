@@ -50,7 +50,7 @@ public class Dice {
             .setColor(color)
             .setTitle(title)
             .setDescription(
-                String.format("Your role: %d\nMy Role: %d", yourRoll, myRoll) +"\n\n" +
+                String.format("Your roll: %d\nMy roll: %d", yourRoll, myRoll) +"\n\n" +
                     "Payout: " + payout
             ).build()
         ).setActionRows().setContent("").queue();
