@@ -50,7 +50,7 @@ public class ConfigCommand implements ICommand {
 				Matcher matcher = Pattern.compile("(.+\\.[^\\s\\/]{2,63})", Pattern.CASE_INSENSITIVE).matcher(domain);
 				if (matcher.find()) domain = matcher.group(0);
 				if (config.getDomains().contains(domain)) {
-					event.reply("The config already contains: " + domain).queue();
+					event.getHook().editOriginal("The config already contains: " + domain).queue();
 					return;
 				}
 				config.addDomain(domain);

@@ -231,6 +231,7 @@ public class BejoIjoPlugins extends CustomGuild {
 
 	private void checkVotes(GuildMessageReactionAddEvent event, String upvoteEmote) {
 		final int NEEDED_VOTES = 25;
+		Emote choppereyes = event.getGuild().getEmotesByName("choppereyes", true).get(0);
 
 		event.retrieveMessage().queue(message -> {
 			if (event.getMember().getId().equals(message.getAuthor().getId())) {
@@ -245,8 +246,15 @@ public class BejoIjoPlugins extends CustomGuild {
 					.orElse(null);
 				if (checkmark == null)
 					return;
-				if (checkmark.getCount() >= NEEDED_VOTES)
-					promote(message);
+				if (checkmark.getCount() >= NEEDED_VOTES) {
+					boolean isBlocked = message.getReactions().stream().anyMatch(
+						it -> it.getReactionEmote().isEmote() && it.getReactionEmote().getEmote().equals(choppereyes)
+					);
+					if (!isBlocked) {
+						message.addReaction(choppereyes).queue();
+						promote(message);
+					}
+				}
 			}
 		});
 	}
@@ -401,7 +409,6 @@ public class BejoIjoPlugins extends CustomGuild {
 				mRoles.retainAll(colorRoles);
 				//Remove all roles left in member roles (These should only be colorRoles the member has
 				mRoles.forEach(role -> getGuild().removeRoleFromMember(m, role).queue());
-
 			}
 			Database.resetDailyCounts(getGuild(), basicPatreonIds, premiumPatreonIds, chopAndBasic, chopAndPremium);
 		});
